@@ -1,111 +1,83 @@
-# MarkEditor — 离线 Markdown 编辑器
+# MarkEditor
 
-> **单文件、零依赖、完全离线**的所见即所得 Markdown 编辑器，**Typora 的开源免费替代品**。
+> 单文件、零依赖、完全离线的所见即所得 Markdown 编辑器 —— Typora 的免费开源替代品。
 
-一个 HTML 文件就是全部 — 无需安装、无需联网、无需注册，双击即用。支持数学公式、Mermaid 图表、多主题、导出 Word/HTML、本地文件系统直读直写。
+一个 HTML 文件就是全部：无需安装、无需联网、无需注册，双击即用。支持数学公式、Mermaid 图表、多主题、导出 Word/HTML/PDF、本地工作区直读直写。
 
-![MarkEditor](https://img.shields.io/badge/version-1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Platform](https://img.shields.io/badge/platform-cross--platform-orange)
-
----
-
-## ✨ 为什么选择 MarkEditor？
-
-| 特性 | MarkEditor | Typora |
-|------|-----------|--------|
-| **价格** | 🆓 完全免费开源 | 💰 付费（$14.99 起） |
-| **安装** | 📄 单 HTML 文件，双击即用 | 📦 需要下载安装 |
-| **离线运行** | ✅ 完全离线 | ✅ 离线 |
-| **跨平台** | ✅ 任意浏览器（Win/Mac/Linux） | ✅ 桌面端 |
-| **体积** | 🪶 ~270KB 单文件 | 💾 数百 MB |
-| **源码可见** | ✅ 纯 HTML/JS/CSS，可自行修改 | ❌ 闭源 |
-| **数学公式** | ✅ 内置 TeX 渲染 | ✅ 支持 |
-| **Mermaid 图表** | ✅ 支持（CDN，离线降级） | ✅ 支持 |
-| **导出 Word** | ✅ 带样式 .doc | ✅ 支持 |
-| **工作区管理** | ✅ 文件树 + 右键菜单 | ✅ 支持 |
-| **主题** | ✅ 5 套内置主题 | ✅ 多主题 |
+[![version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/YCG1995/MarkEditor/releases)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![platform](https://img.shields.io/badge/platform-cross--platform-orange)](#下载)
+[![online](https://img.shields.io/badge/在线体验-MarkEditor-brightgreen)](#在线体验)
 
 ---
 
-## 🚀 快速开始
+## 在线体验
 
-### 方式一：直接使用（推荐）
+无需下载，浏览器直接打开：
 
-1. 下载 `index.html`
-2. 双击用浏览器打开（推荐 Chrome / Edge）
-3. 开始写作！
-
-### 方式二：固定为桌面应用
-
-在 Chrome / Edge 中打开后：
-- **Edge**：右上角「…」→ 应用 → 将此站点安装为应用
-- **Chrome**：右上角「⋮」→ 投放、保存和分享 → 将网页安装为应用
-
-### 方式三：无边框窗口
-
-点击菜单栏右侧的「无边框应用窗口」按钮，即可获得类似桌面应用的体验。
+**https://ycg1995.github.io/MarkEditor/**
 
 ---
 
-## 🎯 核心功能
+## 下载
 
-### 📝 所见即所得编辑
+桌面版基于 [Neutralinojs](https://neutralino.js.org/) 打包，使用系统自带 WebView，每个平台仅约 3 MB，自包含单文件、解压即用、完全离线（Mermaid 图表除外）。
+
+| 平台 | 下载 |
+| --- | --- |
+| Windows 10/11 x64 | [MarkEditor-1.0.0-windows-x64.zip](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-windows-x64.zip) |
+| macOS Intel (x64) | [MarkEditor-1.0.0-macos-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-macos-x64.tar.gz) |
+| macOS Apple Silicon (M1+) | [MarkEditor-1.0.0-macos-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-macos-arm64.tar.gz) |
+| macOS 通用 (Universal) | [MarkEditor-1.0.0-macos-universal.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-macos-universal.tar.gz) |
+| Linux x64 | [MarkEditor-1.0.0-linux-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-linux-x64.tar.gz) |
+| Linux arm64 | [MarkEditor-1.0.0-linux-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-linux-arm64.tar.gz) |
+| Linux armhf | [MarkEditor-1.0.0-linux-armhf.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.0/MarkEditor-1.0.0-linux-armhf.tar.gz) |
+
+更多版本见 [Releases](https://github.com/YCG1995/MarkEditor/releases)。
+
+### 运行方式
+
+- **Windows**：解压后双击 `MarkEditor.exe`。
+- **macOS / Linux**：解压后在终端执行 `chmod +x MarkEditor && ./MarkEditor`。
+- **macOS** 首次打开若提示"无法验证开发者"：到「系统设置 → 隐私与安全性」点击「仍要打开」。
+- **Linux** 需系统带 WebKitGTK，例如 Ubuntu：`sudo apt install libwebkit2gtk-4.1-0`。
+
+---
+
+## 特性
+
+### 所见即所得编辑
 - 直接输入 Markdown 语法即时渲染
-- `Ctrl+/` 一键切换源码模式 / 可视模式
-- 光标位置精确映射，源码与可视模式无缝切换
+- `Ctrl + /` 一键切换源码 / 可视模式，光标位置精确映射
+- 表格可视化编辑：浮动工具栏增删行列、切换对齐、导出 CSV
+- 代码块语法高亮 + 行号 + 一键复制
+- 引用块与 Callout 提示块（TIP / WARNING / INFO 等 9 种）
 
-### 📐 完整 Markdown 支持
-- **标题** H1–H6，支持自动编号（可设置起始级别）
-- **列表** 无序/有序/任务列表，支持嵌套与自动编号
-- **代码块** 语法高亮 + 行号 + 一键复制，支持 10+ 语言
-- **表格** 可视化编辑，浮动工具栏增删行列、切换对齐、导出 CSV
-- **引用** 支持嵌套与 Callout 提示块（TIP/WARNING/INFO 等 9 种）
-- **链接/图片** 拖拽/粘贴插入，支持相对路径、Base64 内嵌
-- **脚注**、**分割线**、**目录 [TOC]**、**Front Matter**
+### 完整 Markdown 支持
+标题 H1–H6（支持自动编号）、无序/有序/任务列表、链接、图片（拖拽/粘贴、相对路径、Base64）、脚注、分割线、目录 `[TOC]`、Front Matter。
 
-### 🧮 数学公式
-- 内置轻量 TeX 渲染器，**无需联网**
-- 行内公式 `$E=mc^2$` 与块级公式 `$$...$$`
-- 点击公式即可编辑，Shift+Enter 完成
+### 数学与图表
+- 内置轻量 TeX 渲染器，行内 `$E=mc^2$` 与块级 `$$...$$`，**无需联网**
+- Mermaid 流程图、时序图、甘特图等，联网自动加载、离线优雅降级
 
-### 📊 Mermaid 图表
-- 支持流程图、时序图、甘特图等
-- 联网时自动从 CDN 加载，离线时优雅降级显示源码
+### 工作区与导出
+- 打开文件夹作为工作区，左侧文件树浏览，右键重命名/复制/删除
+- 最近文件 / 最近工作区快速恢复，`Ctrl+P` 快速打开，`Ctrl+Shift+F` 全局搜索
+- 导出 Word（.doc，带样式）、静态 HTML、可编辑 HTML、打印 / 另存 PDF
 
-### 🎨 5 套主题
-- GitHub Light / GitHub Dark / Night / Newsprint / Pixyll
-- 一键切换，实时预览
-
-### 📂 工作区管理
-- 打开文件夹作为工作区，左侧文件树浏览
-- 右键菜单：重命名、创建副本、删除、复制路径、属性
-- 最近文件 / 最近工作区快速恢复
-- `Ctrl+P` 快速打开文件，`Ctrl+Shift+F` 工作区全局搜索
-
-### 📤 多格式导出
-- **导出 Word**（.doc，带完整样式，可用 Word/WPS 打开）
-- **导出 HTML**（静态零脚本，适合分享/上传）
-- **导出可编辑 HTML**（内嵌文档，可继续编辑）
-- **打印 / 另存 PDF**（支持纸张、页边距、页眉页脚设置）
-- **复制 Markdown 源码**
-
-### 🔧 编辑体验
-- **专注模式**（F8）：淡化其他段落，聚焦当前
-- **打字机模式**（F9）：光标始终保持在视口中央
-- **全屏**（F11）
-- **查找替换**（Ctrl+F / Ctrl+H），支持正则、区分大小写
-- **命令面板**（Ctrl+Shift+P）：72 个命令一键搜索
-- **大纲面板**：自动生成，支持层级折叠/展开，窄屏默认折叠
-- **缩放**：70%–160%
-- **页面宽度**：窄/标准/宽/全屏
-- **拼写检查**
-- **自动草稿保存**（localStorage）
+### 编辑体验
+- 5 套主题（GitHub Light / GitHub Dark / Night / Newsprint / Pixyll）
+- 专注模式（F8）、打字机模式（F9）、全屏（F11）
+- 可折叠大纲面板，窄屏默认折叠
+- 查找替换（支持正则、区分大小写）、命令面板（72+ 命令）
+- 缩放 70%–160%、页面宽度可调、拼写检查、自动草稿保存
 
 ---
 
-## ⌨️ 常用快捷键
+## 常用快捷键
 
 | 功能 | 快捷键 | 功能 | 快捷键 |
-|------|--------|------|--------|
+| --- | --- | --- | --- |
 | 加粗 | `Ctrl+B` | 斜体 | `Ctrl+I` |
 | 下划线 | `Ctrl+U` | 高亮 | `Ctrl+E` |
 | 行内代码 | `Ctrl+Shift+\`` | 链接 | `Ctrl+K` |
@@ -120,59 +92,41 @@
 | 源码模式 | `Ctrl+/` | 专注模式 | `F8` |
 | 打字机模式 | `F9` | 全屏 | `F11` |
 | 保存 | `Ctrl+S` | 另存为 | `Ctrl+Shift+S` |
-| 偏好设置 | `Ctrl+,` | 撤销/重做 | `Ctrl+Z` / `Ctrl+Y` |
+| 偏好设置 | `Ctrl+,` | 撤销 / 重做 | `Ctrl+Z` / `Ctrl+Y` |
 
-> macOS 用户：`Ctrl` = `⌘`，`Alt` = `⌥`，`Shift` = `⇧`
+> macOS 用户：`Ctrl` = `⌘`，`Alt` = `⌥`，`Shift` = `⇧`。
 
 ---
 
-## 🌐 浏览器兼容性
+## 浏览器兼容性
 
 | 浏览器 | 状态 | 说明 |
-|--------|------|------|
+| --- | --- | --- |
 | Chrome 86+ | ✅ 完全支持 | 推荐 |
 | Edge 86+ | ✅ 完全支持 | 推荐 |
-| Firefox 111+ | ⚠️ 部分支持 | 工作区（File System Access API）不可用，其余功能正常 |
+| Firefox 111+ | ⚠️ 部分支持 | 工作区（File System Access API）不可用，其余正常 |
 | Safari 15.2+ | ⚠️ 部分支持 | 同上 |
 
-> **工作区功能**（打开文件夹、直接读写文件）需要 Chrome / Edge 86+。其他浏览器可使用「打开文件」和下载保存。
+> 工作区功能（打开文件夹、直接读写文件）需要 Chrome / Edge 86+。其他浏览器可使用「打开文件」和下载保存。
 
 ---
 
-## 📁 项目结构
+## 技术实现
 
-```
-offline-markdown-editor/
-├── index.html      # 编辑器本体（单文件，包含所有 CSS/JS）
-└── README.md       # 本文件
-```
-
-就是这么简单 — 一个 HTML 文件包含了全部功能。
-
----
-
-## 🛠️ 技术实现
-
-- **纯原生 HTML/CSS/JavaScript**，零框架、零依赖
-- **ContentEditable + 自定义 Markdown 引擎**，实现真正的所见即所得
-- **File System Access API** 实现本地文件直读直写
-- **IndexedDB** 存储最近文件/工作区句柄
-- **localStorage** 保存草稿、主题、设置
-- **内置轻量 TeX 渲染器**，数学公式无需联网
-- **Mermaid** 通过 CDN 按需加载，离线优雅降级
+- 纯原生 HTML / CSS / JavaScript，零框架、零依赖
+- ContentEditable + 自定义 Markdown 引擎，实现真正的所见即所得
+- File System Access API 实现本地文件直读直写
+- IndexedDB 存储最近文件 / 工作区句柄，localStorage 保存草稿与设置
+- 内置轻量 TeX 渲染器，数学公式无需联网
+- Mermaid 通过 CDN 按需加载，离线优雅降级
+- 桌面端基于 Neutralinojs 打包，自包含单文件
 
 ---
 
-## 📄 许可证
+## 许可证
 
 MIT License — 自由使用、修改、分发。
 
 ---
 
-## 🙏 致谢
-
-灵感来自 Typora 的优秀编辑体验。MarkEditor 旨在提供一个**免费、开源、轻量**的替代方案，让每个人都能享受高质量的 Markdown 写作体验。
-
----
-
-**开始写作吧！** 🎉
+**开始写作吧。** 🎉
