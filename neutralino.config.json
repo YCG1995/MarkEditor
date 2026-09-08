@@ -1,0 +1,68 @@
+{
+  "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
+  "applicationId": "com.github.ycg1995.markeditor",
+  "version": "1.0.0",
+  "defaultMode": "window",
+  "port": 0,
+  "documentRoot": "/resources/",
+  "url": "/",
+  "enableServer": true,
+  "enableNativeAPI": true,
+  "tokenSecurity": "one-time",
+  "logging": {
+    "enabled": false,
+    "writeToLogFile": false
+  },
+  "nativeAllowList": [
+    "app.*",
+    "os.*",
+    "debug.log"
+  ],
+  "modes": {
+    "window": {
+      "title": "MarkEditor — 离线 Markdown 编辑器",
+      "width": 1280,
+      "height": 860,
+      "minWidth": 680,
+      "minHeight": 480,
+      "center": true,
+      "fullScreen": false,
+      "alwaysOnTop": false,
+      "icon": "/resources/icons/appIcon.png",
+      "enableInspector": false,
+      "borderless": false,
+      "maximize": false,
+      "hidden": false,
+      "resizable": true,
+      "exitProcessOnClose": true
+    },
+    "browser": {
+      "nativeBlockList": [
+        "filesystem.*"
+      ]
+    },
+    "cloud": {
+      "url": "/resources/#cloud",
+      "nativeAllowList": [
+        "app.*"
+      ]
+    },
+    "chrome": {
+      "width": 1280,
+      "height": 860,
+      "args": "--user-agent=\"MarkEditor desktop\"",
+      "nativeBlockList": [
+        "filesystem.*",
+        "os.*"
+      ]
+    }
+  },
+  "cli": {
+    "binaryName": "MarkEditor",
+    "resourcesPath": "/resources/",
+    "extensionsPath": "/extensions/",
+    "clientLibrary": "/resources/js/neutralino.js",
+    "binaryVersion": "6.9.0",
+    "clientVersion": "6.9.0"
+  }
+}

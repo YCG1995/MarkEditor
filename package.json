@@ -1,0 +1,15 @@
+{
+  "name": "markeditor-desktop",
+  "version": "1.0.0",
+  "description": "MarkEditor — 单文件离线 Markdown 编辑器的 Neutralinojs 桌面打包工程",
+  "scripts": {
+    "dev": "neu run",
+    "update:bin": "neu update",
+    "build": "neu build --release --embed-resources",
+    "build:separate": "neu build --release"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.7.2"
+  }
+}

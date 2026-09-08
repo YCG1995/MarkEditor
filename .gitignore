@@ -1,0 +1,19 @@
+# Neutralinojs build artifacts
+node_modules/
+bin/
+dist/
+extensions/
+
+# Neutralinojs logs
+*.log
+Neutralinojs.log
+
+# OS/editor cruft
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Scratch/test files
+_*.js
+_*.html
+_*.txt
