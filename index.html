@@ -273,7 +273,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .hr-block hr{border:none;border-top:2px solid var(--border);height:0}
 
 /* table */
-.table-block{margin:.6em 0 .9em;overflow-x:auto;position:relative}
+.table-block{margin:.6em 0 .9em;overflow-x:visible;position:relative}
 .table-block table{border-collapse:collapse;width:100%;font-size:.95em}
 .table-block th,.table-block td{border:1px solid var(--border);padding:7px 12px;min-width:48px;outline:none;vertical-align:middle;text-align:left;caret-color:var(--text)}
 .table-block th{background:var(--code-bg);font-weight:600;position:relative}.col-resizer{position:absolute;right:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:2}.col-resizer:hover{background:var(--accent)}
@@ -293,11 +293,11 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .toc-block .toc-l3{padding-left:18px}.toc-block .toc-l4{padding-left:36px}.toc-block .toc-l5,.toc-block .toc-l6{padding-left:54px;font-size:.92em}
 
 /* math */
-.math-block{margin:.8em 0;display:flex;justify-content:center;overflow-x:auto;cursor:text;border-radius:8px;padding:8px}
+.math-block{margin:.8em 0;display:flex;justify-content:center;overflow-x:visible;cursor:text;border-radius:8px;padding:8px}
 .math-block:hover{background:var(--code-bg)}
-.math-block .math-out{font-size:1.12em;overflow-x:auto}
+.math-block .math-out{font-size:1.12em;overflow-x:visible}
 .math-src-edit{width:100%;min-height:74px;font-family:var(--mono);font-size:14px;background:var(--code-bg);border:1px solid var(--accent);border-radius:8px;padding:10px;outline:none;resize:vertical;color:var(--text)}
-.math-inline .math-src-edit{display:none;width:14em;min-height:0;height:auto;padding:2px 6px;border-radius:5px;resize:none;vertical-align:baseline;margin:0 2px}
+.math-inline .math-src-edit{display:none;width:26em;min-width:18em;min-height:0;height:auto;padding:2px 6px;border-radius:5px;resize:none;vertical-align:baseline;margin:0 2px}
 .math-inline.editing .math-src-edit{display:inline-block!important}
 .math-inline .math-out{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-style:italic}
 .math-block .math-out{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-style:italic}
@@ -839,6 +839,7 @@ function countWords(md){
 function detectLine(rawIn){
   rawIn=String(rawIn==null?'':rawIn).replace(/ /g,' '); // normalize nbsp
   const res={type:'paragraph',prefix:'',content:rawIn,raw:rawIn};
+  rawIn=rawIn.replace(/[\uE000\uE001]/g,'').replace(/\n+$/,''); res.content=rawIn; res.raw=rawIn;
   let m;
   if(m=rawIn.match(/^(#{1,6})([ \t]+)(.*)$/)){
     res.type='heading';res.level=m[1].length;res.prefix=m[1]+m[2];res.content=m[3];return res;
@@ -1002,7 +1003,24 @@ function inlineRender(src){
    ============================================================ */
 const TEX_GREEK={alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',vartheta:'ϑ',iota:'ι',kappa:'κ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',varpi:'π',rho:'ρ',varrho:'ρ',sigma:'σ',varsigma:'ς',tau:'τ',upsilon:'υ',phi:'φ',varphi:'φ',chi:'χ',psi:'ψ',omega:'ω',Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Xi:'Ξ',Pi:'Π',Sigma:'Σ',Upsilon:'Υ',Phi:'Φ',Psi:'Ψ',Omega:'Ω'};
 const TEX_OPS={times:'×',div:'÷',cdot:'·',cdots:'⋯',ldots:'…',vdots:'⋮',ddots:'⋱',pm:'±',mp:'∓',timesbar:'⨱',ne:'≠',neq:'≠',le:'≤',leq:'≤',ge:'≥',geq:'≥',ll:'≪',gg:'≫',approx:'≈',equiv:'≡',cong:'≅',sim:'∼',propto:'∝',infty:'∞',sum:'∑',prod:'∏',int:'∫',oint:'∮',partial:'∂',nabla:'∇',forall:'∀',exists:'∃',emptyset:'∅',in:'∈',notin:'∉',ni:'∋',subset:'⊂',subseteq:'⊆',supset:'⊃',supseteq:'⊇',cup:'∪',cap:'∩',setminus:'∖',wedge:'∧',vee:'∨',neg:'¬',to:'→',rightarrow:'→',leftarrow:'←',leftrightarrow:'↔',Rightarrow:'⇒',Leftarrow:'⇐',Leftrightarrow:'⇔',mapsto:'↦',uparrow:'↑',downarrow:'↓',langle:'⟨',rangle:'⟩',lceil:'⌈',rceil:'⌉',lfloor:'⌊',rfloor:'⌋',deg:'°',prime:'′',circ:'∘',bullet:'•',star:'⋆',ast:'∗',oplus:'⊕',otimes:'⊗',odot:'⊙',sqrt:'√',overline:'',underline:'',cdotp:'·',colon:':',mid:'|',parallel:'∥',perp:'⊥',angle:'∠',triangle:'△',because:'∵',therefore:'∴',pmb:'',mathcal:'',mathrm:'',mathbf:'',mathit:'',mathsf:'',mathtt:'',mathbb:'',text:'',operatorname:'',frac:'',dfrac:'',tfrac:'',binom:'',tbinom:'',dbinom:'',left:'',right:'',big:'',Big:'',bigg:'',Bigg:'',displaystyle:'',textstyle:'',limits:'',hat:'',bar:'',vec:'',dot:'',tilde:'',ddot:'',acute:'',grave:'',breve:'',check:''};
+const MathEngine={katex:null,loading:false,failed:false};
+function loadKatex(){
+  if(MathEngine.katex||MathEngine.loading||MathEngine.failed)return;
+  MathEngine.loading=true;
+  const link=document.createElement('link');link.rel='stylesheet';
+  link.href='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
+  link.onerror=()=>{MathEngine.failed=true;MathEngine.loading=false;};
+  document.head.appendChild(link);
+  const s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js';
+  s.onload=()=>{MathEngine.katex=window.katex;MathEngine.loading=false;
+    $$('.math-inline,.math-block').forEach(mb=>{const tex=mb.dataset.tex;const out=$('.math-out',mb);if(tex&&out)out.innerHTML=renderMath(tex);});
+  };
+  s.onerror=()=>{MathEngine.failed=true;MathEngine.loading=false;};
+  document.head.appendChild(s);
+}
 function renderMath(rawTex){
+  if(MathEngine.katex){try{return MathEngine.katex.renderToString(rawTex,{throwOnError:false,displayMode:false});}catch(e){}}
   const stash=[];const hold=h=>{stash.push(h);return '\u0003'+(stash.length-1)+'\u0004';};
   let t=escapeHtml(rawTex);
   t=t.replace(/\\left\s*([.()[\]|\\])/g,'$1').replace(/\\right\s*([.()[\]|\\])/g,'$1');
@@ -1212,7 +1230,7 @@ function loadMermaid(){
       if(reached&&window.mermaid)break;
     }
     if(!window.mermaid)throw new Error('mermaid cdn unavailable');
-    try{window.mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:mermaidTheme()});}catch(e){}
+    try{window.mermaid.initialize({startOnLoad:false,securityLevel:'loose',theme:mermaidTheme()});}catch(e){}
     MermaidState.ok=true;return window.mermaid;
   })().catch(e=>{MermaidState.p=null;throw e;});
   return MermaidState.p;
@@ -1222,14 +1240,14 @@ function cleanupMermaidArtifacts(){
   $$('body > [id^="dmmd"],body > [id^="dmermaid"]').forEach(el=>el.remove());
 }
 function renderMermaidBlock(block){
-  const code=block.dataset.code||'',id='mmd'+(++mermaidSeq);cleanupMermaidArtifacts();
+  const code=block.dataset.code||'',id='mmd'+(++mermaidSeq);
   const view=$('.mermaid-view',block);if(!view)return;
   const svgBox=$('.mermaid-svg',view),msg=$('.mermaid-msg',view);
   block.classList.remove('fallback');
   if(!code.trim()){svgBox.innerHTML='';msg.textContent='（空图表）';return;}
   msg.textContent='图表加载中…';
   loadMermaid().then(mr=>{
-    if(window.mermaid)try{window.mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:mermaidTheme()});}catch(e){}
+    if(window.mermaid)try{window.mermaid.initialize({startOnLoad:false,securityLevel:'loose',theme:mermaidTheme()});}catch(e){}
     return mr.render(id,code).then(out=>{
       if(!block.isConnected)return;
       svgBox.innerHTML=out.svg;msg.textContent='';block.classList.add('rendered');
@@ -1240,7 +1258,7 @@ function renderMermaidBlock(block){
     svgBox.innerHTML='<pre class="mermaid-fallback">'+escapeHtml(code)+'</pre>';
     const network=!navigator.onLine||/cdn|offline|load|network/i.test(e&&e.message||'');
     msg.textContent=network?'（离线/CDN 不可用，显示源码；联网后可重新渲染）':'（图表语法或渲染错误，显示源码）';
-  }).finally(cleanupMermaidArtifacts);
+  });
 }
 function buildMermaidBlock(code){
   const el=document.createElement('div');
@@ -1348,49 +1366,50 @@ function parseMarkdown(md){
   let i=0;
   const push=el=>frag.appendChild(el);
   while(i<lines.length){
-    const line=lines[i];
-    if(i===0&&/^---\s*$/.test(line)){
+    const line=lines[i], clean=line.replace(/[\uE000\uE001]/g,'');
+    if(i===0&&/^---\s*$/.test(clean)){
       let j=1;while(j<lines.length&&!/^(---|\.\.\.)\s*$/.test(lines[j]))j++;
       if(j<lines.length){push(buildFrontMatter(lines.slice(1,j).join('\n')));i=j+1;continue;}
     }
     // fenced code
-    let m=line.match(/^(\s*)(`{3,}|~{3,})(.*)$/);
+    let m=clean.match(/^(\s*)(`{3,}|~{3,})(.*)$/);
     if(m){
       const fence=m[2],lang=m[3].trim();const buf=[];i++;
       while(i<lines.length&&!lines[i].match(new RegExp('^\\s*'+fence[0]+'{'+fence.length+',}\\s*$'))){buf.push(lines[i]);i++;}
       i++;push(/^mermaid$/i.test(lang)?buildMermaidBlock(buf.join('\n')):buildCodeblock(lang,buf.join('\n'),fence));continue;
     }
     // math block
-    if(/^\s*\$\$\s*.*$/.test(line)){
+    if(/^\s*\$\$\s*.*$/.test(clean)){
       const tail=line.replace(/^\s*\$\$/,'').replace(/\$\$\s*$/,'');
       if(/\$\$\s*$/.test(line)&&tail.trim()){push(buildMathBlock(tail.trim()));i++;continue;}
       const buf=[];i++;while(i<lines.length&&!/^\s*\$\$\s*$/.test(lines[i])){buf.push(lines[i]);i++;}i++;
       push(buildMathBlock(buf.join('\n').trim()));continue;
     }
     // table
-    if(line.includes('|')&&i+1<lines.length&&isSepRow(lines[i+1])){
+    if(clean.includes('|')&&i+1<lines.length&&isSepRow(lines[i+1])){
       const rows=[lines[i],lines[i+1]];i+=2;
       while(i<lines.length&&lines[i].includes('|')&&lines[i].trim()){rows.push(lines[i]);i++;}
       push(buildTable(rows));continue;
     }
-    const ref=line.match(/^\s*\[([^\]^]+)\]:\s*<?([^\s>]+)>?(?:\s+["'(]([^"')]+)["')])?\s*$/);
+    const ref=clean.match(/^\s*\[([^\]^]+)\]:\s*<?([^\s>]+)>?(?:\s+["'(]([^"')]+)["')])?\s*$/);
     if(ref){push(buildReferenceDefinition(line));i++;continue;}
-    const fn=line.match(/^\[\^([^\]\s]+)\]:\s*(.*)$/);
+    const fn=clean.match(/^\[\^([^\]\s]+)\]:\s*(.*)$/);
     if(fn){const body=[fn[2]];i++;while(i<lines.length&&(/^(?: {2,}|\t)/.test(lines[i])||(!lines[i]&&i+1<lines.length&&/^(?: {2,}|\t)/.test(lines[i+1])))){body.push(lines[i].replace(/^(?: {2,4}|\t)/,''));i++;}push(buildFootnoteDefinition(fn[1],body.join('\n')));continue;}
     // callout: > [!TYPE]
-    let cm=line.match(/^\s*>\s*\[!([A-Za-z]+)\]\s*(.*)$/);
+    let cm=clean.match(/^\s*>\s*\[!([A-Za-z]+)\]\s*(.*)$/);
     if(cm){
       const type=cm[1].toUpperCase();const title=cm[2]||'';
       const buf=[];i++;
       while(i<lines.length&&/^\s*>/.test(lines[i])){buf.push(lines[i].replace(/^\s*>\s?/,''));i++;}
       push(buildCallout(type,title,buf.join('\n')));continue;
     }
-    // setext heading
-    if(i+1<lines.length&&/^=+\s*$/.test(lines[i+1])&&line.trim()){push(buildTextBlock('# '+line));i+=2;continue;}
-    if(i+1<lines.length&&/^-+\s*$/.test(lines[i+1])&&line.trim()){push(buildTextBlock('## '+line));i+=2;continue;}
-    if(line.trim()===''){i++;continue;}
+    // setext heading (only plain text lines, not quotes/lists/code)
+    const isPlainText=!clean.match(/^\s*(>|[-*+]\s|\d+[.)]\s|`{3,}|~{3,})/);
+    if(i+1<lines.length&&/^=+\s*$/.test(lines[i+1])&&clean.trim()&&isPlainText){push(buildTextBlock('# '+line));i+=2;continue;}
+    if(i+1<lines.length&&/^-+\s*$/.test(lines[i+1])&&clean.trim()&&isPlainText){push(buildTextBlock('## '+line));i+=2;continue;}
+    if(clean.trim()===''){push(buildTextBlock(''));i++;continue;}
     // raw HTML paragraph block: <p style/align>...</p> (lenient: also accepts </font> etc.)
-    let pm=line.match(/^\s*<p(\s[^>]*)?>(.*)$/i);
+    let pm=clean.match(/^\s*<p(\s[^>]*)?>(.*)$/i);
     if(pm){
       const content=(pm[2]||'').replace(/<\/(p|font|span|div)>\s*$/i,'').trim();
       push(buildHtmlP(pm[1]||'',content));i++;continue;
@@ -1515,25 +1534,44 @@ function restorePatch(s){
   State.dirty=State.lastSavedMd!==persistedMd();updateFileStatus();saveDraft();
   if((State.dirHandle||State.workspaceRoot)&&hasUnresolvedImages())resolveRelativeImages();
 }
-function restoreEditorView(anchor,scroll){
+function restoreEditorView(anchor,scroll,targetIdx){
+  if(targetIdx!=null&&targetIdx>=0&&anchor&&(anchor.i==null||anchor.i<0)){anchor=Object.assign({},anchor,{i:targetIdx});}
   const apply=()=>{
     const all=topBlocks();if(!all.length)return false;
     const raw=anchor&&Number.isFinite(anchor.i)?anchor.i:0,index=Math.max(0,Math.min(raw,all.length-1)),block=all[index];
     const start=Math.max(0,anchor&&Number.isFinite(anchor.off)?anchor.off:0),end=Math.max(start,anchor&&Number.isFinite(anchor.end)?anchor.end:start);
     try{
       let focusRoot=editableRoot(block);
+      // 先滚动到修改位置（用getBoundingClientRect+scrollTop，兼容嵌套滚动容器）
+      if(paperScroll){
+        const _rect=block.getBoundingClientRect();
+        const _target=Math.max(0,_rect.top+paperScroll.scrollTop-80);
+        if(Math.abs(paperScroll.scrollTop-_target)>2)paperScroll.scrollTop=_target;
+      }
       if(anchor&&anchor.table&&block.dataset.type==='table'){
         const row=$$('tr',block)[Math.max(0,anchor.row||0)],cell=row&&row.children[Math.max(0,anchor.col||0)];
         if(cell){editor.focus({preventScroll:true});cell.focus({preventScroll:true});focusRoot=cell;setCaret(cell,start,end);cell.classList.add('cell-active');cell.style.caretColor='transparent';void cell.offsetHeight;cell.style.caretColor='var(--text)';}
         else{focusBlock(block,start);setCaret(focusRoot,start,end);}
-      }else{focusBlock(block,start);setCaret(focusRoot,start,end);}
-      State.activeBlock=block;paperScroll.scrollTop=scroll||0;
+      }else{
+        // 先尝试标准focus+setCaret
+        focusBlock(block,start);setCaret(focusRoot,start,end);
+        // 兜底：空段落等场景setCaret可能失败，手动设置Range
+        try{
+          const _sel=getSelection();
+          if(!_sel||!_sel.rangeCount||!block.contains(_sel.anchorNode)){
+            editor.focus({preventScroll:true});
+            const _r=document.createRange();_r.selectNodeContents(block);_r.collapse(true);
+            _sel.removeAllRanges();_sel.addRange(_r);
+          }
+        }catch(_e){}
+      }
+      State.activeBlock=block;
       const sel=getSelection(),ok=!!(sel&&sel.rangeCount&&focusRoot.contains(sel.anchorNode));console.info('[MarkEditor] 恢复撤销光标:',{index,start,end,table:!!(anchor&&anchor.table),ok});return ok;
     }catch(e){console.error('[MarkEditor] 恢复撤销光标失败:',e);return false;}
   };
-  apply();requestAnimationFrame(()=>{apply();paperScroll.scrollTop=scroll||0;setTimeout(()=>{apply();paperScroll.scrollTop=scroll||0;},40);});
+  apply();requestAnimationFrame(()=>{apply();setTimeout(()=>{apply();},40);});
 }
-function restoreSnapshot(s){
+function restoreSnapshot(s,targetIdx){
   if(!s)return;
   if(s.type==='patch'){restorePatch(s);return;}
   History.locked=true;
@@ -1547,8 +1585,7 @@ function restoreSnapshot(s){
     State._serCache=s.md;State._serDirty=false;
     requestAnimationFrame(()=>{
       refreshOutline();refreshTocAll();updateStatus();
-      restoreEditorView(s.anchor,s.scroll);
-      paperScroll.scrollTop=s.scroll||0;
+      restoreEditorView(s.anchor,s.scroll,targetIdx);
     });
   }
   History.locked=false;
@@ -1557,7 +1594,30 @@ function restoreSnapshot(s){
 }
 function undo(){
   History.lastAction=Date.now();
-  if(History.idx>0){History.idx--;console.info('[MarkEditor] 撤销到历史视图:',History.stack[History.idx]);restoreSnapshot(History.stack[History.idx]);}
+  if(History.idx>0){
+    const current=History.stack[History.idx];
+    let targetIdx=current&&current.anchor&&current.anchor.i>=0?current.anchor.i:topBlocks().indexOf(activeBlock());
+    if(targetIdx<0)targetIdx=Math.max(0,topBlocks().length-2);
+    History.idx--;console.info('[MarkEditor] 撤销到历史视图:',History.stack[History.idx]);
+    restoreSnapshot(History.stack[History.idx],targetIdx);
+    // 最终兜底：确保跳转到修改位置（兼容嵌套滚动容器和空段落焦点）
+    setTimeout(()=>{
+      const all=topBlocks();if(!all.length)return;
+      const block=all[Math.max(0,Math.min(targetIdx,all.length-1))];
+      if(block){
+        State.activeBlock=block;
+        try{
+          editor.focus({preventScroll:true});
+          const _r=document.createRange();_r.selectNodeContents(block);_r.collapse(true);
+          const _s=getSelection();_s.removeAllRanges();_s.addRange(_r);
+        }catch(e){}
+        if(paperScroll){
+          const rect=block.getBoundingClientRect();
+          paperScroll.scrollTop=Math.max(0,rect.top+paperScroll.scrollTop-80);
+        }
+      }
+    },60);
+  }
 }
 function redo(){
   History.lastAction=Date.now();
@@ -1866,6 +1926,26 @@ function wrapSelection(l,r){
       return;
     }
   }
+  const cell=activeCell();
+  if(cell){
+    const c=getCaret(cell);if(!c)return;
+    const src=nodeToMd(cell);
+    let piece=src.slice(c.s,c.e);
+    let ns;
+    if(piece.length>=l.length+r.length&&piece.startsWith(l)&&piece.endsWith(r)){
+      piece=piece.slice(l.length,piece.length-r.length);
+      ns=src.slice(0,c.s)+piece+src.slice(c.e);
+    }else{
+      const clean=stripText(piece);
+      ns=src.slice(0,c.s)+l+clean+r+src.slice(c.e);
+      piece=clean;
+    }
+    cell.innerHTML=cellRender(ns);
+    ensureColResizer(cell);
+    const a=c.s+l.length,b=a+piece.length;
+    setCaret(cell,piece?b:a,piece?b:a);
+    markDirty();scheduleMutate();commitHistory('struct');return;
+  }
   const block=activeBlock();if(!block||!isTextBlock(block)){
     // source textarea fallback handled elsewhere
     return;
@@ -1892,6 +1972,19 @@ function stripText(src){
   s=s.replace(/<\/?(?:p|div|span|font|u|b|i|strong|em|del|mark|kbd|sub|sup|small|abbr|br)[^>]*>/gi,'');
   return s;
 }
+/* 清除块级格式：引用、列表、标题、任务列表 → 纯文本 */
+function stripBlockFormat(src){
+  let s=String(src);
+  // 引用标记 >
+  s=s.replace(/^\s*>\s?/gm,'');
+  // 任务列表标记 - [ ] / - [x]
+  s=s.replace(/^\s*[-*+]\s+\[[ xX]\]\s+/gm,'');
+  // 列表标记 - * + 1. 1)
+  s=s.replace(/^\s*([-*+]|\d+[.)])\s+/gm,'');
+  // 标题标记 # ## ###
+  s=s.replace(/^\s*#{1,6}\s+/gm,'');
+  return s;
+}
 function stripInline(){
   const sel=getSelection();
   // cross-block selection: strip inline markers across every spanned text block
@@ -1908,19 +2001,74 @@ function stripInline(){
       blocks.forEach(b=>{
         const src=nodeToMd(b);let s,e;
         if(b===sb){s=sOff;e=src.length;}else if(b===eb){s=0;e=eOff;}else{s=0;e=src.length;}
-        const clean=stripText(src.slice(s,e));
+        const clean=stripText(stripBlockFormat(src.slice(s,e)));
         rerenderBlock(b,src.slice(0,s)+clean+src.slice(e),s,s+clean.length);
       });
       markDirty();return;
     }
   }
+  const cell=activeCell();
+  if(cell){
+    const c=getCaret(cell);if(!c)return;
+    const src=nodeToMd(cell);
+    const clean=stripText(src.slice(c.s,c.e));
+    const ns=src.slice(0,c.s)+clean+src.slice(c.e);
+    cell.innerHTML=cellRender(ns);
+    ensureColResizer(cell);
+    setCaret(cell,c.s,c.s+clean.length);
+    markDirty();scheduleMutate();commitHistory('struct');return;
+  }
   const block=activeBlock();if(!block||!isTextBlock(block))return;
   const c=getCaret(block);if(!c)return;
   let src=nodeToMd(block);
-  const before=src.slice(0,c.s),piece=src.slice(c.s,c.e),after=src.slice(c.e);
-  const clean=stripText(piece);
-  rerenderBlock(block,before+clean+after,c.s,c.s+clean.length);
+  // 光标未选中时，清除整个 block 的格式（块级+行内）
+  let s=c.s,e=c.e;
+  if(s===e){s=0;e=src.length;}
+  const before=src.slice(0,s),piece=src.slice(s,e),after=src.slice(e);
+  const clean=stripText(stripBlockFormat(piece));
+  rerenderBlock(block,before+clean+after,s,s+clean.length);
   markDirty();
+}
+/* 移除空行：渲染模式直接删除空段落block；源码模式压缩连续空行 */
+function removeBlankLines(){
+  const cleanMd=md=>{
+    let c=md.replace(/\n{3,}/g,'\n\n');
+    return c.replace(/^\n+/,'').replace(/\n+$/,'\n');
+  };
+  if(State.sourceMode){
+    const md=sourceArea.value;
+    const cleaned=cleanMd(md);
+    if(cleaned===md){toast('没有空行可移除');return;}
+    const pos=sourceArea.selectionStart;
+    sourceArea.value=cleaned;
+    sourceArea.selectionStart=sourceArea.selectionEnd=Math.min(pos,cleaned.length);
+    State._serCache=cleaned;State._serDirty=false;
+    commitHistory('struct');
+    toast('已移除多余空行');
+    return;
+  }
+  // 渲染模式：直接删除空段落block，保留其他block结构
+  const blocks=topBlocks();
+  const emptyParas=[];
+  let activeIdx=-1;
+  blocks.forEach((b,i)=>{
+    if(b.dataset.type==='paragraph'&&nodeToMd(b).trim()===''){
+      emptyParas.push(b);
+      if(b.classList.contains('active'))activeIdx=i;
+    }
+  });
+  if(emptyParas.length===0){toast('没有空行可移除');return;}
+  // 光标在被删除的空段落中时，移动到相邻block
+  if(activeIdx>=0){
+    const target=blocks[activeIdx-1]||blocks[activeIdx+1];
+    if(target)focusBlock(target,0);
+  }
+  const scrollTop=paperScroll?paperScroll.scrollTop:0;
+  emptyParas.forEach(b=>b.remove());
+  if(paperScroll)paperScroll.scrollTop=scrollTop;
+  markDirty();
+  commitHistory('struct');
+  toast('已移除 '+emptyParas.length+' 个空行');
 }
 
 /* ---- Enter / Tab / Backspace ---- */
@@ -1961,8 +2109,7 @@ function handleEnter(shift){
   }
   const info=detectLine(src);
   if(info.type==='list'){
-    const li=detectLine(left);
-    if(li.type==='list'&&li.content.trim()===''&&right===''){ // empty item -> exit list
+    if(info.content.trim()===''&&right.trim()===''){ // empty item -> exit list
       const nb=buildTextBlock('');block.replaceWith(nb);focusBlock(nb,0);reorderLists();scheduleMutate();return;
     }
     rerenderBlock(block,left,c.s,c.s);
@@ -1973,8 +2120,7 @@ function handleEnter(shift){
     block.after(nb);reorderLists();focusBlock(nb,prefix.length);scheduleMutate();return;
   }
   if(info.type==='quote'){
-    const li=detectLine(left);
-    if(li.type==='quote'&&li.content.trim()===''&&right===''){
+    if(info.content.trim()===''&&right.trim()===''){
       const nb=buildTextBlock('');block.replaceWith(nb);focusBlock(nb,0);scheduleMutate();return;
     }
     rerenderBlock(block,left,c.s,c.s);
@@ -2354,9 +2500,24 @@ function enterImageEdit(wrap){
   const rect=wrap.getBoundingClientRect();
   const ed=document.createElement('div');
   ed.id='img-editor';
-  ed.style.cssText='position:fixed;z-index:9999;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);min-width:340px;max-width:480px;';
-  ed.style.left=Math.min(rect.left,window.innerWidth-360)+'px';
-  ed.style.top=(rect.bottom+6)+'px';
+  ed.style.cssText='position:absolute;z-index:9999;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);min-width:480px;max-width:720px;';
+  const _ps=paperScroll||document.scrollingElement||document.documentElement;
+  const _psRect=_ps.getBoundingClientRect();
+  const _st=_ps.scrollTop||0,_sl=_ps.scrollLeft||0;
+  const _pw=_ps.clientWidth||window.innerWidth;
+  // rect是视口坐标，减去paperScroll在视口中的偏移，再加scrollTop/Left转为paperScroll内容区域坐标
+  const _imgBottom=rect.bottom-_psRect.top+_st;
+  const _imgTop=rect.top-_psRect.top+_st;
+  const _imgLeft=rect.left-_psRect.left+_sl;
+  let _top=_imgBottom+6;
+  const _left=Math.max(8,Math.min(_imgLeft,_pw-500));
+  // 如果弹窗会超出paperScroll可视区域底部，则放在图片上方
+  const _edHeight=120; // 预估弹窗高度
+  if(_top+_edHeight>_st+_ps.clientHeight&&_imgTop-_edHeight-6>_st){
+    _top=_imgTop-_edHeight-6;
+  }
+  ed.style.left=_left+'px';
+  ed.style.top=_top+'px';
   const label=document.createElement('div');
   label.style.cssText='font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono);';
   label.textContent='图片 Markdown（Enter 确认，Esc 取消）';
@@ -2365,7 +2526,7 @@ function enterImageEdit(wrap){
   ta.style.cssText='width:100%;min-height:44px;font-family:var(--mono);font-size:12px;background:var(--code-bg);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:6px;outline:none;resize:vertical;box-sizing:border-box;';
   ta.setAttribute('spellcheck','false');
   ed.appendChild(label);ed.appendChild(ta);
-  document.body.appendChild(ed);
+  (paperScroll||document.body).appendChild(ed);
   wrap.classList.add('img-editing');
   ta.focus();ta.select();
   let done=false;
@@ -2848,6 +3009,7 @@ cmd('inlineCode','行内代码','Ctrl+Shift+`',()=>doWrap('code'));
 cmd('link','链接…','Ctrl+K',openLinkModal);
 cmd('image','插入图片…','Ctrl+Shift+I',pickImage);
 cmd('clearInline','清除格式','Ctrl+\\',()=>{stripInline();});
+cmd('removeBlankLines','移除空行','',()=>{removeBlankLines();});
 cmd('dateTime','插入日期时间','',insertDate);
 cmd('sidebar','切换侧边栏','Ctrl+Shift+L',toggleSidebar);
 cmd('source','源码模式','Ctrl+/',toggleSource);
@@ -2933,7 +3095,7 @@ const MENUS=[
  {label:'文件',items:['new','open','openFile',{sub:'最近工作区',recent:'workspace'},{sub:'最近文件',recent:'file'},'refreshWorkspace','-','save','saveAs','-','exportWord','exportHtml','exportEditable','copyMd','-','print']},
  {label:'编辑',items:['undo','redo','-','find','replace','spellcheck','globalSearch','quickOpen','-','palette']},
  {label:'段落',items:['text','h1','h2','h3','h4','h5','h6','-','quote','ul','ol','task','-','codeblock','mathblock','table','hr','toc','-','indent','outdent']},
- {label:'格式',items:['bold','italic','underline','strike','mark','inlineCode','-','link','image','-','clearInline']},
+ {label:'格式',items:['bold','italic','underline','strike','mark','inlineCode','-','link','image','-','clearInline','removeBlankLines']},
  {label:'插入',items:['codeblock','mathblock','mermaidblock','table','hr','toc','-','link','image','dateTime']},
  {label:'视图',items:['sidebar','showFiles','showOutline','source','-','focus','typewriter','fullscreen','appWindow','installGuide','-','zoomOut','zoomReset','zoomIn','-','pageNarrow','pageStandard','pageWide','pageFull','-','headingNumber',{sub:'编号起始级别',items:[{cmd:'headingStart1',label:'从 H1 开始'},{cmd:'headingStart2',label:'从 H2 开始'},{cmd:'headingStart3',label:'从 H3 开始'},{cmd:'headingStart4',label:'从 H4 开始'}]},{sub:'主题',items:THEMES.map(t=>({theme:t[0],label:t[1]}))}]},
  {label:'帮助',items:['palette','-','settings','about','welcome']},
@@ -4404,6 +4566,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
 /* ---------- init ---------- */
 function init(){
   cleanupMermaidArtifacts();buildMenus();buildSelToolbar();syncModeButtons();
+  setTimeout(loadKatex,300);
   // theme / zoom restore
   let draft=null;
   try{draft=JSON.parse(localStorage.getItem('me-draft')||'null');}catch(e){}
