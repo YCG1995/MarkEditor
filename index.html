@@ -195,11 +195,11 @@ sub,sup{font-size:.75em}
 code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);border-radius:5px;padding:.15em .4em;color:var(--code-text)}
 .md-img img,.md-block>img{max-width:100%;border-radius:6px;cursor:zoom-in;vertical-align:baseline}
 .md-img{display:inline-block;max-width:100%}
-.md-img.img-editing img{opacity:.45;outline:2px solid var(--accent);outline-offset:2px}
+.md-img.img-editing{font-family:var(--mono);font-size:.92em!important;color:var(--text)!important;user-select:text!important;-webkit-user-select:text!important;cursor:text;vertical-align:middle;outline:none}
 #img-ctx-menu{position:fixed;z-index:10000;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:170px;display:none;font-size:13px}
 #img-ctx-menu.show{display:block}
 #img-ctx-menu .ctx-item{padding:7px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text)}
-#img-ctx-menu .ctx-item:hover{background:var(--hover)}
+#img-ctx-menu .ctx-item:hover{background:var(--ui-hover)}
 #img-ctx-menu .ctx-item.danger{color:#cf222e}
 #img-ctx-menu .ctx-sep{height:1px;background:var(--border);margin:4px 6px}
 #img-ctx-menu .ctx-item .ctx-ico{width:18px;text-align:center;opacity:.8}
@@ -214,7 +214,7 @@ code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);border-ra
 #file-ctx-menu{position:fixed;z-index:10000;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:180px;display:none;font-size:13px}
 #file-ctx-menu.show{display:block;animation:menuIn .1s ease}
 #file-ctx-menu .ctx-item{padding:7px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text)}
-#file-ctx-menu .ctx-item:hover{background:var(--hover)}
+#file-ctx-menu .ctx-item:hover{background:var(--ui-hover)}
 #file-ctx-menu .ctx-item.danger{color:#cf222e}
 #file-ctx-menu .ctx-item.disabled{opacity:.4;cursor:default;pointer-events:none}
 #file-ctx-menu .ctx-sep{height:1px;background:var(--border);margin:4px 6px}
@@ -319,12 +319,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 /* math */
 .math-block{margin:.8em 0;display:flex;justify-content:center;overflow-x:visible;cursor:text;border-radius:8px;padding:8px}
 .math-block:hover{background:var(--code-bg)}
-.math-block .math-out{font-size:1.12em;overflow-x:visible}
+.math-block .math-out{font-size:1.12em;overflow-x:visible;font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-style:italic}
 .math-src-edit{width:100%;min-height:74px;font-family:var(--mono);font-size:14px;background:var(--code-bg);border:1px solid var(--accent);border-radius:8px;padding:10px;outline:none;resize:vertical;color:var(--text)}
-.math-inline .math-src-edit{display:none;width:26em;min-width:18em;min-height:0;height:auto;padding:2px 6px;border-radius:5px;resize:none;vertical-align:baseline;margin:0 2px}
-.math-inline.editing .math-src-edit{display:inline-block!important}
 .math-inline .math-out{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-style:italic}
-.math-block .math-out{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-style:italic}
+.math-inline.editing:not(.math-block-inline){font-family:var(--mono);font-size:.92em!important;color:var(--text)!important;outline:none;vertical-align:middle;user-select:text!important;-webkit-user-select:text!important;pointer-events:auto}
 .math-block-inline{display:block;text-align:center;margin:.4em 0;font-size:1.12em}
 .md-mfrac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 3px;font-size:.92em}
 .md-mfrac>span:first-child{border-bottom:1.4px solid currentColor;padding:0 5px}
@@ -481,12 +479,13 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   .list-item.ordered::before{left:calc(22px * var(--indent,0));width:22px}
   .task-box{left:calc(22px * var(--indent,0) + 4px)}
   /* 块工具栏保持可达且可水平滚动 */
-  .code-actions,.table-tools{opacity:1;position:static;margin:6px 0 0;flex-wrap:wrap}
+  .code-actions{opacity:1;position:static;margin:6px 0 0;flex-wrap:wrap}
+  .table-tools{position:static;margin:6px 0 0;flex-wrap:wrap}
   .codeblock{overflow:visible}
   .codeblock pre{padding:12px 12px 10px}
   .table-block{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .table-block table{min-width:420px}
-  .table-tools{display:flex;gap:4px;flex-wrap:wrap}
+  .table-block.has-focus .table-tools{display:flex;gap:4px;flex-wrap:wrap}
   .tt-btn,.code-lang,.code-copy,.mermaid-toggle{padding:6px 11px;font-size:13px}
   /* selection floating toolbar */
   #sel-toolbar{max-width:94vw;flex-wrap:wrap}
@@ -497,7 +496,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   .modal-mask{padding:6vh 12px 0}
   .modal{width:100%;max-width:100%;border-radius:12px}
   #cmdk{padding:6vh 10px 0;align-items:flex-start}
-  #cmdk-box{width:100%;max-width:100%}
+  .cmdk-box{width:100%;max-width:100%}
   .cmdk-item{padding:13px 14px;font-size:15px}
   /* 状态栏紧凑：保留块类型 / 字数 / 文件名，隐藏模式切换与缩放 */
   #statusbar{padding:0 8px;font-size:11px;gap:2px;overflow:hidden;height:34px;flex-basis:34px}
@@ -515,14 +514,12 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   blockquote,.quote{padding-left:10px}
   /* 公式编辑器文本域 */
   .math-src-edit,.mermaid-edit{font-size:14px}
-  /* 防止 iOS 输入聚焦时自动缩放：保持字号 ≥16px */
+  /* 防止 iOS 输入聚焦时自动缩放：保持字号 ≥16px；移动端 source-area 也使用 16px */
   input,textarea,#source-area{font-size:16px}
-  #source-area{font-size:14px}
   /* 触摸：阻止交互控件双击缩放，平滑滚动 */
   .menu-trigger,.mb-btn,.sel-btn,.tt-btn,.task-box,.mi,.cmdk-item{touch-action:manipulation}
   #editor{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-  /* 移动端图片编辑弹窗全宽 */
-  #img-editor{min-width:0!important;width:calc(100vw - 24px)!important;max-width:none!important}
+
 }
 @media (max-width:420px){
   #paper{padding:16px 12px 56px}
@@ -764,24 +761,32 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
    ============================================================ */
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const isMac=/Mac|iPhone|iPad/.test(navigator.platform);
+/* 调试日志开关：生产环境保持 false，需要诊断时本地改为 true */
+const DEBUG=false;
+const log=(...a)=>{if(DEBUG)console.info('[MarkEditor]',...a);};
+const warnLog=(...a)=>{if(DEBUG)console.warn('[MarkEditor]',...a);};
+const isMac=navigator.userAgentData?.platform?/mac/i.test(navigator.userAgentData.platform):/Mac|iPhone|iPad/.test(navigator.platform);
 const editor=$('#editor'),paper=$('#paper'),paperScroll=$('#paper-scroll'),sourceArea=$('#source-area');
 
 const State={
-  composing:false, pending:null, activeBlock:null, lastCaret:null, handledEnterInBeforeInput:false,
+  composing:false, pending:null, activeBlock:null, lastCaret:null, handledEnterInBeforeInput:false, editingMath:null, editingImg:null,
   theme:'github-light', zoom:1, filename:'untitled.md',
-  tabSize:4, autosave:true, lineNumbers:true,
+  tabSize:4, lineNumbers:true,
   sourceMode:false, focusMode:false, typewriter:false,
   savedTimer:null, pageWidth:'standard',
   hn:{enabled:false,startLevel:1},
   dirty:false, lastSavedMd:null, draftErrorShown:false, imageUrls:new Set(), imageUrlCache:new Map(),
+  referenceDefinitions:[],
   workspaceRoot:null, dirHandle:null, fileHandle:null, currentPath:'', expandedDirs:new Set(), workspaceWritable:false, workspaceFiles:[],
   imageClipboard:'',cellClipboard:null,spellcheck:false,outlineMaxLevel:6,outlineCollapsed:new Set(),outlineDefaultCollapsed:null,
   _serCache:null, _serDirty:true,
 };
 const DEFAULT_SETTINGS={image:{mode:'copy',directory:'assets',path:'relative'},markdown:{emoji:true,autoDraft:true},export:{paper:'A4',orientation:'portrait',fontSize:10.5,imageWidth:100,margin:64,frontMatter:false,header:'',footer:''}};
-function loadSettings(){try{const saved=JSON.parse(localStorage.getItem('me-settings')||'null')||{};State.settings={image:Object.assign({},DEFAULT_SETTINGS.image,saved.image),markdown:Object.assign({},DEFAULT_SETTINGS.markdown,saved.markdown),export:Object.assign({},DEFAULT_SETTINGS.export,saved.export)};}catch(e){State.settings=JSON.parse(JSON.stringify(DEFAULT_SETTINGS));}}
-function saveSettings(){localStorage.setItem('me-settings',JSON.stringify(State.settings));}
+function loadSettings(){try{const saved=JSON.parse(lsGet('me-settings')||'null')||{};State.settings={image:Object.assign({},DEFAULT_SETTINGS.image,saved.image),markdown:Object.assign({},DEFAULT_SETTINGS.markdown,saved.markdown),export:Object.assign({},DEFAULT_SETTINGS.export,saved.export)};}catch(e){State.settings=JSON.parse(JSON.stringify(DEFAULT_SETTINGS));}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){warnLog('localStorage write failed:',k,e);}}
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsRemove(k){try{localStorage.removeItem(k);}catch(e){}}
+function saveSettings(){lsSet('me-settings',JSON.stringify(State.settings));}
 loadSettings();
 function markDirty(){State._serDirty=true;State.dirty=true;updateFileStatus();}
 function persistedMd(){return State.sourceMode?decodeImages(sourceArea.value):serialize();}
@@ -795,7 +800,7 @@ function updateFileStatus(){
 function confirmDiscard(){return !State.dirty||confirm('当前文档有尚未保存到磁盘的修改，确定继续吗？');}
 
 /* ---------- 小工具 ---------- */
-function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);setTimeout(()=>fn(...a),ms)}}
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),typeof ms==='function'?ms():ms);}}
 function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escapeAttr(s){return escapeHtml(s).replace(/'/g,'&#39;');}
 function unescapeHtml(s){return String(s).replace(/&quot;/g,'"').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#39;/g,"'").replace(/&amp;/g,'&');}
@@ -845,23 +850,32 @@ async function recordRecent(kind,handle,extra={}){
   const record=Object.assign({},old||{id:kind+'-'+uid()},extra,{kind,handle,name:handle.name||extra.name||'未命名',ts:Date.now()});
   if(!await recentPut(record))return null;
   const fresh=await recentAll(kind);for(const item of fresh.slice(10))await recentDelete(item.id);
-  if(kind==='workspace')localStorage.setItem('me-last-workspace',record.id);return record;
+  if(kind==='workspace')lsSet('me-last-workspace',record.id);return record;
 }
 async function getRecent(id){return (await recentAll()).find(x=>x.id===id)||null;}
 async function findRecentHandle(kind,handle){for(const item of await recentAll(kind)){try{if(handle.isSameEntry&&await handle.isSameEntry(item.handle))return item;}catch(e){}}return null;}
 async function ensureHandlePermission(handle,mode='read',ask=false){
-  if(!handle){console.warn('[MarkEditor] 权限检查失败：句柄为空');return false;}
-  if(!handle.queryPermission){console.info('[MarkEditor] 句柄不支持权限查询，按兼容模式继续:',handle.name||'');return true;}
+  if(!handle){warnLog('权限检查失败：句柄为空');return false;}
+  if(!handle.queryPermission){log('句柄不支持权限查询，按兼容模式继续:',handle.name||'');return true;}
   const opt={mode};
   try{
     const state=ask&&handle.requestPermission?await handle.requestPermission(opt):await handle.queryPermission(opt);
-    console.info('[MarkEditor] 文件权限:',handle.name||'',mode,state);return state==='granted';
+    log('文件权限:',handle.name||'',mode,state);return state==='granted';
   }catch(e){console.error('[MarkEditor] 文件权限请求异常:',handle.name||'',mode,e);return false;}
 }
 function countWords(md){
-  const cjk=(md.match(/[一-鿿㐀-䶿]/g)||[]).length;
-  const words=(md.replace(/[一-鿿㐀-䶿]/g,' ').match(/[A-Za-z0-9_'-]+/g)||[]).length;
-  return {cjk,words,chars:md.replace(/\s/g,'').length};
+  // 单遍扫描：遍历一次字符串，同时统计 CJK 数量、拉丁单词边界、非空白字符数
+  let cjk=0,words=0,chars=0,inWord=false;
+  for(let i=0;i<md.length;i++){
+    const c=md[i];
+    if(/\s/.test(c)){if(inWord){words++;inWord=false;}continue;}
+    chars++;
+    if(/[\u4e00-\u9fff\u3400-\u4dbf]/.test(c)){cjk++;if(inWord){words++;inWord=false;}}
+    else if(/[A-Za-z0-9_'\-]/.test(c)){inWord=true;}
+    else{if(inWord){words++;inWord=false;}}
+  }
+  if(inWord)words++;
+  return {cjk,words,chars};
 }
 
 /* ============================================================
@@ -1004,7 +1018,7 @@ function inlineRender(src,depth=0){
   // 3.1) 行内公式 $...$
   s=s.replace(/(^|[^\\$])\$([^$\n]+?)\$/g,(_,pre,tex)=>{
     const raw=unescapeHtml(tex);
-    return pre+hold('<span class="math-inline" data-tex="'+escapeAttr(raw)+'"><span class="math-src md-hidden">$'+escapeHtml(raw)+'$</span><span class="math-out" contenteditable="false">'+renderMath(raw)+'</span><textarea class="math-src-edit" hidden rows="1"></textarea></span>');
+    return pre+hold('<span class="math-inline" data-tex="'+escapeAttr(raw)+'" contenteditable="false">'+buildMathInlineChildren(raw,false)+'</span>');
   });
 
   // 4) 图片 ![alt](url "title")
@@ -1098,19 +1112,25 @@ function offlineWarn(lib){
   toast('离线/CDN 不可用，'+lib+' 使用内置精简渲染，联网后刷新可获得完整效果',4000);
 }
 function loadKatex(){
-  if(MathEngine.katex||MathEngine.loading||MathEngine.failed)return;
+  if(MathEngine.katex)return Promise.resolve();
+  if(MathEngine.loading)return MathEngine._loadPromise||Promise.resolve();
+  if(MathEngine.failed)return Promise.reject(new Error('KaTeX failed'));
   MathEngine.loading=true;
-  const link=document.createElement('link');link.rel='stylesheet';
-  link.href='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
-  link.onerror=()=>{MathEngine.failed=true;MathEngine.loading=false;offlineWarn('公式');};
-  document.head.appendChild(link);
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js';
-  s.onload=()=>{MathEngine.katex=window.katex;MathEngine.loading=false;
-    $$('.math-inline,.math-block').forEach(mb=>{const tex=mb.dataset.tex;const out=$('.math-out',mb);if(tex&&out)out.innerHTML=renderMath(tex);});
-  };
-  s.onerror=()=>{MathEngine.failed=true;MathEngine.loading=false;offlineWarn('公式');};
-  document.head.appendChild(s);
+  MathEngine._loadPromise=new Promise((resolve,reject)=>{
+    const link=document.createElement('link');link.rel='stylesheet';
+    link.href='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
+    link.onerror=()=>{MathEngine.failed=true;MathEngine.loading=false;offlineWarn('公式');reject(new Error('KaTeX CSS failed'));};
+    document.head.appendChild(link);
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js';
+    s.onload=()=>{MathEngine.katex=window.katex;MathEngine.loading=false;
+      $$('.math-inline,.math-block').forEach(mb=>{const tex=mb.dataset.tex;const out=$('.math-out',mb);if(tex&&out)out.innerHTML=renderMath(tex,mb.classList.contains('math-block')||mb.classList.contains('math-block-inline'));});
+      resolve();
+    };
+    s.onerror=()=>{MathEngine.failed=true;MathEngine.loading=false;offlineWarn('公式');reject(new Error('KaTeX failed'));};
+    document.head.appendChild(s);
+  });
+  return MathEngine._loadPromise;
 }
 function renderMath(rawTex,displayMode){
   if(MathEngine.katex){try{return MathEngine.katex.renderToString(rawTex,{throwOnError:false,displayMode:!!displayMode});}catch(e){}}
@@ -1161,11 +1181,11 @@ function renderMath(rawTex,displayMode){
    语法高亮器（通用，多语言）
    ============================================================ */
 const HL_KW={
-  common:'var let const function return if else elif for while do switch case break continue new class extends super this typeof instanceof in of default try catch except finally throw raises raise delete void async await yield static get set import export from as with true false null undefined None True False nil self lambda pass global nonlocal assert yield print',
-  js:'var let const function return if else for while do switch case break continue new class extends super this typeof instanceof in of default try catch finally throw delete void async await static get set import export from as yield let undefined NaN Infinity',
+  common:'var let const function return if else elif for while do switch case break continue new class extends super this typeof instanceof in of default try catch except finally throw raises raise delete void async await yield static get set import export from as with true false null undefined None True False nil self lambda pass global nonlocal assert NaN Infinity',
+  js:'typeof instanceof static get set',
   ts:'interface type enum implements public private protected readonly abstract namespace declare never unknown any string number boolean',
-  py:'def elif lambda global nonlocal pass with assert raise is not and or yield from import as class try except finally while for return print self None True False async await',
-  go:'func chan go defer range package map select interface struct type var const return if else for switch case break continue default import package go',
+  py:'def elif lambda global nonlocal pass with assert raise is not and or print self except raises',
+  go:'func chan defer range package map select interface struct type var const return if else for switch case break continue default import go',
   rust:'fn mut impl trait pub use mod where Some None Ok Err move ref struct enum match if else for while loop return self Self const static type crate super unsafe async await dyn',
   c:'int char float double long short unsigned signed void const struct enum union typedef sizeof return if else for while do switch case break continue goto default extern static register volatile include define',
   cpp:'int char float double long short unsigned signed void const struct enum class public private protected virtual override namespace template typename typedef using new delete return if else for while switch case break continue goto default auto constexpr noexcept nullptr this',
@@ -1175,27 +1195,32 @@ const HL_KW={
   json:'true false null',
 };
 const HL_LANG_ALIAS={javascript:'js',jsx:'js',tsx:'ts',typescript:'ts',python:'py',python3:'py',golang:'go',rs:'rust',csharp:'c',sh:'bash',shell:'bash',zsh:'bash',yml:'yaml',md:'markdown',plaintext:'text',txt:'text','c++':'cpp',cxx:'cpp','objective-c':'c'};
+const _hlKwCache=new Map();
+const _hlReCache=new Map();
+const _hlHashLangs=new Set(['py','bash','yaml','ruby','r','toml','ini','perl']);
 function highlightCode(code,lang){
   lang=HL_LANG_ALIAS[(lang||'text').toLowerCase()]||(lang||'text').toLowerCase();
-  const kwSet=new Set((HL_KW.common+' '+(HL_KW[lang]||'')).split(/\s+/).filter(Boolean));
-  const isHashComment=lang==='python'||lang==='bash'||lang==='yaml'||lang==='ruby'||lang==='sh';
-  const lineComment=lang==='python'||lang==='bash'||lang==='yaml'||lang==='ruby'||lang==='sh'?'#':(lang==='sql'?'--':'//');
+  let kwSet=_hlKwCache.get(lang);
+  if(!kwSet){kwSet=new Set((HL_KW.common+' '+(HL_KW[lang]||'')).split(/\s+/).filter(Boolean));_hlKwCache.set(lang,kwSet);}
+  const isHashComment=_hlHashLangs.has(lang);
+  const lineComment=isHashComment?'#':(lang==='sql'?'--':'//');
   // ReDoS 守卫：块注释/VBS 字符串的交替分支在超长输入下会引发大量回溯。
   // 超过阈值时改为逐行 tokenize，复杂度为线性，不会跨整块回溯。
   // 仅牺牲多行块注释的跨行高亮（罕见的病态情况），正常块不受影响。
   const perLine=code.length>20000;
-  const re=new RegExp(
+  const reKey=isHashComment+'|'+lineComment;
+  let re=_hlReCache.get(reKey);
+  if(!re){re=new RegExp(
     '(\\/\\*[\\s\\S]*?\\*\\/|'+(isHashComment?'#[^\\n]*':lineComment==='--'?'--[^\\n]*':'\\/\\/[^\\n]*')+')'+
     '|("""[\\s\\S]*?"""|\'\'\'[\\s\\S]*?\'\'\'|"(?:[^"\\\\\\n]|\\\\.)*"|\'(?:[^\'\\\\\\n]|\\\\.)*\'|`(?:[^`\\\\]|\\\\.)*`)'+
     '|(\\b\\d[\\d_]*(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[A-Za-z]*\\b)'+
-    '|([A-Za-z_]\\w*)','g');
+    '|([A-Za-z_]\\w*)','g');_hlReCache.set(reKey,re);}re.lastIndex=0;
   const tokenize=src=>src.replace(re,(m,com,str,num,id)=>{
     if(com)return '<span class="tok-com">'+m+'</span>';
     if(str)return '<span class="tok-str">'+m+'</span>';
     if(num)return '<span class="tok-num">'+m+'</span>';
     if(id){
       if(kwSet.has(id))return '<span class="tok-kw">'+id+'</span>';
-      if(/^(true|false|null|undefined|None|True|False|nil|self|this|super|NaN|Infinity)$/.test(id))return '<span class="tok-bi">'+id+'</span>';
       return id;
     }
     return m;
@@ -1228,6 +1253,10 @@ function createBlock(type){
   const el=document.createElement('div');
   el.className='md-block';el.dataset.type=type;el.id=uid();
   return el;
+}
+function buildMathInlineChildren(raw,display){
+  const delim=display?'$$':'$';
+  return '<span class="md-marker md-hidden math-delim" contenteditable="false">'+delim+'</span><span class="math-src md-hidden" contenteditable="false">'+escapeHtml(raw)+'</span><span class="md-marker md-hidden math-delim" contenteditable="false">'+delim+'</span><span class="math-out" contenteditable="false">'+renderMath(raw,display)+'</span>';
 }
 function buildTextBlock(raw){
   // 原始 HTML 段落（宽松匹配闭合标签）
@@ -1420,7 +1449,6 @@ function buildFrontMatter(src){
   const el=createBlock('frontmatter');el.className='md-block frontmatter';el.setAttribute('contenteditable','false');el.dataset.src=src;
   el.innerHTML='<pre>'+escapeHtml(src)+'</pre>';return el;
 }
-function buildReferenceDefinition(raw){const el=createBlock('reference');el.className='md-block footnote-def';el.dataset.raw=raw;el.setAttribute('contenteditable','false');el.textContent=raw;return el;}
 function buildFootnoteDefinition(id,content){
   const el=createBlock('footnote');el.className='md-block footnote-def';el.dataset.footnote=id;el.id='fn-'+id;el.setAttribute('contenteditable','false');
   el.innerHTML='<span class="footnote-label">[^'+escapeHtml(id)+']:</span> <span class="block-content">'+inlineRender(content)+'</span>';return el;
@@ -1429,7 +1457,7 @@ function buildMathBlock(tex){
   const el=document.createElement('div');
   el.className='md-block math-block';el.dataset.type='math';el.dataset.tex=tex;
   el.setAttribute('contenteditable','false');el.id=uid();
-  el.innerHTML='<span class="math-hint">点击编辑 · Shift+Enter 完成</span><div class="math-out" contenteditable="false">'+renderMath(tex)+'</div><textarea class="math-src-edit" hidden></textarea>';
+  el.innerHTML='<span class="math-hint">点击编辑 · Shift+Enter 完成</span><div class="math-out" contenteditable="false">'+renderMath(tex,true)+'</div><textarea class="math-src-edit" hidden></textarea>';
   return el;
 }
 function splitTableRow(line){
@@ -1446,10 +1474,22 @@ function splitTableRow(line){
   if(core.endsWith('|')&&!core.endsWith('\\|'))core=core.slice(0,-1);
   s=core+trail;
   const cells=[];let cur='',escaped=false,ticks=0;
+  // 未被反斜杠转义的反引号若不成对（如快捷键文本 Ctrl+Shift+`），则不启用代码跨度屏蔽：
+  // 否则单个孤立反引号会让 ticks 停在非零状态，吞掉其后所有真正的列分隔符 |，
+  // 造成列错位，并在每次源码/渲染往返时把分列 | 不断转义累积进单元格（表格越来越多 |）。
+  let backticks=0;
+  for(let i=0;i<s.length;i++){
+    if(s[i]==='`'){let sl=0;for(let j=i-1;j>=0&&s[j]==='\\';j--)sl++;if(sl%2===0)backticks++;}
+  }
+  const ticksEnabled=backticks%2===0;
   for(let i=0;i<s.length;i++){
     const ch=s[i];if(escaped){cur+=ch;escaped=false;continue;}if(ch==='\\'){cur+=ch;escaped=true;continue;}
-    if(ch==='`'){let n=1;while(s[i+n]==='`')n++;ticks=ticks===n?0:(ticks?ticks:n);cur+=ch.repeat(n);i+=n-1;continue;}
-    if(ch==='|'&&!ticks){cells.push(cur.replace(/\\\|/g,'|').trim());cur='';}else cur+=ch;
+    if(ch==='`'){
+      if(ticksEnabled){let n=1;while(s[i+n]==='`')n++;ticks=ticks===n?0:(ticks?ticks:n);cur+=ch.repeat(n);i+=n-1;}
+      else cur+=ch;
+      continue;
+    }
+    if(ch==='|'&&(ticksEnabled?!ticks:true)){cells.push(cur.replace(/\\\|/g,'|').trim());cur='';}else cur+=ch;
   }
   cells.push(cur.replace(/\\\|/g,'|').trim());return cells;
 }
@@ -1503,7 +1543,8 @@ function countBlankLines(lines,start){
 function parseMarkdown(md){
   const frag=document.createDocumentFragment();
   const lines=md.replace(/\r\n?/g,'\n').split('\n');CurrentParseContext={references:{}};
-  lines.forEach(line=>{const m=line.match(/^\s*\[([^\]^]+)\]:\s*<?([^\s>]+)>?(?:\s+["'(]([^"')]+)["')])?\s*$/);if(m)CurrentParseContext.references[m[1].trim().toLowerCase()]={url:m[2],title:m[3]||''};});
+  State.referenceDefinitions=[];
+  lines.forEach(line=>{const m=line.match(/^\s*\[([^\]^]+)\]:\s*<?([^\s>]+)>?(?:\s+["'(]([^"')]+)["')])?\s*$/);if(m){CurrentParseContext.references[m[1].trim().toLowerCase()]={url:m[2],title:m[3]||''};State.referenceDefinitions.push(line);}});
   let i=0;
   const push=el=>frag.appendChild(el);
   while(i<lines.length){
@@ -1534,7 +1575,7 @@ function parseMarkdown(md){
       push(buildTable(rows));continue;
     }
     const ref=clean.match(/^\s*\[([^\]^]+)\]:\s*<?([^\s>]+)>?(?:\s+["'(]([^"')]+)["')])?\s*$/);
-    if(ref){push(buildReferenceDefinition(line));i++;continue;}
+    if(ref){i++;continue;}
     const fn=clean.match(/^\[\^([^\]\s]+)\]:\s*(.*)$/);
     if(fn){const body=[fn[2]];i++;while(i<lines.length&&(/^(?: {2,}|\t)/.test(lines[i])||(!lines[i]&&i+1<lines.length&&/^(?: {2,}|\t)/.test(lines[i+1])))){body.push(lines[i].replace(/^(?: {2,4}|\t)/,''));i++;}push(buildFootnoteDefinition(fn[1],body.join('\n')));continue;}
     // callout：> [!TYPE]
@@ -1587,11 +1628,22 @@ function loadMarkdown(md,silent){
   if(State.dirHandle||State.workspaceRoot)resolveRelativeImages();
   rerenderAsyncBlocks();
 }
+// 按需加载数学引擎：仅当文档中存在公式块时才请求 KaTeX CDN
+function ensureMathEngine(){
+  if(MathEngine.katex)return Promise.resolve();
+  if(!$$('.math-inline,.math-block').length)return Promise.resolve();
+  return loadKatex();
+}
 // 重新渲染所有异步块（mermaid 图表、KaTeX 公式），用于加载/撤销重做后
 function rerenderAsyncBlocks(){
-  if(window.mermaid){$$('.mermaid-block').forEach(b=>renderMermaidBlock(b));}
-  else{loadMermaid().then(()=>$$('.mermaid-block').forEach(b=>renderMermaidBlock(b))).catch(()=>{});}
-  if(MathEngine.katex){$$('.math-inline,.math-block').forEach(mb=>{const tex=mb.dataset.tex;const out=$('.math-out',mb);if(tex&&out)out.innerHTML=renderMath(tex);});}
+  const mermaidBlocks=$$('.mermaid-block');
+  if(mermaidBlocks.length){
+    if(window.mermaid){mermaidBlocks.forEach(b=>renderMermaidBlock(b));}
+    else{loadMermaid().then(()=>mermaidBlocks.forEach(b=>renderMermaidBlock(b))).catch(()=>{});}
+  }
+  ensureMathEngine().then(()=>{
+    if(MathEngine.katex){$$('.math-inline,.math-block').forEach(mb=>{const tex=mb.dataset.tex;const out=$('.math-out',mb);if(tex&&out)out.innerHTML=renderMath(tex,mb.classList.contains('math-block')||mb.classList.contains('math-block-inline'));});}
+  }).catch(()=>{});
 }
 
 /* ============================================================
@@ -1696,7 +1748,7 @@ function restorePatch(s){
     // ——后者会再次进入本函数形成无限递归，且"回退到当前栈帧"等于撤销无效。
     const frag=parseMarkdown(s.md);
     if(!frag.firstElementChild){
-      console.warn('[MarkEditor] Patch produced empty fragment, skipping');
+      warnLog('Patch produced empty fragment, skipping');
     }else if(block){
       block.replaceWith(frag);
       ensureTrailingParagraph();
@@ -1704,7 +1756,7 @@ function restorePatch(s){
       scheduleMutate();
       restoreEditorView(s.anchor,s.scroll);
     }else{
-      console.warn('[MarkEditor] Patch target block missing, re-inserting at recorded index',s.blockIndex);
+      warnLog('Patch target block missing, re-inserting at recorded index',s.blockIndex);
       const all2=topBlocks();
       const ref=all2[Math.min(Math.max(0,s.blockIndex),all2.length)];
       if(ref)editor.insertBefore(frag,ref);else editor.appendChild(frag);
@@ -1750,7 +1802,7 @@ function restoreEditorView(anchor,scroll,targetIdx){
         }catch(_e){}
       }
       State.activeBlock=block;
-      const sel=getSelection(),ok=!!(sel&&sel.rangeCount&&focusRoot.contains(sel.anchorNode));console.info('[MarkEditor] 恢复撤销光标:',{index,start,end,table:!!(anchor&&anchor.table),ok});return ok;
+      const sel=getSelection(),ok=!!(sel&&sel.rangeCount&&focusRoot.contains(sel.anchorNode));log('恢复撤销光标:',{index,start,end,table:!!(anchor&&anchor.table),ok});return ok;
     }catch(e){console.error('[MarkEditor] 恢复撤销光标失败:',e);return false;}
   };
   // 同步立即应用一次 + 下一帧（布局完成后）再应用一次；
@@ -1786,7 +1838,7 @@ function undo(){
     const current=History.stack[History.idx];
     let targetIdx=current&&current.anchor&&current.anchor.i>=0?current.anchor.i:topBlocks().indexOf(activeBlock());
     if(targetIdx<0)targetIdx=Math.max(0,topBlocks().length-2);
-    History.idx--;console.info('[MarkEditor] 撤销到历史视图:',History.stack[History.idx]);
+    History.idx--;log('撤销到历史视图: idx=',History.idx);
     restoreSnapshot(History.stack[History.idx],targetIdx);
     // 最终兜底：确保跳转到修改位置（兼容嵌套滚动容器和空段落焦点）
     setTimeout(()=>{
@@ -1809,7 +1861,7 @@ function undo(){
 }
 function redo(){
   History.lastAction=Date.now();
-  if(History.idx<History.stack.length-1){History.idx++;console.info('[MarkEditor] 重做到历史视图:',History.stack[History.idx]);restoreSnapshot(History.stack[History.idx]);}
+  if(History.idx<History.stack.length-1){History.idx++;log('重做到历史视图: idx=',History.idx);restoreSnapshot(History.stack[History.idx]);}
 }
 
 /* ============================================================
@@ -1820,7 +1872,7 @@ function redo(){
 // 交由 marker 正常序列化为语法，不按 HTML 标签回写。
 const INLINE_HTML_TAGS={KBD:'kbd',SUB:'sub',SUP:'sup',SMALL:'small',ABBR:'abbr',MARK:'mark',U:'u'};
 function nodeToMd(node,depth=0){
-  if(node.nodeType===3)return node.nodeValue;
+  if(node.nodeType===3)return node.nodeValue.replace(/[\uE000\uE001]/g,'');
   if(node.nodeType!==1)return '';
   // 递归深度兜底：畸形深层嵌套（如粘贴的脏 HTML）不会栈溢出
   if(depth>100)return '';
@@ -1860,7 +1912,7 @@ function nodeToMd(node,depth=0){
     // 将缩放/尺寸样式保留为带紧凑 style 属性的 HTML <img>
     if(st.replace(/max-width:\s*100%;?/,'').trim()){
       const compact=st.replace(/:\s+/g,':').replace(/;\s*/g,';').replace(/;$/,';');
-      return '<img src="'+(im.getAttribute('src')||'')+'" alt="'+(im.getAttribute('alt')||'')+'" style="'+compact+'" />';
+      return '<img src="'+escapeAttr(im.getAttribute('src')||'')+'" alt="'+escapeAttr(im.getAttribute('alt')||'')+'" style="'+escapeAttr(compact)+'" />';
     }
     return unescapeHtml(node.dataset.md||'');
   }
@@ -1898,7 +1950,8 @@ function tableToMd(block){
   });
   return rows.join('\n');
 }
-function cellText(cell){return (nodeToMd(cell)||'').replace(/\n/g,'<br>').replace(/\|/g,'\\|');}
+function escapeCellSource(s){return String(s).replace(/\n/g,'<br>').replace(/\|/g,'\\|');}
+function cellText(cell){return escapeCellSource(nodeToMd(cell)||'');}
 function blockToMd(b){
   switch(b.dataset.type){
     case 'codeblock':{
@@ -1937,7 +1990,9 @@ function topBlocks(){return Array.from(editor.children).filter(c=>c.classList&&c
 function serialize(){
   if(!State._serDirty&&State._serCache!=null)return State._serCache;
   const md=topBlocks().map(blockToMd).join('\n');
-  State._serCache=md;State._serDirty=false;return md;
+  const refs=State.referenceDefinitions&&State.referenceDefinitions.length?State.referenceDefinitions.join('\n'):'';
+  const out=refs?md+'\n\n'+refs:md;
+  State._serCache=out;State._serDirty=false;return out;
 }
 function ensureTrailingParagraph(){
   const last=editor.lastElementChild;
@@ -2018,14 +2073,21 @@ function getCaret(root){
 function setRangePoint(r,method,node,off){
   if(node&&node.nodeType===3){
     const par=node.parentElement;
-    const hiddenMarker=par&&par.classList&&(par.classList.contains('md-marker')||par.classList.contains('md-hidden')||par.classList.contains('math-src')||par.classList.contains('md-back'));
-    if(hiddenMarker&&off===node.nodeValue.length&&par.parentElement){
+    if(par&&par.isContentEditable===false&&par.parentElement){
       const host=par.parentElement,idx=Array.from(host.childNodes).indexOf(par);
-      r[method](host,idx+1);return;
+      if(off>=node.nodeValue.length){
+        const nxt=par.nextElementSibling;if(nxt&&nxt.isContentEditable!==false){r[method](nxt,0);return;}
+        r[method](host,idx+1);return;
+      }else{
+        const prv=par.previousElementSibling;if(prv&&prv.isContentEditable!==false){r[method](prv,prv.childNodes.length);return;}
+        r[method](host,idx);return;
+      }
     }
-    if(hiddenMarker&&off===0&&par.parentElement){
+    const hiddenMarker=par&&par.classList&&(par.classList.contains('md-marker')||par.classList.contains('md-hidden')||par.classList.contains('math-src')||par.classList.contains('md-back'));
+    if(hiddenMarker&&par.parentElement){
       const host=par.parentElement,idx=Array.from(host.childNodes).indexOf(par);
-      r[method](host,idx);return;
+      if(off>=node.nodeValue.length){r[method](host,idx+1);return;}
+      if(off===0){r[method](host,idx);return;}
     }
   }
   r[method](node,off);
@@ -2044,9 +2106,23 @@ function focusBlock(block,offset){
   editor.focus();
   if(offset===undefined){
     // 放置到末尾
-    const nodes=textNodes(root);const last=nodes[nodes.length-1];
+    const nodes=textNodes(root);
     setCaret(root,nodes.reduce((a,n)=>a+n.nodeValue.length,0));
   }else setCaret(root,offset);
+}
+function hiddenMarkerParent(p){return p&&p.classList&&(p.classList.contains('md-marker')||p.classList.contains('md-hidden')||p.classList.contains('math-src')||p.classList.contains('md-back'));}
+function snapCaretOutOfMarkers(root,c){
+  if(!c)return null;
+  let s=c.s,e=c.e;let pos=0;
+  for(const tn of textNodes(root)){
+    const end=pos+tn.nodeValue.length;
+    if(hiddenMarkerParent(tn.parentElement)){
+      if(s>pos&&s<end)s=end;
+      if(e>pos&&e<end)e=end;
+    }
+    pos=end;
+  }
+  return {s,e,collapsed:c.collapsed};
 }
 function activeBlock(){
   const sel=getSelection();
@@ -2131,18 +2207,21 @@ function editSource(insText,selectLen){
   const block=activeBlock();if(!block)return;
   const t=block.dataset.type;
   if(t==='table'){const cell=activeCell();if(!cell)return;
-    const c=getCaret(cell);const src=cell.textContent;
+    const c=snapCaretOutOfMarkers(cell,getCaret(cell));if(!c)return;
+    const src=nodeToMd(cell);
     const ns=src.slice(0,c.s)+insText+src.slice(c.e);
-    cell.innerHTML=inlineRender(ns);
+    cell.innerHTML=cellRender(ns);
+    invalidateTextNodes(cell);ensureColResizer(cell);
     const pos=c.s+insText.length;setCaret(cell,selectLen?pos-selectLen:pos,pos);
     commitHistory('struct');return block;
   }
-  if(t==='codeblock'){const root=$('code',block);const c=getCaret(root);
+  if(t==='codeblock'){const root=$('code',block);const c=snapCaretOutOfMarkers(root,getCaret(root));if(!c)return;
     const src=root.textContent;const ns=src.slice(0,c.s)+insText+src.slice(c.e);
     rerenderCode(block,ns,c.s+insText.length);commitHistory('struct');return block;}
   if(!isTextBlock(block))return;
-  const root=block,c=getCaret(root);if(!c)return;
-  const src=nodeToMd(block);const ns=src.slice(0,c.s)+insText+src.slice(c.e);
+  const root=block,c=snapCaretOutOfMarkers(block,getCaret(block));if(!c)return;
+  const src=root.textContent;
+  const ns=src.slice(0,c.s)+insText+src.slice(c.e);
   const pos=c.s+insText.length;
   const nb=rerenderBlock(block,ns,selectLen?pos-selectLen:pos,pos);
   commitHistory('struct');return nb;
@@ -2202,7 +2281,7 @@ function wrapSelection(l,r){
       piece=clean;
     }
     cell.innerHTML=cellRender(ns);
-    ensureColResizer(cell);
+    invalidateTextNodes(cell);ensureColResizer(cell);
     const a=c.s+l.length,b=a+piece.length;
     setCaret(cell,piece?b:a,piece?b:a);
     markDirty();scheduleMutate();commitHistory('struct');return;
@@ -2281,7 +2360,7 @@ function stripInline(){
     const clean=stripText(src.slice(c.s,c.e));
     const ns=src.slice(0,c.s)+clean+src.slice(c.e);
     cell.innerHTML=cellRender(ns);
-    ensureColResizer(cell);
+    invalidateTextNodes(cell);ensureColResizer(cell);
     setCaret(cell,c.s,c.s+clean.length);
     markDirty();scheduleMutate();commitHistory('struct');return;
   }
@@ -2340,7 +2419,7 @@ function removeBlankLines(){
 
 /* ---- Enter / Tab / Backspace 处理 ---- */
 function handleEnter(shift){
-  const block=activeBlock();if(!block)return;
+  let block=activeBlock();if(!block)return;
   const t=block.dataset.type;
   if(t==='hr'||t==='toc'){const p=buildTextBlock('');block.after(p);focusBlock(p,0);return;}
   if(t==='math'){openMathEditor(block);return;}
@@ -2379,7 +2458,7 @@ function handleEnter(shift){
     if(info.content.trim()===''&&right.trim()===''){ // 空列表项 -> 退出列表
       const nb=buildTextBlock('');block.replaceWith(nb);focusBlock(nb,0);reorderLists();scheduleMutate();return;
     }
-    rerenderBlock(block,left,c.s,c.s);
+    block=rerenderBlock(block,left,c.s,c.s);
     const ni={type:'list',indent:info.indent,ordered:info.ordered,bullet:info.bullet,dot:info.dot,task:!!info.task,
       order:info.ordered?(info.order||1)+1:1,checked:false};
     const prefix=makePrefix(ni);
@@ -2390,12 +2469,12 @@ function handleEnter(shift){
     if(info.content.trim()===''&&right.trim()===''){
       const nb=buildTextBlock('');block.replaceWith(nb);focusBlock(nb,0);scheduleMutate();return;
     }
-    rerenderBlock(block,left,c.s,c.s);
+    block=rerenderBlock(block,left,c.s,c.s);
     const prefix='>'.repeat(info.depth)+' ';
     const nb=buildTextBlock(prefix+right);block.after(nb);focusBlock(nb,prefix.length);scheduleMutate();return;
   }
   // 标题 / 段落：拆分
-  rerenderBlock(block,left,c.s,c.s);
+  block=rerenderBlock(block,left,c.s,c.s);
   const nb=buildTextBlock(right);block.after(nb);
   if(info.type==='heading')ensureTrailingParagraph();
   focusBlock(nb,0);scheduleMutate();
@@ -2450,7 +2529,7 @@ function changeIndent(dir){
   rerenderBlock(block,src,c.s+delta,c.e+delta);reorderLists();
 }
 function reorderLists(){
-  const blocks=$$('.md-block',editor);
+  const blocks=topBlocks();
   blocks.forEach((b,i)=>{
     if(b.dataset.type!=='list'||!b.classList.contains('ordered'))return;
     const prev=blocks[i-1];
@@ -2483,7 +2562,7 @@ function reorderLists(){
 const scheduleMutate=debounce(()=>{
   ensureTrailingParagraph();refreshOutline();refreshTocAll();updateStatus();saveDraft();
   if(State.dirHandle||State.workspaceRoot)resolveRelativeImages();
-},120);
+},()=>mutateDebounceMs());
 // 大文档（block 数 > 500）时使用更长防抖，避免输入卡顿
 function mutateDebounceMs(){const n=editor?editor.children.length:0;return n>2000?300:n>500?200:120;}
 const _scheduleImages=debounce(()=>{if(State.dirHandle||State.workspaceRoot){requestAnimationFrame(resolveRelativeImages);}},150);
@@ -2499,7 +2578,7 @@ editor.addEventListener('beforeinput',e=>{
     if(e.inputType==='historyUndo')undo();else redo();
     return;
   }
-  if(e.target.closest&&e.target.closest('.math-src-edit,.mermaid-edit'))return;
+  if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;
   if(State.composing)return;updateCurrentHistoryView();
   const block=activeBlock();if(!block)return;
   const t=block.dataset.type;
@@ -2508,7 +2587,14 @@ editor.addEventListener('beforeinput',e=>{
     // 仅当光标右侧确实存在一个可跳过的同字符（如已配对的右括号）时才越过；
     // 显式 c.s<src.length，避免依赖 src[末尾]===undefined 的隐式行为
     if(c&&c.collapsed&&c.s<src.length&&Object.values(pairs).includes(e.data)&&src[c.s]===e.data){e.preventDefault();setCaret(block,c.s+1);return;}
-    if(c&&close){e.preventDefault();historyStartTyping(block);const selected=src.slice(c.s,c.e),fresh=rerenderBlock(block,src.slice(0,c.s)+e.data+selected+close+src.slice(c.e),c.s+1,c.s+1+selected.length);if(fresh)State.activeBlock=fresh;historyFinishTyping();return;}
+    if(c&&close&&e.data.length===1){
+      // 括号类（([{）无条件配对；引号/反引号仅在「有选区」或「光标右侧是行尾/空白/闭合标点」时才配对，避免 don't → don''t
+      const isBracket='([{'.includes(e.data);
+      const selLen=c.e-c.s;
+      const rightChar=src[c.s]||'';
+      const shouldPair=isBracket||selLen>0||!rightChar||/[\s\u0000-\u001f)}\]'"`'"'">，。、；：！？）】」』]/u.test(rightChar);
+      if(shouldPair){e.preventDefault();historyStartTyping(block);try{const selected=src.slice(c.s,c.e),fresh=rerenderBlock(block,src.slice(0,c.s)+e.data+selected+close+src.slice(c.e),c.s+1,c.s+1+selected.length);if(fresh)State.activeBlock=fresh;}finally{historyFinishTyping();}return;}
+    }
   }
   if(['math','hr','toc'].includes(t)){e.preventDefault();return;}
   const root=editableRoot(block),c=getCaret(root);
@@ -2521,7 +2607,7 @@ editor.addEventListener('beforeinput',e=>{
   if((e.inputType==='insertText'||e.inputType==='insertCompositionText')&&(isTextBlock(block)||t==='codeblock'||t==='table')){historyStartTyping(block);}
 });
 editor.addEventListener('input',e=>{
-  if(e.target.closest&&e.target.closest('.math-src-edit,.mermaid-edit'))return;
+  if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;
   if(State.composing)return;
   const block=activeBlock();if(!block)return;
   const t=block.dataset.type;
@@ -2535,9 +2621,9 @@ editor.addEventListener('input',e=>{
   else if(isTextBlock(block))rerenderBlock(block,nodeToMd(block),target);
   commitHistory('typing');
 });
-editor.addEventListener('compositionstart',e=>{if(e.target.closest&&e.target.closest('.math-src-edit,.mermaid-edit'))return;updateCurrentHistoryView();State.composing=true;const block=activeBlock();if(block)historyStartTyping(block);});
+editor.addEventListener('compositionstart',e=>{if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;updateCurrentHistoryView();State.composing=true;const block=activeBlock();if(block)historyStartTyping(block);});
 editor.addEventListener('compositionend',e=>{
-  if(e.target.closest&&e.target.closest('.math-src-edit,.mermaid-edit'))return;
+  if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;
   State.composing=false;
   const block=activeBlock();if(!block)return;
   if(block.dataset.type==='codeblock'){rerenderCode(block,$('code',block).textContent,$('code',block).textContent.length);}
@@ -2593,27 +2679,34 @@ document.addEventListener('selectionchange',()=>{
   rafSel=requestAnimationFrame(onSelectionChange);
 });
 function onSelectionChange(){
+  if(State.editingMath){
+    const sel=getSelection();
+    if(!sel||!sel.rangeCount||!State.editingMath.contains(sel.anchorNode)){commitMath(State.editingMath);State.editingMath=null;}
+  }
+  if(State.editingImg){
+    const sel=getSelection();
+    if(!sel||!sel.rangeCount||!State.editingImg.contains(sel.anchorNode)){commitImage(State.editingImg);State.editingImg=null;}
+  }
   const block=activeBlock();
   $$('.md-block.active').forEach(b=>{if(b!==block)b.classList.remove('active');});
   if(block&&editor.contains(block)){block.classList.add('active');State.activeBlock=block;updateBlockType(block);
-    if(block.dataset.type==='codeblock')block.classList.add('active');
     const cell=block.dataset.type==='table'?activeCell():null,caret=getCaret(cell||editableRoot(block));if(caret)State.lastCaret={block,caret,cell,row:cell?$$('tr',block).indexOf(cell.parentElement):-1,col:cell?cell.cellIndex:-1};
   }
-  $$('.editing',editor).forEach(el=>el.classList.remove('editing'));
+  $$('.editing',editor).forEach(el=>{if(el!==State.editingMath)el.classList.remove('editing');});
   const sel=getSelection();
   if(sel&&sel.rangeCount&&sel.isCollapsed&&block){
     let node=sel.anchorNode;if(node&&node.nodeType===3)node=node.parentElement;
     if(node&&block.contains(node)&&!(node.closest&&node.closest('.codeblock pre'))){
       let p=node;
       while(p&&p!==block){
-        if(p.nodeType===1&&p.matches&&p.matches('strong,em,s,mark,u,a,.math-inline,.md-img,.md-esc'))p.classList.add('editing');
+        if(p.nodeType===1&&p.matches&&p.matches('strong,em,s,mark,u,a,.md-esc'))p.classList.add('editing');
         p=p.parentNode;
       }
     }
   }
   updateSelToolbar();
   if(State.typewriter&&block)typewriterScroll(block);
-  updateBlockType(block);
+  if(!block)updateBlockType(block);
 }
 function typewriterScroll(block){
   const vr=paperScroll.getBoundingClientRect(),br=block.getBoundingClientRect();
@@ -2654,7 +2747,7 @@ editor.addEventListener('click',e=>{
   if(img){
     e.preventDefault();
     const wrap=img.closest('.md-img')||img;
-    enterImageEdit(wrap);
+    if(!wrap.classList.contains('img-editing'))enterImageEdit(wrap);
     return;
   }
   const mt=e.target.closest('.mermaid-toggle');
@@ -2673,7 +2766,7 @@ editor.addEventListener('click',e=>{
     return;
   }
   const mb=e.target.closest('.math-block,.math-inline');
-  if(mb&&!e.target.closest('.math-src-edit')){openMathEditor(mb);}
+  if(mb&&!e.target.closest('.math-inline.editing,.math-src-edit')){openMathEditor(mb);}
   const tocA=e.target.closest('.toc-block a');
   if(tocA){e.preventDefault();const id=tocA.dataset.target;const t=editor.querySelector('[id="'+id+'"]');if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}
 });
@@ -2720,11 +2813,11 @@ async function copyImageClipboard(wrap){
       blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('图片转换失败')),'image/png'));
     }
     await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);return true;
-  }catch(err){try{await navigator.clipboard.writeText(md);}catch(e){}console.warn('[MarkEditor] 系统图片剪贴板不可用，已保留内部图片剪贴板:',err);return !!md;}
+  }catch(err){try{await navigator.clipboard.writeText(md);}catch(e){}warnLog('系统图片剪贴板不可用，已保留内部图片剪贴板:',err);return !!md;}
 }
 async function pasteImageClipboard(){
   try{if(navigator.clipboard.read){for(const item of await navigator.clipboard.read()){const type=item.types.find(t=>t.startsWith('image/'));if(type){await readImageInsert(await item.getType(type));return true;}}}}
-  catch(err){console.warn('[MarkEditor] 读取系统图片剪贴板失败，尝试内部剪贴板:',err);}
+  catch(err){warnLog('读取系统图片剪贴板失败，尝试内部剪贴板:',err);}
   if(State.imageClipboard){editSource(State.imageClipboard);toast('已粘贴图片');return true;}toast('剪贴板中没有图片');return false;
 }
 $('#img-ctx-menu').addEventListener('click',async e=>{
@@ -2758,7 +2851,7 @@ $('#img-ctx-menu').addEventListener('click',async e=>{
     }
     case 'copy': if(await copyImageClipboard(ctxImgWrap))toast('已复制图片');else toast('复制失败');break;
     case 'copy-md':
-      State.imageClipboard=ctxImgWrap.dataset.md||'';navigator.clipboard.writeText(State.imageClipboard).catch(()=>{});toast('已复制 Markdown');break;
+      State.imageClipboard=ctxImgWrap.dataset.md||'';copyText(State.imageClipboard).catch(()=>{});toast('已复制 Markdown');break;
     case 'paste':await pasteImageClipboard();break;
     case 'edit': enterImageEdit(ctxImgWrap);break;
     case 'delete':
@@ -2766,79 +2859,81 @@ $('#img-ctx-menu').addEventListener('click',async e=>{
       markDirty();scheduleMutate();commitHistory('struct');toast('已删除图片');break;
   }
 });
-/* 图片源码编辑：点击图片 -> 浮动文本域编辑 Markdown；失焦/Enter 时提交 */
+/* 图片 Markdown 解析：支持 ![alt](url "title") / ![alt][id] / <img ...> */
+function parseImageMarkdown(md){
+  const s=String(md||'').trim();
+  if(!s)return null;
+  // 1) 原始 HTML <img ...>
+  if(/^<img\b/i.test(s)){
+    const src=(s.match(/\ssrc=["']([^"']*)["']/i)||[])[1]||'';
+    const alt=(s.match(/\salt=["']([^"']*)["']/i)||[])[1]||'';
+    const style=(s.match(/\sstyle=["']([^"']*)["']/i)||[])[1]||'';
+    return {md:s,alt,src,style:filterStyle(style)};
+  }
+  // 2) 引用式 ![alt][id]
+  const ref=s.match(/^!\[([^\]]*)\]\[([^\]]*)\]$/);
+  if(ref){
+    const id=(ref[2]||ref[1]||'').trim();
+    const r=CurrentParseContext&&CurrentParseContext.references[id.toLowerCase()];
+    const src=r&&r.url?r.url:'';
+    return {md:s,alt:unescapeHtml(ref[1])||'',src,style:''};
+  }
+  // 3) 行内 ![alt](url "title")
+  const m=s.match(/^!\[([^\]]*)\]\(\s*<?([^\s)>]+)>?(?:\s+["']([^"']*)["'])?\s*\)$/);
+  if(m){
+    return {md:s,alt:unescapeHtml(m[1])||'',src:m[2]||'',style:''};
+  }
+  return null;
+}
+/* 生成 .md-img 内部子元素 */
+function buildImageInlineChildren(parsed){
+  if(!parsed)return '';
+  return '<span class="md-src md-hidden" contenteditable="false">'+escapeHtml(parsed.md)+'</span><img src="'+escapeAttr(imagePreviewSrc(parsed.src))+'" alt="'+escapeAttr(parsed.alt)+'" style="'+escapeAttr(parsed.style)+'" loading="lazy">';
+}
+/* 提交图片编辑 */
+function commitImage(wrap){
+  if(!wrap||!wrap.classList.contains('img-editing'))return;State.editingImg=null;
+  const newMd=wrap.textContent.trim();
+  wrap.classList.remove('img-editing');
+  wrap.contentEditable='false';wrap.onkeydown=null;wrap.onblur=null;
+  if(newMd===''){
+    wrap.remove();
+    markDirty();scheduleMutate();commitHistory('struct');return;
+  }
+  const parsed=parseImageMarkdown(newMd);
+  if(parsed){
+    wrap.dataset.md=parsed.md;
+    wrap.innerHTML=buildImageInlineChildren(parsed);
+  }else{
+    const old=parseImageMarkdown(wrap.dataset.md)||{md:wrap.dataset.md||'',alt:'',src:'',style:''};
+    wrap.innerHTML=buildImageInlineChildren(old);
+  }
+  if(State.dirHandle||State.workspaceRoot)resolveRelativeImages();
+  markDirty();scheduleMutate();commitHistory('struct');saveDraft();
+}
+/* 取消图片编辑 */
+function cancelImage(wrap){
+  if(!wrap||!wrap.classList.contains('img-editing'))return;State.editingImg=null;
+  wrap.classList.remove('img-editing');
+  wrap.contentEditable='false';wrap.onkeydown=null;wrap.onblur=null;
+  const old=parseImageMarkdown(wrap.dataset.md)||{md:wrap.dataset.md||'',alt:'',src:'',style:''};
+  wrap.innerHTML=buildImageInlineChildren(old);
+}
+/* 图片源码编辑：点击图片 -> 就地显示并编辑 Markdown 源码；失焦/Enter 时提交 */
 function enterImageEdit(wrap){
   if(State.sourceMode)return;
-  const old=$('#img-editor');if(old)old.remove();
-  const rect=wrap.getBoundingClientRect();
-  const ed=document.createElement('div');
-  ed.id='img-editor';
-  ed.style.cssText='position:absolute;z-index:9999;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);min-width:480px;max-width:720px;';
-  const _ps=paperScroll||document.scrollingElement||document.documentElement;
-  const _psRect=_ps.getBoundingClientRect();
-  const _st=_ps.scrollTop||0,_sl=_ps.scrollLeft||0;
-  const _pw=_ps.clientWidth||window.innerWidth;
-  // rect是视口坐标，减去paperScroll在视口中的偏移，再加scrollTop/Left转为paperScroll内容区域坐标
-  const _imgBottom=rect.bottom-_psRect.top+_st;
-  const _imgTop=rect.top-_psRect.top+_st;
-  const _imgLeft=rect.left-_psRect.left+_sl;
-  let _top=_imgBottom+6;
-  const _left=Math.max(8,Math.min(_imgLeft,_pw-500));
-  // 如果弹窗会超出paperScroll可视区域底部，则放在图片上方
-  const _edHeight=120; // 预估弹窗高度
-  if(_top+_edHeight>_st+_ps.clientHeight&&_imgTop-_edHeight-6>_st){
-    _top=_imgTop-_edHeight-6;
-  }
-  ed.style.left=_left+'px';
-  ed.style.top=_top+'px';
-  const label=document.createElement('div');
-  label.style.cssText='font-size:11px;color:var(--muted);margin-bottom:4px;font-family:var(--mono);';
-  label.textContent='图片 Markdown（Enter 确认，Esc 取消）';
-  const ta=document.createElement('textarea');
-  ta.value=wrap.dataset.md||'';
-  ta.style.cssText='width:100%;min-height:44px;font-family:var(--mono);font-size:12px;background:var(--code-bg);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:6px;outline:none;resize:vertical;box-sizing:border-box;';
-  ta.setAttribute('spellcheck','false');
-  ed.appendChild(label);ed.appendChild(ta);
-  (paperScroll||document.body).appendChild(ed);
+  if(State.editingImg&&State.editingImg!==wrap)commitImage(State.editingImg);
+  if(wrap.classList.contains('img-editing'))return;
+  State.editingImg=wrap;
   wrap.classList.add('img-editing');
-  ta.focus();ta.select();
-  let done=false;
-  let onDown=null;
-  const cleanup=()=>{if(onDown){document.removeEventListener('mousedown',onDown);onDown=null;}};
-  const commit=()=>{
-    if(done)return;done=true;cleanup();
-    const newMd=ta.value.trim();
-    const m=newMd.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-    if(m){
-      wrap.dataset.md=newMd;
-      const im=$('img',wrap);
-      if(im){im.alt=m[1]||'';im.src=m[2]||'';}
-      const src=$('.md-src',wrap);if(src)src.textContent=newMd;
-      markDirty();
-      if(State.dirHandle||State.workspaceRoot)resolveRelativeImages();
-      scheduleMutate();commitHistory('struct');
-    }else if(newMd===''){
-      wrap.remove();
-      markDirty();
-      scheduleMutate();commitHistory('struct');
-    }
-    wrap.classList.remove('img-editing');
-    ed.remove();
-  };
-  const cancel=()=>{if(done)return;done=true;cleanup();wrap.classList.remove('img-editing');ed.remove();};
-  ta.addEventListener('blur',commit);
-  ta.addEventListener('keydown',e=>{
-    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();commit();}
-    else if(e.key==='Escape'){e.preventDefault();cancel();}
-  });
+  wrap.contentEditable='true';
+  wrap.textContent=wrap.dataset.md||'';
+  wrap.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();commitImage(wrap);}else if(e.key==='Escape'){e.preventDefault();cancelImage(wrap);}e.stopPropagation();};
+  wrap.onblur=()=>commitImage(wrap);
   setTimeout(()=>{
-    onDown=function(e){
-      if(!ed.contains(e.target)&&!wrap.contains(e.target)){
-        ed.remove();document.removeEventListener('mousedown',onDown);onDown=null;
-        if(!done)commit();
-      }
-    };
-    document.addEventListener('mousedown',onDown);
+    if(!wrap.isConnected)return;
+    wrap.focus();
+    const r=document.createRange();r.selectNodeContents(wrap);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
   },0);
 }
 /* 灯箱 */
@@ -2857,43 +2952,67 @@ $('#lightbox').addEventListener('wheel',e=>{
 $('#lightbox-img').addEventListener('pointerdown',e=>{e.preventDefault();Lightbox.drag=true;Lightbox.px=e.clientX;Lightbox.py=e.clientY;$('#lightbox').classList.add('dragging');e.target.setPointerCapture(e.pointerId);});
 $('#lightbox-img').addEventListener('pointermove',e=>{if(!Lightbox.drag)return;Lightbox.x+=e.clientX-Lightbox.px;Lightbox.y+=e.clientY-Lightbox.py;Lightbox.px=e.clientX;Lightbox.py=e.clientY;renderLightbox();});
 $('#lightbox-img').addEventListener('pointerup',e=>{Lightbox.drag=false;$('#lightbox').classList.remove('dragging');try{e.target.releasePointerCapture(e.pointerId);}catch(err){}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#lightbox').classList.contains('show'))closeLightbox();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#lightbox').classList.contains('show')){e.stopPropagation();closeLightbox();}});
 
-/* 公式块编辑器 */
+/* 公式编辑器 */
 function openMathEditor(mb){
   if(State.sourceMode)return;
-  const ta=$('.math-src-edit',mb),out=$('.math-out',mb);
-  if(!ta)return;
-  ta.value=mb.dataset.tex||'';out.style.display='none';ta.hidden=false;mb.classList.add('editing');ta.focus();
-  ta.setSelectionRange(ta.value.length,ta.value.length);
-  ta.onkeydown=ev=>{
-    const inline=mb.classList.contains('math-inline');
-    if(ev.key==='Enter'&&(inline||ev.shiftKey)){ev.preventDefault();commitMath(mb);}
-    else if(ev.key==='Escape'){ev.preventDefault();cancelMath(mb);}
-    ev.stopPropagation();
-  };
-  ta.onblur=()=>commitMath(mb);
+  if(State.editingMath&&State.editingMath!==mb)commitMath(State.editingMath);
+  State.editingMath=mb;
+  const ta=$('.math-src-edit',mb);
+  if(ta){
+    mb.classList.add('editing');
+    const out=$('.math-out',mb);if(out)out.style.display='none';
+    ta.value=mb.dataset.tex||'';ta.hidden=false;ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);
+    ta.onkeydown=ev=>{if(ev.key==='Enter'&&ev.shiftKey){ev.preventDefault();commitMath(mb);}else if(ev.key==='Escape'){ev.preventDefault();cancelMath(mb);}ev.stopPropagation();};
+    ta.onblur=()=>commitMath(mb);
+  }else{
+    mb.classList.add('editing');mb.contentEditable='true';
+    mb.textContent='$'+(mb.dataset.tex||'')+'$';
+    mb.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();commitMath(mb);}else if(ev.key==='Escape'){ev.preventDefault();cancelMath(mb);}ev.stopPropagation();};
+    mb.onblur=()=>commitMath(mb);
+    setTimeout(()=>{
+      if(!mb.isConnected)return;
+      mb.focus();
+      const r=document.createRange();r.selectNodeContents(mb);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
+    },0);
+  }
 }
 function commitMath(mb){
-  const ta=$('.math-src-edit',mb);if(!ta||ta.hidden)return;
-  mb.dataset.tex=ta.value;ta.hidden=true;mb.classList.remove('editing');
-  const out=$('.math-out',mb);out.style.display='';
-  out.innerHTML=renderMath(ta.value);
-  const src=$('.math-src',mb);if(src)src.textContent='$'+ta.value+'$';
+  if(!mb||!mb.classList.contains('editing'))return;State.editingMath=null;
+  const ta=$('.math-src-edit',mb);
+  let raw='';
+  if(ta&&!ta.hidden)raw=ta.value;
+  else raw=mb.textContent;
+  raw=raw.replace(/^\s*\$+|\$+\s*$/g,'').trim(); // 去除首尾空白和误输入的 $
+  mb.dataset.tex=raw;mb.classList.remove('editing');
+  if(ta){ta.hidden=true;ta.onkeydown=null;ta.onblur=null;}
+  else{
+    mb.contentEditable='false';
+    mb.innerHTML=buildMathInlineChildren(raw,mb.classList.contains('math-block-inline'));
+  }
+  const out=$('.math-out',mb);if(out)out.innerHTML=renderMath(raw,mb.classList.contains('math-block')||mb.classList.contains('math-block-inline'));
   // 强制立即重绘
-  out.style.display='none';void out.offsetHeight;out.style.display='';
+  if(out){out.style.display='none';void out.offsetHeight;out.style.display='';}
   commitHistory('struct');scheduleMutate();saveDraft();
 }
 function cancelMath(mb){
-  const ta=$('.math-src-edit',mb);if(ta){ta.hidden=true;mb.classList.remove('editing');}
-  $('.math-out',mb).style.display='';
+  if(!mb||!mb.classList.contains('editing'))return;State.editingMath=null;
+  const ta=$('.math-src-edit',mb),out=$('.math-out',mb);
+  mb.classList.remove('editing');
+  if(ta){ta.hidden=true;ta.onkeydown=null;ta.onblur=null;}
+  else{
+    mb.contentEditable='false';
+    mb.innerHTML=buildMathInlineChildren(mb.dataset.tex||'',mb.classList.contains('math-block-inline'));
+  }
+  if(out)out.style.display='';
 }
 
 /* ============================================================
    表格交互
    ============================================================ */
 function activeCell(){
-  const sel=getSelection();if(!sel.rangeCount)return null;
+  const sel=getSelection();if(!sel||!sel.rangeCount)return null;
   const n=sel.anchorNode;const el=n&&n.nodeType===3?n.parentElement:n;
   return el&&el.closest&&el.closest('.table-block th,.table-block td');
 }
@@ -2916,7 +3035,7 @@ editor.addEventListener('focusout',e=>{
 let cellSel={active:false,anchor:null,table:null};
 function cellIndexInTable(cell){
   const tr=cell.parentElement;
-  return {row:Array.from($$('tr',cell.closest('table'))).indexOf(tr),col:cell.cellIndex};
+  return {row:$$('tr',cell.closest('table')).indexOf(tr),col:cell.cellIndex};
 }
 function paintCellRangeTo(targetCell){
   if(!cellSel.anchor||!cellSel.table)return;
@@ -2959,8 +3078,7 @@ function copyCellRange(){
   // 系统剪贴板放 Tab 分隔纯文本，便于直接粘贴到 Excel/WPS 等电子表格自动分列；
   // 编辑器内部粘贴走 State.cellClipboard 的结构化 grid，不依赖系统剪贴板
   const txt=grid.map(row=>row.join('\t')).join('\n');
-  const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();
-  try{document.execCommand('copy');}catch(e){}ta.remove();
+  copyText(txt).catch(()=>{});
   State.cellClipboard=grid;
   toast('已复制 '+grid.length+' 行 × '+grid[0].length+' 列');
   return true;
@@ -2971,17 +3089,19 @@ function pasteCellRange(targetCell){
   const table=targetCell.closest('table');
   const startCol=targetCell.cellIndex;
   let tr=targetCell.parentElement;
-  let startRow=Array.from($$('tr',table)).indexOf(tr);
+  let trsArr=$$('tr',table);
+  let startRow=trsArr.indexOf(tr);
   for(let r=0;r<grid.length;r++){
     let ri=startRow+r;
-    let row=$$('tr',table)[ri];
+    let row=trsArr[ri];
     if(!row){
       // 在 tbody 末尾自动追加一行
       const tbody=$('tbody',table);if(!tbody)break;
-      const cols=$$('th,td',$$('tr',table)[0]).length;
+      const cols=$$('th,td',trsArr[0]).length;
       const nr=document.createElement('tr');
       for(let i=0;i<cols;i++){const td=document.createElement('td');td.setAttribute('contenteditable','true');nr.appendChild(td);}
       tbody.appendChild(nr);
+      trsArr=$$('tr',table);
       row=nr;
     }
     const cells=$$('th,td',row);
@@ -3037,7 +3157,7 @@ function tableOp(act){
   if(act==='resize'){
     const rows=Math.max(2,Math.min(50,parseInt(prompt('总行数（含表头）',allRows.length),10)||allRows.length)),cols=Math.max(1,Math.min(20,parseInt(prompt('列数',$$('th,td',allRows[0]).length),10)||$$('th,td',allRows[0]).length));
     const currentCols=$$('th,td',allRows[0]).length,removed=[];if(rows<allRows.length)allRows.slice(rows).forEach(r=>$$('th,td',r).forEach(c=>{if(cellText(c).trim())removed.push(cellText(c));}));if(cols<currentCols)allRows.forEach(r=>$$('th,td',r).slice(cols).forEach(c=>{if(cellText(c).trim())removed.push(cellText(c));}));if(removed.length&&!confirm('缩小表格将删除 '+removed.length+' 个非空单元格，确定继续吗？'))return;
-    while($$('tr',table).length<rows){const r=document.createElement('tr');for(let i=0;i<currentCols;i++){const td=document.createElement('td');td.contentEditable='true';r.appendChild(td);}$('tbody',table).appendChild(r);}while($$('tr',table).length>rows)$$('tr',table).pop().remove();
+    const tbody=$('tbody',table)||table;while($$('tr',table).length<rows){const r=document.createElement('tr');for(let i=0;i<currentCols;i++){const td=document.createElement('td');td.contentEditable='true';r.appendChild(td);}tbody.appendChild(r);}while($$('tr',table).length>rows){const trsNow=$$('tr',table);trsNow[trsNow.length-1].remove();}
     $$('tr',table).forEach((r,ri)=>{while(r.children.length<cols){const c=document.createElement(ri===0?'th':'td');c.contentEditable='true';c.dataset.align='';if(ri===0){const h=document.createElement('span');h.className='col-resizer';h.contentEditable='false';c.appendChild(h);}r.appendChild(c);}while(r.children.length>cols)r.lastElementChild.remove();});markDirty();scheduleMutate();commitHistory('struct');return;
   }
   if(act==='row-add-below'){
@@ -3160,7 +3280,9 @@ function htmlToMarkdown(html){
   const doc=new DOMParser().parseFromString(html,'text/html');
   const walk=(n,depth=0)=>{if(n.nodeType===3)return n.nodeValue;if(n.nodeType!==1)return '';const tag=n.tagName.toLowerCase(),inner=Array.from(n.childNodes).map(c=>walk(c,depth)).join('');
     if(/^h[1-6]$/.test(tag))return '\n'+'#'.repeat(+tag[1])+' '+inner.trim()+'\n';if(tag==='p'||tag==='div')return '\n'+inner.trim()+'\n';if(tag==='br')return '\n';
-    if(tag==='strong'||tag==='b')return '**'+inner+'**';if(tag==='em'||tag==='i')return '*'+inner+'*';if(tag==='del'||tag==='s')return '~~'+inner+'~~';if(tag==='code'&&(!n.parentElement||n.parentElement.tagName!=='PRE'))return '`'+inner+'`';if(tag==='pre')return '\n```\n'+n.textContent.replace(/\n$/,'')+'\n```\n';
+    if(tag==='strong'||tag==='b')return '**'+inner+'**';if(tag==='em'||tag==='i')return '*'+inner+'*';if(tag==='del'||tag==='s')return '~~'+inner+'~~';if(tag==='code'&&(!n.parentElement||n.parentElement.tagName!=='PRE'))return '`'+inner+'`';
+    if(tag==='pre'){const code=n.querySelector('code');const lang=code&&(code.className.match(/(?:^|\s)language-(\S+)(?:\s|$)/)||[])[1]||'';return '\n```'+lang+'\n'+(code?code.textContent:n.textContent).replace(/\n$/,'')+'\n```\n';}
+    if(tag==='table'){const rows=$$('tr',n);if(!rows.length)return '';const maxCols=Math.max(...rows.map(r=>$$('th,td',r).length));const cells=r=>$$('th,td',r).map(c=>c.textContent.trim().replace(/\|/g,'\\|').replace(/\n/g,' '));const mdRows=rows.map(r=>{const cs=cells(r);while(cs.length<maxCols)cs.push('');return '| '+cs.join(' | ')+' |';});const sep='| '+Array(maxCols).fill('---').join(' | ')+' |';const isSep=s=>/^\|\s*(?::?-+:?\s*\|)+\s*$/.test(s);if(mdRows.length>=2&&isSep(mdRows[1])){}else{mdRows.splice(1,0,sep);}return '\n'+mdRows.join('\n')+'\n';}
     if(tag==='a')return '['+inner+']('+(n.getAttribute('href')||'')+')';if(tag==='img')return '!['+(n.getAttribute('alt')||'image')+']('+(n.getAttribute('src')||'')+')';if(tag==='blockquote')return '\n'+inner.trim().split('\n').map(x=>'> '+x).join('\n')+'\n';
     if(tag==='li'){const ordered=n.parentElement.tagName==='OL';return '\n'+'  '.repeat(Math.max(0,depth-1))+(ordered?(Array.from(n.parentElement.children).indexOf(n)+1)+'. ':'- ')+inner.trim();}if(tag==='ul'||tag==='ol')return Array.from(n.children).map(c=>walk(c,depth+1)).join('')+'\n';
     return inner;};
@@ -3378,7 +3500,7 @@ function insertDate(){editSource(new Date().toLocaleString('zh-CN',{hour12:false
 
 /* ---------- 命令注册表 ---------- */
 const Cmds=[];
-function cmd(id,title,hot,run){const c={id,title,hot,run};Cmds.push(c);return c;}
+function cmd(id,title,hot,run){const c={id,title,hot,run,_hot:null};Cmds.push(c);return c;}
 cmd('new','新建','Ctrl+N',fileNew);
 cmd('open','打开工作区','Ctrl+O',fileOpen);
 cmd('openFile','打开文件…','',fileOpenFile);
@@ -3469,20 +3591,21 @@ function parseHot(h){
 }
 function matchHotkey(e){
   const key=(e.key||'').length===1?(e.key||'').toLowerCase():e.key;
-  for(const c of Cmds){const h=parseHot(c.hot);if(!h)continue;
+  for(const c of Cmds){const h=c._hot;if(!h)continue;
     if(!!h.ctrl!==!!(e.ctrlKey||e.metaKey))continue;
     if(!!h.alt!==!!e.altKey)continue;
     if(!!h.shift!==!!e.shiftKey)continue;
-    let hk=h.key;
+    const hk=h.key;
     if(hk==='`'&&key==='`')return c;
     if(hk==='\\'&&key==='\\')return c;
     if(hk==='='&&(key==='='||key==='+'))return c;
-    if(hk==='5'&&key==='5')return c;
     if(hk.length===1&&hk===key)return c;
     if(hk.length>1&&hk.toLowerCase()===(e.key||'').toLowerCase())return c;
   }
   return null;
 }
+// parseHot 和 Cmds 均已定义，统一填充缓存热键（在 cmd() 注册时 parseHot 尚未定义，故延迟到此处）
+Cmds.forEach(c=>{c._hot=parseHot(c.hot);});
 function globalKeydown(e){
   if(e.isComposing||State.composing)return false;
   // Ctrl+Shift+Z -> 重做（未注册为单独的命令快捷键）
@@ -3531,11 +3654,11 @@ function buildMenus(){
       ev.preventDefault();
       const wasOpen=root.classList.contains('open');
       $$('.menu-root.open').forEach(x=>x.classList.remove('open'));
-      if(!wasOpen)root.classList.add('open');
+      if(!wasOpen){root.classList.add('open');refreshMenuChecks();}
     });
     root.addEventListener('mouseenter',()=>{
       if($$('.menu-root.open').length&&!root.classList.contains('open')){
-        $$('.menu-root.open').forEach(x=>x.classList.remove('open'));root.classList.add('open');
+        $$('.menu-root.open').forEach(x=>x.classList.remove('open'));root.classList.add('open');refreshMenuChecks();
       }
     });
   });
@@ -3549,32 +3672,32 @@ async function handleAtPath(root,path){
   for(let i=0;i<parts.length-1;i++)dir=await dir.getDirectoryHandle(parts[i]);return dir.getFileHandle(parts[parts.length-1]);
 }
 async function openRecentRecord(record,ask=true){
-  if(!record){console.warn('[MarkEditor] 历史记录为空');return;}
-  console.info('[MarkEditor] 准备打开历史记录:',record.kind,record.name,record);
-  if(!confirmDiscard()){console.info('[MarkEditor] 用户取消切换历史记录');return;}
+  if(!record){warnLog('历史记录为空');return;}
+  log('准备打开历史记录:',record.kind,record.name);
+  if(!confirmDiscard()){log('用户取消切换历史记录');return;}
   const mode=record.kind==='workspace'?'readwrite':'read';
-  if(!await ensureHandlePermission(record.handle,mode,ask)){console.warn('[MarkEditor] 历史记录权限被拒绝:',record.name);toast('未获得访问权限');return;}
+  if(!await ensureHandlePermission(record.handle,mode,ask)){warnLog('历史记录权限被拒绝:',record.name);toast('未获得访问权限');return;}
   if(record.kind==='workspace'){
     State.workspaceRoot=record.handle;State.dirHandle=record.handle;State.workspaceWritable=true;
     State.expandedDirs=new Set(record.expanded||['']);State.currentPath=record.currentPath||'';
     $('#workspace-name').textContent=record.name;switchSidebarPane('files-pane');await refreshFileTree();
-    record.ts=Date.now();await recentPut(record);localStorage.setItem('me-last-workspace',record.id);
+    record.ts=Date.now();await recentPut(record);lsSet('me-last-workspace',record.id);
     if(record.currentPath){try{const fh=await handleAtPath(record.handle,record.currentPath);await openMdFile(fh,record.currentPath,true);}catch(e){console.error('[MarkEditor] 恢复工作区当前文件失败:',e);}}
-    console.info('[MarkEditor] 工作区恢复完成:',record.name);toast('已恢复工作区 '+record.name);return;
+    log('工作区恢复完成:',record.name);toast('已恢复工作区 '+record.name);return;
   }
   if(record.dirHandle&&await ensureHandlePermission(record.dirHandle,'read',false)){State.workspaceRoot=record.workspace?record.dirHandle:null;State.dirHandle=record.dirHandle;}
-  else{State.workspaceRoot=null;State.dirHandle=null;console.info('[MarkEditor] 关联目录权限不可用，继续打开文件本身');}
-  const opened=await openMdFile(record.handle,record.path||record.name,true);console.info('[MarkEditor] 历史文件打开结果:',record.name,opened);
+  else{State.workspaceRoot=null;State.dirHandle=null;log('关联目录权限不可用，继续打开文件本身');}
+  const opened=await openMdFile(record.handle,record.path||record.name,true);log('历史文件打开结果:',record.name,opened);
 }
 async function renderRecentPanel(panel,kind,force=false){
   if(panel.dataset.loading==='1'||(!force&&panel.dataset.loaded==='1'))return;
-  panel.dataset.loading='1';console.info('[MarkEditor] 读取最近记录:',kind);
+  panel.dataset.loading='1';log('读取最近记录:',kind);
   const items=await recentAll(kind);panel.innerHTML='';panel.dataset.loading='0';panel.dataset.loaded='1';
-  console.info('[MarkEditor] 最近记录数量:',kind,items.length);
+  log('最近记录数量:',kind,items.length);
   if(!items.length){panel.innerHTML='<button class="mi" disabled>暂无最近记录</button>';return;}
-  items.forEach(item=>{const b=document.createElement('button');b.className='mi';b.textContent=item.path||item.name;b.title=item.name;b.onclick=async()=>{console.info('[MarkEditor] 点击最近记录:',item.kind,item.name,item.path||'');try{await openRecentRecord(item,true);}catch(e){console.error('[MarkEditor] 打开历史记录失败:',e);toast('打开历史记录失败: '+(e.message||e),4000);}finally{$$('.menu-root.open').forEach(x=>x.classList.remove('open'));}};panel.appendChild(b);});
+  items.forEach(item=>{const b=document.createElement('button');b.className='mi';b.textContent=item.path||item.name;b.title=item.name;b.onclick=async()=>{log('点击最近记录:',item.kind,item.name,item.path||'');try{await openRecentRecord(item,true);}catch(e){console.error('[MarkEditor] 打开历史记录失败:',e);toast('打开历史记录失败: '+(e.message||e),4000);}finally{$$('.menu-root.open').forEach(x=>x.classList.remove('open'));}};panel.appendChild(b);});
   const sep=document.createElement('div');sep.className='mi-sep';panel.appendChild(sep);
-  const clear=document.createElement('button');clear.className='mi';clear.textContent='清除最近记录';clear.onclick=async()=>{console.info('[MarkEditor] 清除最近记录:',kind);for(const item of items)await recentDelete(item.id);panel.dataset.loaded='0';panel.innerHTML='<button class="mi" disabled>暂无最近记录</button>';};panel.appendChild(clear);
+  const clear=document.createElement('button');clear.className='mi';clear.textContent='清除最近记录';clear.onclick=async()=>{log('清除最近记录:',kind);for(const item of items)await recentDelete(item.id);panel.dataset.loaded='0';panel.innerHTML='<button class="mi" disabled>暂无最近记录</button>';};panel.appendChild(clear);
 }
 function renderMenuItems(container,items){
   container.innerHTML='';
@@ -3591,7 +3714,7 @@ function renderMenuItems(container,items){
         panel.style.left=left+'px';};
       wrap.addEventListener('mouseenter',()=>{placePanel();if(it.recent)renderRecentPanel(panel,it.recent);});
       wrap.addEventListener('focusin',e=>{placePanel();if(it.recent&&e.target===wrap)renderRecentPanel(panel,it.recent);});
-      wrap.addEventListener('click',e=>{if(e.target.closest('.mi-sub-panel'))return;e.stopPropagation();$$('.mi-sub.open').forEach(x=>{if(x!==wrap)x.classList.remove('open');});wrap.classList.toggle('open');placePanel();if(it.recent){console.info('[MarkEditor] 展开最近记录菜单:',it.recent);renderRecentPanel(panel,it.recent,true);}});
+      wrap.addEventListener('click',e=>{if(e.target.closest('.mi-sub-panel'))return;e.stopPropagation();$$('.mi-sub.open').forEach(x=>{if(x!==wrap)x.classList.remove('open');});wrap.classList.toggle('open');placePanel();if(it.recent){log('展开最近记录菜单:',it.recent);renderRecentPanel(panel,it.recent,true);}});
       if(it.recent)panel.innerHTML='<button class="mi" disabled>正在读取…</button>';
       else it.items.forEach(ti=>{
         const b=document.createElement('button');b.className='mi';
@@ -3626,7 +3749,6 @@ function refreshMenuChecks(){
     check.textContent=themeName&&themeName[0]===State.theme?'✓':'';
   }));
 }
-document.addEventListener('mouseover',refreshMenuChecks);
 
 /* ---------- 选区浮动工具栏 ---------- */
 function buildSelToolbar(){
@@ -3658,7 +3780,7 @@ function updateSelToolbar(){
 function showModal(sel){$(sel).classList.add('show');}
 function closeModal(sel){$(sel).classList.remove('show');}
 function openSettings(){const s=State.settings;$('#set-img-mode').value=s.image.mode;$('#set-img-dir').value=s.image.directory;$('#set-img-path').value=s.image.path;$('#set-emoji').checked=s.markdown.emoji;$('#set-autodraft').checked=s.markdown.autoDraft!==false;$('#set-paper').value=s.export.paper;$('#set-orient').value=s.export.orientation;$('#set-font-size').value=s.export.fontSize;$('#set-img-width').value=s.export.imageWidth;$('#set-margin').value=s.export.margin;$('#set-frontmatter').checked=s.export.frontMatter;$('#set-header').value=s.export.header;$('#set-footer').value=s.export.footer;showModal('#settings-modal');}
-function commitSettings(){State.settings={image:{mode:$('#set-img-mode').value,directory:$('#set-img-dir').value.trim()||'assets',path:$('#set-img-path').value},markdown:{emoji:$('#set-emoji').checked,autoDraft:$('#set-autodraft').checked},export:{paper:$('#set-paper').value,orientation:$('#set-orient').value,fontSize:+$('#set-font-size').value||10.5,imageWidth:+$('#set-img-width').value||100,margin:+$('#set-margin').value||64,frontMatter:$('#set-frontmatter').checked,header:$('#set-header').value,footer:$('#set-footer').value}};saveSettings();if(!State.settings.markdown.autoDraft){try{localStorage.removeItem('me-draft');}catch(e){}}closeModal('#settings-modal');toast('设置已保存');}
+function commitSettings(){State.settings={image:{mode:$('#set-img-mode').value,directory:$('#set-img-dir').value.trim()||'assets',path:$('#set-img-path').value},markdown:{emoji:$('#set-emoji').checked,autoDraft:$('#set-autodraft').checked},export:{paper:$('#set-paper').value,orientation:$('#set-orient').value,fontSize:+$('#set-font-size').value||10.5,imageWidth:+$('#set-img-width').value||100,margin:+$('#set-margin').value||64,frontMatter:$('#set-frontmatter').checked,header:$('#set-header').value,footer:$('#set-footer').value}};saveSettings();if(!State.settings.markdown.autoDraft){lsRemove('me-draft');}closeModal('#settings-modal');toast('设置已保存');}
 $('#settings-ok').onclick=commitSettings;$('#settings-reset').onclick=()=>{State.settings=JSON.parse(JSON.stringify(DEFAULT_SETTINGS));saveSettings();openSettings();};
 $$('.modal-mask').forEach(m=>m.addEventListener('mousedown',e=>{if(e.target===m)m.classList.remove('show');}));
 $$('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal-mask').classList.remove('show')));
@@ -3681,10 +3803,12 @@ $('#link-ok').addEventListener('click',()=>{
   const root=linkTarget;linkTarget=null;
   if(!root||!document.contains(root)){editor.focus();return;}
   const c=linkCaret||{s:0,e:0};const src=nodeToMd(root);
-  const ins='['+t+']('+u+')';
+  const tt=t.replace(/([\\[\\]])/g,'\\$1');
+  const uu=u.replace(/\)/g,'%29').replace(/\s/g,'%20');
+  const ins='['+tt+']('+uu+')';
   const ns=src.slice(0,c.s)+ins+src.slice(c.e),end=c.s+ins.length;
   if(root.tagName==='TD'||root.tagName==='TH'){
-    root.innerHTML=cellRender(ns);ensureColResizer(root);setCaret(root,end,end);scheduleMutate();
+    root.innerHTML=cellRender(ns);invalidateTextNodes(root);ensureColResizer(root);setCaret(root,end,end);scheduleMutate();
   }else{
     rerenderBlock(root,ns,c.s,end);
   }
@@ -3758,7 +3882,11 @@ function paintWorkspaceSearch(){const list=$('#file-search-list');fileSearchIdx=
 async function renderWorkspaceSearch(){
   const generation=++fileSearchGeneration,q=$('#file-search-input').value.trim(),list=$('#file-search-list'),results=[];list.innerHTML='<div class="cmdk-empty">'+(q?'正在搜索…':'输入关键词开始搜索')+'</div>';
   if(fileSearchMode==='quick')results.push(...State.workspaceFiles.filter(f=>!q||f.path.toLowerCase().includes(q.toLowerCase())||fuzzyMatch(f.path,q.toLowerCase())).slice(0,100).map(f=>({file:f,preview:''})));
-  else if(q)for(const file of State.workspaceFiles){try{const text=await (await file.handle.getFile()).text(),i=text.toLowerCase().indexOf(q.toLowerCase());if(i>=0)results.push({file,preview:text.slice(Math.max(0,i-45),i+q.length+90).replace(/\s+/g,' ')});}catch(e){}if(results.length>=100||generation!==fileSearchGeneration)break;}
+  else if(q)for(const file of State.workspaceFiles){try{
+    const f=await file.handle.getFile();const maxSize=1024*1024;
+    const text=f.size>maxSize?await f.slice(0,maxSize).text():await f.text();
+    const i=text.toLowerCase().indexOf(q.toLowerCase());if(i>=0)results.push({file,preview:text.slice(Math.max(0,i-45),i+q.length+90).replace(/\s+/g,' ')});
+  }catch(e){}if(results.length>=100||generation!==fileSearchGeneration)break;}
   if(generation!==fileSearchGeneration)return;fileSearchResults=results;paintWorkspaceSearch();
 }
 async function openWorkspaceResult(i){const r=fileSearchResults[i];if(!r)return;$('#file-search').classList.remove('show');await openMdFile(r.file.handle,r.file.path);}
@@ -3828,7 +3956,7 @@ const refreshOutline=debounce(()=>{
     nav.appendChild(b);
     if(isCollapsed)hiddenStack.push(lv);
   });
-  syncOutlineVisibility();
+  syncOutlineVisibility();invalidateHeadingOffsets();
 },100);
 // 依据 State.outlineCollapsed 同步刷新现有大纲项的显隐（不重建 DOM，保证手机端即时响应）
 function syncOutlineVisibility(){
@@ -3865,13 +3993,23 @@ $('#outline-toggle-all').addEventListener('click',()=>{
   syncOutlineVisibility();
 });
 let spyT=null;
+let _headingOffsetCache=null; // {tops:[],heads:[]} 在 refreshOutline 后失效
+function invalidateHeadingOffsets(){_headingOffsetCache=null;}
+function getHeadingOffsets(){
+  if(_headingOffsetCache)return _headingOffsetCache;
+  const heads=$$('.heading',editor);
+  const paperTop=paperScroll.getBoundingClientRect().top;
+  const tops=heads.map(h=>h.getBoundingClientRect().top-paperTop+paperScroll.scrollTop);
+  _headingOffsetCache={tops,heads};
+  return _headingOffsetCache;
+}
 paperScroll.addEventListener('scroll',()=>{
   clearTimeout(spyT);spyT=setTimeout(()=>{
-    const heads=$$('.heading',editor);let cur=null;
-    const top=paperScroll.getBoundingClientRect().top+80;
-    for(const h of heads){if(h.getBoundingClientRect().top<=top)cur=h;else break;}
-    // 视口尚在首个标题之前（如文档顶部受 paper 上内边距影响）时，若首个标题已在可视区内则高亮它
-    if(!cur&&heads.length&&heads[0].getBoundingClientRect().top<paperScroll.getBoundingClientRect().bottom)cur=heads[0];
+    const {tops,heads}=getHeadingOffsets();let cur=null;
+    const scrollTop=paperScroll.scrollTop+80;
+    let lo=0,hi=tops.length-1;
+    while(lo<=hi){const mid=(lo+hi)>>1;if(tops[mid]<=scrollTop){cur=heads[mid];lo=mid+1;}else hi=mid-1;}
+    if(!cur&&heads.length&&tops[0]<paperScroll.scrollTop+paperScroll.clientHeight)cur=heads[0];
     $$('#outline .ol-item').forEach(b=>b.classList.toggle('active',cur&&b.dataset.target===cur.id));
   },60);
 });
@@ -3883,7 +4021,7 @@ function refreshTocAll(){
   heads.forEach(h=>{
     const a=document.createElement('a');a.className='toc-l'+h.dataset.level;
     a.dataset.target=h.id;a.textContent=(numMap.get(h)||'')+headingPlainText(h);
-    a.href='javascript:void(0)';tpl.appendChild(a);
+    a.href='#';tpl.appendChild(a);
   });
   $$('.toc-block',editor).forEach(toc=>{
     const list=$('.toc-list',toc);if(!list)return;
@@ -3895,21 +4033,20 @@ function refreshTocAll(){
 const updateStatus=debounce(()=>{
   const md=serialize();const w=countWords(md);
   $('#st-count').textContent=(w.cjk+w.words)+' 字 · '+w.chars+' 字符';
-  updateFileStatus();
-},120);
+},()=>Math.max(mutateDebounceMs()*4,500));
 function updateBlockType(b){
   const el=$('#st-block-type');if(!b){el.textContent='段落';return;}
   const t=b.dataset.type;
   const map={paragraph:'段落',heading:'H'+b.dataset.level,quote:'引用',list:b.classList.contains('ordered')?'有序列表':(b.classList.contains('task')?'任务列表':'无序列表'),codeblock:'代码 · '+(b.dataset.lang||'text'),table:'表格',math:'公式',hr:'分割线',toc:'目录',frontmatter:'Front Matter',footnote:'脚注'};
   el.textContent=map[t]||t;
 }
-$('#st-file').addEventListener('click',()=>{const v=prompt('文件名',State.filename);if(v){State.filename=v.endsWith('.md')?v:v+'.md';updateStatus();saveDraft();}});
+$('#st-file').addEventListener('click',()=>{const v=prompt('文件名',State.filename);if(v&&v.trim()){State.filename=(v.trim().endsWith('.md')||v.trim().endsWith('.markdown')||v.trim().endsWith('.txt'))?v.trim():v.trim()+'.md';updateFileStatus();saveDraft();}});
 
 /* ---------- 视图模式 ---------- */
 function toggleSidebar(){
   const sb=$('#sidebar');sb.classList.toggle('collapsed');
   const collapsed=sb.classList.contains('collapsed');
-  localStorage.setItem('me-sidebar',collapsed?'1':'0');
+  lsSet('me-sidebar',collapsed?'1':'0');
   const sbt=$('#st-sidebar');if(sbt)sbt.classList.toggle('on',!collapsed);
   const bd=$('#sb-backdrop');
   if(bd)bd.classList.toggle('show',!collapsed&&window.matchMedia('(max-width:820px)').matches);
@@ -3921,11 +4058,10 @@ window.addEventListener('resize',()=>{
   else if(!$('#sidebar').classList.contains('collapsed'))bd.classList.add('show');
 });
 function canonicalBlockRanges(){let pos=0;return topBlocks().map((block,i)=>{const text=blockToMd(block),range={block,index:i,start:pos,end:pos+text.length,text};pos=range.end+1;return range;});}
-function escapedCellPrefix(text){return String(text).replace(/\n/g,'<br>').replace(/\|/g,'\\|');}
 function visibleCanonicalBookmark(ranges=canonicalBlockRanges()){
   const block=activeBlock(),range=ranges.find(r=>r.block===block);if(!block||!range)return {start:0,end:0};
   if(block.dataset.type==='table'){
-    const saved=State.lastCaret&&State.lastCaret.block===block?State.lastCaret:null,cell=activeCell()||(saved&&saved.cell);if(cell){const rows=$$('tr',block),row=rows.indexOf(cell.parentElement),col=cell.cellIndex,c=getCaret(cell)||(saved&&saved.caret)||{s:0,e:0},lines=range.text.split('\n'),lineIndex=row===0?0:row+1,lineStart=lines.slice(0,lineIndex).reduce((n,x)=>n+x.length+1,0),cells=$$('th,td',cell.parentElement).map(cellText),cellStart=2+cells.slice(0,col).reduce((n,x)=>n+x.length+3,0),raw=nodeToMd(cell);return {start:range.start+lineStart+cellStart+escapedCellPrefix(raw.slice(0,c.s)).length,end:range.start+lineStart+cellStart+escapedCellPrefix(raw.slice(0,c.e)).length};}
+    const saved=State.lastCaret&&State.lastCaret.block===block?State.lastCaret:null,cell=activeCell()||(saved&&saved.cell);if(cell){const rows=$$('tr',block),row=rows.indexOf(cell.parentElement),col=cell.cellIndex,c=getCaret(cell)||(saved&&saved.caret)||{s:0,e:0},lines=range.text.split('\n'),lineIndex=row===0?0:row+1,lineStart=lines.slice(0,lineIndex).reduce((n,x)=>n+x.length+1,0),cells=$$('th,td',cell.parentElement).map(cellText),cellStart=2+cells.slice(0,col).reduce((n,x)=>n+x.length+3,0),raw=nodeToMd(cell);return {start:range.start+lineStart+cellStart+escapeCellSource(raw.slice(0,c.s)).length,end:range.start+lineStart+cellStart+escapeCellSource(raw.slice(0,c.e)).length};}
   }
   const root=editableRoot(block),saved=State.lastCaret&&State.lastCaret.block===block?State.lastCaret.caret:null,c=getCaret(root)||saved||{s:0,e:0};let prefix=0;if(block.dataset.type==='codeblock')prefix=range.text.indexOf('\n')+1;else if(block.dataset.type==='math'||block.dataset.type==='frontmatter')prefix=range.text.indexOf('\n')+1;
   return {start:Math.min(range.end,range.start+prefix+c.s),end:Math.min(range.end,range.start+prefix+c.e)};
@@ -3967,7 +4103,7 @@ function restoreCanonicalMarkers(canonical,start,end,oldY){
       if(collapsed)r.collapse(true);else r.setEnd(eA.node,eA.offset);
       const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
       State._serCache=canonical;State._serDirty=false;const newY=selectionViewportY();paperScroll.scrollTop+=newY-oldY;requestAnimationFrame(()=>{paperScroll.scrollTop+=selectionViewportY()-oldY;});
-    }else{console.warn('[MarkEditor] 源码光标标记未能映射回可视 DOM');State._serCache=canonical;State._serDirty=false;}
+    }else{warnLog('源码光标标记未能映射回可视 DOM');State._serCache=canonical;State._serDirty=false;}
     // 兜底：无论标记是否映射成功，全局清除残留的私用区光标标记，防止泄漏到文档
     const w2=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);let x;
     while((x=w2.nextNode())){if(x.nodeValue.indexOf(A)>=0||x.nodeValue.indexOf(B)>=0)x.nodeValue=x.nodeValue.split(A).join('').split(B).join('');}
@@ -3979,7 +4115,7 @@ function toggleSource(){
       const oldY=textareaCaretY(sourceArea,sourceArea.selectionStart),projection=decodeProjection(sourceArea.value),start=projection.map(sourceArea.selectionStart),end=projection.map(sourceArea.selectionEnd);
       restoreCanonicalMarkers(projection.text,start,end,oldY);
     }catch(err){
-      console.warn('[MarkEditor] 源码→渲染光标映射失败，回退到文档开头:',err);
+      warnLog('源码→渲染光标映射失败，回退到文档开头:',err);
       const md=decodeImages(sourceArea.value);loadMarkdown(md,true);paper.classList.remove('source');State.sourceMode=false;
       const first=topBlocks()[0];if(first)focusBlock(first,0);
     }
@@ -4127,9 +4263,16 @@ function runFind(reset){
     // 单次扫描内缓存 block 源码，避免同一块在多次遍历中被重复 nodeToMd 序列化
     const srcCache=new Map();
     const srcFor=b=>{if(!srcCache.has(b))srcCache.set(b,blockSource(b));return srcCache.get(b);};
-    $$('.md-block',editor).forEach(b=>{
+    topBlocks().forEach(b=>{
       if(b.dataset.type==='table'){$$('th,td',b).forEach(cell=>scanText(cell,nodeToMd(cell),re,'table'));return;}
       if(['math','hr','toc','frontmatter','footnote'].includes(b.dataset.type))return;
+      if(b.dataset.type==='callout'){
+        $$('.callout-body > .md-block',b).forEach(inner=>{
+          if(['math','hr','toc','frontmatter','footnote'].includes(inner.dataset.type))return;
+          const src=inner.dataset.type==='codeblock'?$('code',inner).textContent:nodeToMd(inner);
+          scanText(inner,src,re,inner.dataset.type==='codeblock'?'code':'block');
+        });return;
+      }
       scanText(b,srcFor(b),re,'block');
     });
   }
@@ -4169,8 +4312,9 @@ $('#find-replace-all').onclick=replaceAll;
 function replaceOne(){
   if(!findMatches.length)return;const m=findMatches[findIdx<0?0:findIdx];if(!m)return;
   const rep=$('#find-rep').value;
-  if(m.kind==='table'){
-    const src=nodeToMd(m.target);const ns=src.slice(0,m.start)+rep+src.slice(m.end);m.target.innerHTML=inlineRender(ns);invalidateTextNodes(m.target);setCaret(m.target,m.start+rep.length);scheduleMutate();markDirty();
+  if(m.kind==='table'||m.target.tagName==='TD'||m.target.tagName==='TH'){
+    const cell=m.target;const src=nodeToMd(cell);const ns=src.slice(0,m.start)+rep+src.slice(m.end);
+    cell.innerHTML=cellRender(ns);invalidateTextNodes(cell);ensureColResizer(cell);setCaret(cell,m.start+rep.length);scheduleMutate();markDirty();
   }else if(m.target.dataset.type==='codeblock'){
     const root=$('code',m.target);const src=root.textContent;
     rerenderCode(m.target,src.slice(0,m.start)+rep+src.slice(m.end),m.start+rep.length);
@@ -4181,14 +4325,23 @@ function replaceOne(){
 }
 function replaceAll(){
   const re=buildFindRegex();if(!re)return;const rep=$('#find-rep').value;let n=0;
-  $$('.md-block',editor).forEach(b=>{
+  topBlocks().forEach(b=>{
     if(['math','hr','toc','frontmatter','footnote'].includes(b.dataset.type))return;
+    if(b.dataset.type==='callout'){
+      $$('.callout-body > .md-block',b).forEach(inner=>{
+        if(['math','hr','toc','frontmatter','footnote'].includes(inner.dataset.type))return;
+        if(inner.dataset.type==='codeblock'){
+          const root=$('code',inner);const ns=root.textContent.replace(re,()=>{n++;return rep;});
+          if(ns!==root.textContent)rerenderCode(inner,ns);
+        }else{const src=nodeToMd(inner);const ns=src.replace(re,()=>{n++;return rep;});if(ns!==src)rerenderBlock(inner,ns,undefined);}
+      });return;
+    }
     if(b.dataset.type==='codeblock'){
       const root=$('code',b);const ns=root.textContent.replace(re,(...a)=>{n++;return rep;});
       if(ns!==root.textContent)rerenderCode(b,ns);
     }else if(b.dataset.type==='table'){
       $$('th,td',b).forEach(cell=>{const orig=nodeToMd(cell);const ns=orig.replace(re,()=>{n++;return rep;});
-        if(ns!==orig){cell.innerHTML=inlineRender(ns);invalidateTextNodes(cell);}});
+        if(ns!==orig){cell.innerHTML=cellRender(ns);invalidateTextNodes(cell);ensureColResizer(cell);}});
     }else{
       const src=nodeToMd(b);const ns=src.replace(re,(...a)=>{n++;return rep;});
       if(ns!==src)rerenderBlock(b,ns,undefined);
@@ -4256,8 +4409,9 @@ function setBlockTypeSource(kind,arg){
    ============================================================ */
 function download(name,mime,content){
   const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=name;a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const a=document.createElement('a');a.href=url;a.download=name;a.style.display='none';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 function switchSidebarPane(id){
   $$('.sb-tab').forEach(b=>b.classList.toggle('active',b.dataset.pane===id));
@@ -4280,7 +4434,7 @@ async function fileOpen(){
   try{
     const root=await window.showDirectoryPicker({mode:'readwrite'});
     State.workspaceRoot=root;State.dirHandle=root;State.workspaceWritable=true;State.expandedDirs=new Set(['']);
-    const recent=await recordRecent('workspace',root,{expanded:[''],currentPath:''});if(recent)localStorage.setItem('me-last-workspace',recent.id);
+    const recent=await recordRecent('workspace',root,{expanded:[''],currentPath:''});if(recent)lsSet('me-last-workspace',recent.id);
     $('#workspace-name').textContent=root.name;switchSidebarPane('files-pane');await refreshFileTree();
     toast('已打开工作区 '+root.name);
   }catch(e){if(e&&e.name!=='AbortError')toast('打开工作区失败: '+(e.message||e));}
@@ -4296,7 +4450,7 @@ async function openMdFile(fileHandle,path='',skipConfirm=false){
   catch(err){const m=err&&err.message?err.message:String(err);toast(/Data URL|malformed|exceeded/i.test(m)?'打开失败：文件可能包含超大内嵌图片，建议用相对路径引用图片':'解析失败: '+m);return false;}
   refreshFileTreeActive();
   await recordRecent('file',fileHandle,{path:State.currentPath,dirHandle:State.workspaceRoot||State.dirHandle,workspace:!!State.workspaceRoot});
-  if(State.workspaceRoot){const id=localStorage.getItem('me-last-workspace'),rec=id&&await getRecent(id);if(rec){rec.currentPath=State.currentPath;rec.expanded=Array.from(State.expandedDirs);rec.ts=Date.now();await recentPut(rec);}}
+  if(State.workspaceRoot){const id=lsGet('me-last-workspace'),rec=id&&await getRecent(id);if(rec){rec.currentPath=State.currentPath;rec.expanded=Array.from(State.expandedDirs);rec.ts=Date.now();await recentPut(rec);}}
   const hasRel=/!\[[^\]]*\]\((?!https?:|data:|\/|file:|#)[^)]+\)/.test(text);
   toast(hasRel?'已打开 '+file.name+'（正在加载相对路径图片）':'已打开 '+file.name);return true;
 }
@@ -4374,7 +4528,7 @@ async function fileCtxAction(act){
       if(kind==='file'&&!/\.(md|markdown|txt)$/i.test(newName)){toast('仅支持 .md / .markdown / .txt 文件');return;}
       if(entry.move){try{await entry.move(newName);}catch(e){await renameViaCopy(entry,path,newName,kind);}}
       else await renameViaCopy(entry,path,newName,kind);
-      if(State.currentPath===path){State.currentPath=path.replace(/[^/]+$/,newName);State.filename=newName;}
+      if(State.currentPath===path){State.currentPath=path.replace(/[^/]+$/,newName);State.filename=newName;updateFileStatus();}
       toast('已重命名为 '+newName);await refreshFileTree();hideFileContextMenu();return;
     }
     if(act==='duplicate'){
@@ -4411,18 +4565,18 @@ async function fileCtxAction(act){
     }
     if(act==='copy-path'){
       const full=State.workspaceRoot?(State.workspaceRoot.name+'/'+path):path;
-      try{await navigator.clipboard.writeText(full);toast('已复制路径：'+full);}catch(e){toast('复制失败：'+(e.message||e));}
+      try{await copyText(full);toast('已复制路径：'+full);}catch(e){toast('复制失败：'+(e.message||e));}
       hideFileContextMenu();return;
     }
     if(act==='open-location'){
       const parent=path.split('/').filter(Boolean).slice(0,-1).join('/');
       const full=State.workspaceRoot?(State.workspaceRoot.name+(parent?'/'+parent:'')):(parent||'/');
-      try{await navigator.clipboard.writeText(full);toast('已复制所在目录路径：'+full+'（浏览器无法直接打开资源管理器）');}catch(e){toast(full);}
+      try{await copyText(full);toast('已复制所在目录路径：'+full+'（浏览器无法直接打开资源管理器）');}catch(e){toast(full);}
       hideFileContextMenu();return;
     }
     if(act==='properties'){
       let info='名称：'+entry.name+'\n类型：'+(kind==='file'?'Markdown 文件':'文件夹')+'\n路径：'+(State.workspaceRoot?State.workspaceRoot.name+'/':'')+path;
-      if(kind==='file'){try{const f=await entry.getFile();info+='\n大小：'+(f.size<1024?f.size+' B':(f.size/1024).toFixed(1)+' KB')+'\n修改时间：'+f.lastModified.toLocaleString();}catch(e){}}
+      if(kind==='file'){try{const f=await entry.getFile();info+='\n大小：'+(f.size<1024?f.size+' B':(f.size/1024).toFixed(1)+' KB')+'\n修改时间：'+new Date(f.lastModified).toLocaleString();}catch(e){}}
       else{let count=0;try{for await(const e of entry.values())count++;}catch(err){}info+='\n项目数：'+count;}
       alert(info);hideFileContextMenu();return;
     }
@@ -4483,9 +4637,9 @@ async function refreshFileTree(){
 function refreshFileTreeActive(){
   $$('#file-tree .tree-row.file').forEach(row=>{const active=!!State.currentPath&&row.dataset.path===State.currentPath;row.classList.toggle('active',active);row.classList.toggle('dirty',active&&State.dirty);});
 }
-async function saveWorkspaceState(){const id=localStorage.getItem('me-last-workspace'),rec=id&&await getRecent(id);if(rec){rec.currentPath=State.currentPath;rec.expanded=Array.from(State.expandedDirs);rec.ts=Date.now();await recentPut(rec);}}
+async function saveWorkspaceState(){const id=lsGet('me-last-workspace'),rec=id&&await getRecent(id);if(rec){rec.currentPath=State.currentPath;rec.expanded=Array.from(State.expandedDirs);rec.ts=Date.now();await recentPut(rec);}}
 async function restoreLastWorkspace(){
-  const id=localStorage.getItem('me-last-workspace');if(!id)return;const rec=await getRecent(id);if(!rec||!await ensureHandlePermission(rec.handle,'read',false))return;
+  const id=lsGet('me-last-workspace');if(!id)return;const rec=await getRecent(id);if(!rec||!await ensureHandlePermission(rec.handle,'read',false))return;
   State.workspaceRoot=rec.handle;State.dirHandle=rec.handle;State.workspaceWritable=await ensureHandlePermission(rec.handle,'readwrite',false);State.expandedDirs=new Set(rec.expanded||['']);
   if(!State.currentPath)State.currentPath=rec.currentPath||'';$('#workspace-name').textContent=rec.name;await refreshFileTree();if(State.currentPath)resolveRelativeImages();
 }
@@ -4678,7 +4832,7 @@ function emitBlock(b,stack){
   if(t==='codeblock')return `<pre><code class="language${b.dataset.lang?'-'+b.dataset.lang:''}">${escapeHtml($('code',b).textContent)}</code></pre>`;
   if(t==='mermaid'){const svg=$('.mermaid-svg svg',b);return svg?svg.outerHTML:`<pre><code class="language-mermaid">${escapeHtml(b.dataset.code||'')}</code></pre>`;}
   if(t==='math')return `<div class="math-block">${$('.math-out',b)?$('.math-out',b).innerHTML:''}</div>`;
-  if(t==='table'){const c=b.querySelector('table').cloneNode(true);c.querySelectorAll('[contenteditable]').forEach(x=>x.removeAttribute('contenteditable'));return c.outerHTML;}
+  if(t==='table'){const c=b.querySelector('table').cloneNode(true);c.querySelectorAll('[contenteditable]').forEach(x=>x.removeAttribute('contenteditable'));c.querySelectorAll('.col-resizer,.md-marker,.md-hidden,.md-src').forEach(x=>x.remove());c.querySelectorAll('th,td').forEach(x=>{const al=x.dataset.align;if(al)x.style.textAlign=al;x.removeAttribute('data-align');});return c.outerHTML;}
   if(t==='callout'){
     const color=CALLOUT_COLORS[(b.dataset.callout||'NOTE').toUpperCase()]||'#0969da';
     const title=$('.callout-title',b)?$('.callout-title',b).textContent:'';
@@ -4712,7 +4866,8 @@ mark{background:var(--mark)}img{max-width:100%}a{color:var(--accent)}hr{border:n
 input[type=checkbox]{margin-right:6px}
 .math-block{text-align:center;font-family:Cambria Math,Georgia,serif;font-style:italic;margin:1em 0}
 .md-mfrac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center}.md-mfrac>span:first-child{border-bottom:1.4px solid}.md-mroot{border-top:1.4px solid}
-nav.toc{background:var(--code-bg);border-radius:10px;padding:12px 18px}nav.toc ul{padding-left:20px}`;
+nav.toc{background:var(--code-bg);border-radius:10px;padding:12px 18px}nav.toc ul{padding-left:20px}
+.md-marker,.md-hidden,.md-src{display:none}`;
 }
 // 脚本被宿主沙箱禁用（如企业文档预览的 sandbox iframe 无 allow-scripts）时的纯静态兜底
 function buildNoscriptFallback(staticBody){
@@ -4726,20 +4881,26 @@ function buildNoscriptFallback(staticBody){
   return '<noscript><style>'+reset+'.me-static-doc{'+docCss+'}.me-static-doc{max-width:820px;margin:0 auto;padding:32px 24px 80px}</style><div class="me-static-doc">'+body+'</div></noscript>';
 }
 // 导出 HTML 消毒：移除脚本、事件属性、危险协议，避免分享导出文件时传播 XSS
-const SANITIZE_TAGS=new Set(['SCRIPT','IFRAME','OBJECT','EMBED','LINK','META','BASE','FORM','INPUT','BUTTON','TEXTAREA','SELECT']);
+const SANITIZE_TAGS=new Set(['SCRIPT','IFRAME','OBJECT','EMBED','LINK','META','BASE','FORM','BUTTON','TEXTAREA','SELECT']);
 const SANITIZE_EVENTS=/^on/i;
 function sanitizeExportHtml(htmlStr){
   try{
     const doc=new DOMParser().parseFromString('<div id="__root">'+htmlStr+'</div>','text/html');
     const root=doc.getElementById('__root');
-    // 移除危险标签
+    // 移除危险标签；允许任务列表的 <input type="checkbox">，其他 INPUT 仍移除
     root.querySelectorAll('*').forEach(el=>{
       if(SANITIZE_TAGS.has(el.tagName)){el.remove();return;}
+      if(el.tagName==='INPUT'&&el.getAttribute('type')!=='checkbox'){el.remove();return;}
       // 移除事件属性和危险属性
       [...el.attributes].forEach(attr=>{
         const name=attr.name.toLowerCase(),val=attr.value||'';
         if(SANITIZE_EVENTS.test(name))el.removeAttribute(attr.name);
-        else if((name==='href'||name==='src'||name==='xlink:href')&&/^\s*javascript:/i.test(val))el.removeAttribute(attr.name);
+        else if(name==='href'||name==='xlink:href'){
+          if(!/^\s*(https?:|mailto:|#|[^:/?#]*[/?#])/i.test(val)&&!/^\s*$/.test(val))el.removeAttribute(attr.name);
+        }
+        else if(name==='src'){
+          if(!/^\s*(https?:|data:image\/|[^:/?#]*[/?#])/i.test(val)&&!/^\s*$/.test(val))el.removeAttribute(attr.name);
+        }
         else if(name==='style'&&/expression\s*\(|javascript:|behavior:/i.test(val))el.removeAttribute('style');
       });
     });
@@ -4975,18 +5136,19 @@ async function buildEditableHtml(){
     const bi=html.indexOf('<body');
     const gt=bi>=0?html.indexOf('>',bi):-1;
     if(gt>=0)html=html.slice(0,gt+1)+'\n'+fallback+html.slice(gt+1);
-  }catch(e){console.warn('[MarkEditor] 静态兜底生成失败:',e);}
+  }catch(e){warnLog('静态兜底生成失败:',e);}
   return html;
 }
 async function exportEditableHtml(){
   toast('正在打包图片…',1500);
-  let failed=0;
+  const state=captureWordExportState();let failed=0;
   try{
     const html=await buildEditableHtml();
     // buildEditableHtml 内部已调用 embedImagesBase64；检查是否有图片嵌入失败
     failed=$$('.md-img').filter(w=>{const im=$('img',w);return im&&!/^data:image\//.test(im.getAttribute('src')||'');}).length;
     download((State.filename||'untitled').replace(/\.md$/,'')+'-editor.html','text/html;charset=utf-8',html);
   }catch(e){toast('导出失败: '+(e&&e.message?e.message:e),5000);return;}
+  finally{restoreWordExportState(state);}
   if(failed>0)toast('已导出，但有 '+failed+' 张图片未能嵌入（建议用「打开文件夹」方式加载后再导出）',5000);
   else toast('已导出可继续编辑的离线 HTML');
 }
@@ -5068,7 +5230,7 @@ console.log(nums); // [0, 1, 1, 2, 3, 5]
 | :--- | :---: | :--- | :---: |
 | 加粗 | Ctrl+B | 斜体 | Ctrl+I |
 | 下划线 | Ctrl+U | 高亮 | Ctrl+E |
-| 行内代码 | Ctrl+Shift+\` | 链接 | Ctrl+K |
+| 行内代码 | Ctrl+Shift+\\\` | 链接 | Ctrl+K |
 | 插入图片 | Ctrl+Shift+I | 清除格式 | Ctrl+\\ |
 | 一级标题 | Ctrl+1 | 正文段落 | Ctrl+0 |
 | 无序列表 | Ctrl+Shift+] | 有序列表 | Ctrl+Shift+[ |
@@ -5124,16 +5286,16 @@ window.addEventListener('unhandledrejection',e=>{
 /* ---------- 初始化 ---------- */
 function init(){
   cleanupMermaidArtifacts();buildMenus();buildSelToolbar();syncModeButtons();
-  setTimeout(loadKatex,300);
+  setTimeout(ensureMathEngine,300);
   // 恢复主题/缩放
   let draft=null;
-  try{draft=JSON.parse(localStorage.getItem('me-draft')||'null');}catch(e){}
+  try{draft=JSON.parse(lsGet('me-draft')||'null');}catch(e){}
   State.theme=(draft&&draft.theme)||'github-light';document.documentElement.dataset.theme=State.theme;
   State.spellcheck=!!(draft&&draft.spellcheck);editor.spellcheck=State.spellcheck;sourceArea.spellcheck=State.spellcheck;
   setZoom(draft&&draft.zoom||1);
   if(draft&&draft.pageWidth)setPageWidth(draft.pageWidth);else setPageWidth('standard');
   if(draft&&draft.hn){State.hn=Object.assign({enabled:false,startLevel:1},draft.hn);updateHeadingNumbering();}
-  const sbPref=localStorage.getItem('me-sidebar');
+  const sbPref=lsGet('me-sidebar');
   if(sbPref==='1'||(sbPref===null&&window.matchMedia('(max-width:820px)').matches))$('#sidebar').classList.add('collapsed');
   {const _sbt=$('#st-sidebar');if(_sbt)_sbt.classList.toggle('on',!$('#sidebar').classList.contains('collapsed'));}
   const isExported=!!document.querySelector('meta[name="me-exp'+'orted"]');
@@ -5148,21 +5310,15 @@ function init(){
       if(cfg.hn){State.hn=Object.assign({enabled:false,startLevel:1},cfg.hn);updateHeadingNumbering();}
     }catch(e){}}
   }
-  const emb=document.getElementById('embedded-markdown');
-  const embMd=emb?emb.textContent:'';
   if(isExported){
     State.filename='document.md';loadMarkdown(restoreExportImages(WELCOME));
   }else if(draft&&draft.md&&draft.md.trim()){
     State.filename=draft.filename||'untitled.md';State.currentPath=draft.currentPath||'';
     loadMarkdown(draft.md);
-  }else if(embMd&&embMd.trim()){
-    State.filename='document.md';loadMarkdown(embMd);
   }else loadMarkdown(WELCOME);
   ensureTrailingParagraph();
   if(draft&&draft.md&&draft.md.trim()&&!isExported){State.dirty=true;State.lastSavedMd=null;}else markSaved(currentMd());
   updateStatus();
-  // 状态栏快速切换按钮
-  $('#st-source').onclick=toggleSource;$('#st-focus').onclick=toggleFocus;$('#st-typewriter').onclick=toggleTypewriter;
   restoreLastWorkspace();toast('就绪：直接输入 Markdown 语法开始写作',2200);
 }
 init();
