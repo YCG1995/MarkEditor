@@ -78,13 +78,12 @@ body{font-family:var(--ui-font);font-size:14px;background:var(--app-bg);color:va
 ::selection{background:var(--selection)}
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;font-size:inherit}
 input,textarea{font-family:inherit;color:inherit}
-.hidden{display:none!important}
 
 /* ---------- App layout ---------- */
 #app{display:flex;flex-direction:column;height:100vh}
 
 /* 菜单栏 */
-#menubar{display:flex!important;align-items:center;gap:2px;height:42px;flex:0 0 42px;padding:0 10px;background:var(--ui-bg);border-bottom:1px solid var(--ui-border);z-index:60;position:relative;-webkit-user-select:none;user-select:none}
+#menubar{display:flex;align-items:center;gap:2px;height:42px;flex:0 0 42px;padding:0 10px;background:var(--ui-bg);border-bottom:1px solid var(--ui-border);z-index:60;position:relative;-webkit-user-select:none;user-select:none}
 .app-logo{font-weight:700;letter-spacing:.3px;padding:0 10px 0 4px;display:flex;align-items:center;gap:7px;color:var(--accent)}
 .app-logo svg{width:18px;height:18px}
 .menu-root{position:relative}
@@ -177,9 +176,6 @@ input,textarea{font-family:inherit;color:inherit}
 .h1{font-size:1.9em;padding-bottom:.28em;border-bottom:1px solid var(--border)}
 .h2{font-size:1.55em;padding-bottom:.25em;border-bottom:1px solid var(--border)}
 .h3{font-size:1.3em}.h4{font-size:1.12em}.h5{font-size:1em}.h6{font-size:.92em;color:var(--muted)}
-.heading .h-anchor{position:absolute;left:-1.3em;opacity:0;color:var(--muted);font-weight:400;transition:opacity .15s}
-.heading:hover .h-anchor{opacity:.7}
-p{margin:0 0 .5em}
 .paragraph{margin-bottom:.55em}
 /* 连续空行序列的首个空行：高度归零不显示（显示空行数 = 源码空行数 - 1），序列化仍还原原空行 */
 .md-block.paragraph.zero-line{height:0;min-height:0;line-height:0;font-size:0;margin:0!important;padding:0;overflow:hidden}
@@ -196,30 +192,21 @@ code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);border-ra
 .md-img img,.md-block>img{max-width:100%;border-radius:6px;cursor:zoom-in;vertical-align:baseline}
 .md-img{display:inline-block;max-width:100%}
 .md-img.img-editing{font-family:var(--mono);font-size:.92em!important;color:var(--text)!important;user-select:text!important;-webkit-user-select:text!important;cursor:text;vertical-align:middle;outline:none}
-#img-ctx-menu{position:fixed;z-index:10000;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:170px;display:none;font-size:13px}
-#img-ctx-menu.show{display:block}
-#img-ctx-menu .ctx-item{padding:7px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text)}
-#img-ctx-menu .ctx-item:hover{background:var(--ui-hover)}
-#img-ctx-menu .ctx-item.danger{color:#cf222e}
-#img-ctx-menu .ctx-sep{height:1px;background:var(--border);margin:4px 6px}
-#img-ctx-menu .ctx-item .ctx-ico{width:18px;text-align:center;opacity:.8}
-#img-ctx-menu .ctx-item.has-sub{position:relative}
-#img-ctx-menu .ctx-arrow{margin-left:auto;font-size:9px;opacity:.6}
-#img-ctx-menu .ctx-submenu{position:absolute;left:100%;top:-6px;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:130px;display:none;z-index:10001}
-#img-ctx-menu .ctx-item.has-sub:hover>.ctx-submenu,#img-ctx-menu .ctx-item.has-sub.sub-open>.ctx-submenu{display:block}
-#img-ctx-menu .ctx-item.has-sub.sub-left>.ctx-submenu{left:auto;right:100%;margin-right:2px}
-@media(hover:none){
-  #img-ctx-menu .ctx-item.has-sub.sub-open>.ctx-submenu{display:block}
-}
-#file-ctx-menu{position:fixed;z-index:10000;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:180px;display:none;font-size:13px}
-#file-ctx-menu.show{display:block;animation:menuIn .1s ease}
-#file-ctx-menu .ctx-item{padding:7px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text)}
-#file-ctx-menu .ctx-item:hover{background:var(--ui-hover)}
-#file-ctx-menu .ctx-item.danger{color:#cf222e}
-#file-ctx-menu .ctx-item.disabled{opacity:.4;cursor:default;pointer-events:none}
-#file-ctx-menu .ctx-sep{height:1px;background:var(--border);margin:4px 6px}
-#file-ctx-menu .ctx-item .ctx-ico{width:18px;text-align:center;opacity:.8}
-#file-ctx-menu .ctx-item .ctx-kbd{margin-left:auto;font-size:11px;color:var(--muted);opacity:.7}
+/* 图片 / 文件树 右键菜单共用样式 */
+.ctx-menu{position:fixed;z-index:10000;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:170px;display:none;font-size:13px}
+.ctx-menu.show{display:block;animation:menuIn .1s ease}
+.ctx-menu .ctx-item{padding:7px 12px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--text)}
+.ctx-menu .ctx-item:hover{background:var(--ui-hover)}
+.ctx-menu .ctx-item.danger{color:#cf222e}
+.ctx-menu .ctx-item.disabled{opacity:.4;cursor:default;pointer-events:none}
+.ctx-menu .ctx-sep{height:1px;background:var(--border);margin:4px 6px}
+.ctx-menu .ctx-ico{width:18px;text-align:center;opacity:.8}
+#file-ctx-menu{min-width:180px}
+.ctx-menu .ctx-item.has-sub{position:relative}
+.ctx-menu .ctx-arrow{margin-left:auto;font-size:9px;opacity:.6}
+.ctx-menu .ctx-submenu{position:absolute;left:100%;top:-6px;background:var(--ui-bg);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);padding:5px;min-width:130px;display:none;z-index:10001}
+.ctx-menu .ctx-item.has-sub:hover>.ctx-submenu,.ctx-menu .ctx-item.has-sub.sub-open>.ctx-submenu{display:block}
+.ctx-menu .ctx-item.has-sub.sub-left>.ctx-submenu{left:auto;right:100%;margin-right:2px}
 .tree-row.context-target{background:var(--ui-hover);border-radius:5px}
 img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outline-offset:2px}
 
@@ -287,12 +274,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .mermaid-msg{font-size:12.5px;color:var(--muted);padding:6px 0}
 .mermaid-fallback{margin:0;width:100%;white-space:pre-wrap;font-family:var(--mono);font-size:13px;color:var(--code-text);background:var(--paper);border:1px dashed var(--border);border-radius:8px;padding:12px}
 .mermaid-edit{width:100%;min-height:160px;font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--paper);color:var(--text);border:1px solid var(--accent);border-radius:8px;padding:10px;outline:none;resize:vertical;tab-size:2}
-.mermaid-block.fallback{padding-top:38px}
 .tok-kw{color:var(--kw);font-weight:600}.tok-str{color:var(--str)}.tok-com{color:var(--com);font-style:italic}.tok-num{color:var(--num)}.tok-fn{color:var(--fn)}.tok-bi{color:var(--builtin)}
 
 /* hr */
 .hr-block{padding:10px 0;cursor:pointer}
-.hr-block.selected{background:var(--accent-soft);border-radius:6px}
 .hr-block hr{border:none;border-top:2px solid var(--border);height:0}
 
 /* 表格 */
@@ -328,7 +313,6 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .md-mfrac>span:first-child{border-bottom:1.4px solid currentColor;padding:0 5px}
 .md-mfrac>span:last-child{padding:0 5px}
 .md-mroot{border-top:1.4px solid currentColor;padding:0 2px}
-.math-out .paren{display:inline-block}
 .math-block .math-hint{position:absolute;right:10px;top:6px;font-size:11px;color:var(--muted);opacity:0;transition:opacity .15s}
 .math-block:hover .math-hint{opacity:.7}
 
@@ -377,7 +361,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .modal-head{padding:14px 18px 6px;font-weight:700;font-size:15px}
 .modal-body{padding:8px 18px 16px}
 .modal label{display:block;font-size:12px;color:var(--ui-muted);margin:10px 0 5px}
-.modal input[type=text],.modal input[type=url],.modal input[type=number],.modal select{width:100%;background:var(--ui-bg2);color:var(--ui-text);border:1px solid var(--ui-border);border-radius:7px;padding:8px 11px;outline:none;font-size:13.5px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}.settings-grid .full{grid-column:1/-1}.check-row{display:flex!important;align-items:center;gap:8px;font-size:13px!important;color:var(--ui-text)!important}
+.modal input[type=text],.modal input[type=url],.modal input[type=number],.modal select{width:100%;background:var(--ui-bg2);color:var(--ui-text);border:1px solid var(--ui-border);border-radius:7px;padding:8px 11px;outline:none;font-size:13.5px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}.settings-grid .full{grid-column:1/-1}.modal label.check-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ui-text)}
 .modal input:focus{border-color:var(--accent)}
 .modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:0 18px 16px}
 .btn{padding:7px 16px;border-radius:7px;font-size:13.5px;border:1px solid var(--ui-border);transition:var(--transition)}
@@ -511,7 +495,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   #lightbox-img{max-width:96vw;max-height:80vh}
   /* callout / 引用更紧凑 */
   .callout-body{padding:10px}
-  blockquote,.quote{padding-left:10px}
+  .quote{padding-left:10px}
   /* 公式编辑器文本域 */
   .math-src-edit,.mermaid-edit{font-size:14px}
   /* 防止 iOS 输入聚焦时自动缩放：保持字号 ≥16px；移动端 source-area 也使用 16px */
@@ -528,7 +512,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 @media print{
   html,body{height:auto!important;min-height:0!important;overflow:visible!important}
   #app{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important}
-  #menubar,#sidebar,#sb-resize,#statusbar,#sel-toolbar,#findbar,.code-actions,.table-tools,.toc-block .math-hint{display:none!important}
+  #menubar,#sidebar,#sb-resize,#statusbar,#sel-toolbar,#findbar,.code-actions,.table-tools,.math-hint{display:none!important}
   #body-row,#main,#paper-scroll{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important}
   #paper{display:block!important;max-width:none!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;border:none!important;border-radius:0!important;box-shadow:none!important;padding:0!important;overflow:visible!important}
   #editor{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important}
@@ -727,7 +711,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 
 <!-- 灯箱 -->
 <div id="lightbox"><img id="lightbox-img" alt=""><span id="lightbox-zoom">100%</span></div>
-<div id="img-ctx-menu">
+<div id="img-ctx-menu" class="ctx-menu">
   <div class="ctx-item" data-act="view"><span class="ctx-ico">🔍</span><span>全屏查看</span></div>
   <div class="ctx-sep"></div>
   <div class="ctx-item" data-act="cut"><span class="ctx-ico">✂</span><span>剪切图片</span></div>
@@ -750,7 +734,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   <div class="ctx-item" data-act="edit"><span class="ctx-ico">✏️</span><span>编辑路径</span></div>
   <div class="ctx-item danger" data-act="delete"><span class="ctx-ico">🗑</span><span>删除图片</span></div>
 </div>
-<div id="file-ctx-menu"></div>
+<div id="file-ctx-menu" class="ctx-menu"></div>
 <div id="drop-overlay"><div class="drop-hint">松开以打开 Markdown 文件<small>支持 .md / .markdown / .txt，图片将插入到光标处</small></div></div>
 <div id="toast-wrap"></div>
 
@@ -788,7 +772,8 @@ function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function lsRemove(k){try{localStorage.removeItem(k);}catch(e){}}
 function saveSettings(){lsSet('me-settings',JSON.stringify(State.settings));}
 loadSettings();
-function markDirty(){State._serDirty=true;State.dirty=true;updateFileStatus();}
+// 已处于 dirty 状态时只失效序列化缓存，避免每次按键都做状态栏/文件树 DOM 查询
+function markDirty(){State._serDirty=true;if(State.dirty)return;State.dirty=true;updateFileStatus();}
 function persistedMd(){return State.sourceMode?decodeImages(sourceArea.value):serialize();}
 function markSaved(md=persistedMd()){State.lastSavedMd=md;State.dirty=false;updateFileStatus();}
 function updateFileStatus(){
@@ -865,13 +850,15 @@ async function ensureHandlePermission(handle,mode='read',ask=false){
 }
 function countWords(md){
   // 单遍扫描：遍历一次字符串，同时统计 CJK 数量、拉丁单词边界、非空白字符数
+  // 用 charCode 区间判断代替逐字符正则，大文档下快一个数量级
   let cjk=0,words=0,chars=0,inWord=false;
   for(let i=0;i<md.length;i++){
-    const c=md[i];
-    if(/\s/.test(c)){if(inWord){words++;inWord=false;}continue;}
+    const c=md.charCodeAt(i);
+    const ws=c===32||(c>=9&&c<=13)||c===0xA0||c===0x3000||c===0xFEFF||(c>=0x2000&&c<=0x200A)||c===0x2028||c===0x2029||c===0x202F||c===0x205F;
+    if(ws){if(inWord){words++;inWord=false;}continue;}
     chars++;
-    if(/[\u4e00-\u9fff\u3400-\u4dbf]/.test(c)){cjk++;if(inWord){words++;inWord=false;}}
-    else if(/[A-Za-z0-9_'\-]/.test(c)){inWord=true;}
+    if((c>=0x4E00&&c<=0x9FFF)||(c>=0x3400&&c<=0x4DBF)){cjk++;if(inWord){words++;inWord=false;}}
+    else if((c>=48&&c<=57)||(c>=65&&c<=90)||(c>=97&&c<=122)||c===95||c===39||c===45){inWord=true;}
     else{if(inWord){words++;inWord=false;}}
   }
   if(inWord)words++;
@@ -1045,12 +1032,11 @@ function inlineRender(src,depth=0){
     return hold('<a class="md-autolink" href="'+escapeAttr(unescapeHtml(href))+'">'+u+'</a>');
   });
 
-  // 7) 白名单内的原始 HTML 标签
-  const WHITELIST={kbd:1,sub:1,sup:1,small:1,abbr:1,br:1,mark:1,u:1};
+  // 7) 白名单内的原始 HTML 标签（正则交替项即白名单）
   s=s.replace(/&lt;(\/?)(kbd|sub|sup|small|abbr|br|mark|u)\s*&gt;/gi,(_,sl,tag)=>{
-    if(!WHITELIST[tag.toLowerCase()])return _;
-    if(tag.toLowerCase()==='br'&&sl)return '<br>';
-    return '<'+sl+tag.toLowerCase()+'>';
+    tag=tag.toLowerCase();
+    if(tag==='br'&&sl)return '<br>';
+    return '<'+sl+tag+'>';
   });
 
   if(State.settings.markdown.emoji)s=s.replace(/(^|[^\w]):([a-z0-9_+-]+):(?=$|[^\w])/gi,(m,pre,name)=>{const emoji=EMOJI_SHORTCODES[name.toLowerCase()];return emoji?pre+hold('<span class="emoji-shortcode" data-code="'+escapeAttr(name)+'">'+emoji+'</span>'):m;});
@@ -1115,6 +1101,8 @@ function loadKatex(){
   if(MathEngine.katex)return Promise.resolve();
   if(MathEngine.loading)return MathEngine._loadPromise||Promise.resolve();
   if(MathEngine.failed)return Promise.reject(new Error('KaTeX failed'));
+  // 与 loadMermaid 一致：明确离线时不发请求（内置精简渲染已可用），也不弹 CDN 失败提示
+  if(navigator.onLine===false)return Promise.reject(new Error('offline'));
   MathEngine.loading=true;
   MathEngine._loadPromise=new Promise((resolve,reject)=>{
     const link=document.createElement('link');link.rel='stylesheet';
@@ -1182,9 +1170,9 @@ function renderMath(rawTex,displayMode){
    ============================================================ */
 const HL_KW={
   common:'var let const function return if else elif for while do switch case break continue new class extends super this typeof instanceof in of default try catch except finally throw raises raise delete void async await yield static get set import export from as with true false null undefined None True False nil self lambda pass global nonlocal assert NaN Infinity',
-  js:'typeof instanceof static get set',
+  js:'',
   ts:'interface type enum implements public private protected readonly abstract namespace declare never unknown any string number boolean',
-  py:'def elif lambda global nonlocal pass with assert raise is not and or print self except raises',
+  py:'def is not and or print',
   go:'func chan defer range package map select interface struct type var const return if else for switch case break continue default import go',
   rust:'fn mut impl trait pub use mod where Some None Ok Err move ref struct enum match if else for while loop return self Self const static type crate super unsafe async await dyn',
   c:'int char float double long short unsigned signed void const struct enum union typedef sizeof return if else for while do switch case break continue goto default extern static register volatile include define',
@@ -1311,10 +1299,11 @@ function buildCallout(type,title,contentMd){
   // 空行不应显示：callout 正文里的空段落块没有排版意义，隐藏它们。
   // 若正文全空则保留首个空段落作为可编辑锚点，避免点不进去。
   const blocks=$$('.md-block',body);
-  const hasContent=blocks.some(bl=>bl.dataset.type!=='paragraph'||!!nodeToMd(bl).trim());
+  const emptyPara=blocks.map(bl=>bl.dataset.type==='paragraph'&&!nodeToMd(bl).trim());
+  const hasContent=emptyPara.some(x=>!x);
   let keptAnchor=false;
-  blocks.forEach(bl=>{
-    if(bl.dataset.type!=='paragraph'||nodeToMd(bl).trim())return;
+  blocks.forEach((bl,i)=>{
+    if(!emptyPara[i])return;
     if(!hasContent&&!keptAnchor){keptAnchor=true;return;}
     bl.remove();
   });
@@ -1355,7 +1344,7 @@ function buildCodeblock(lang,code,fence='```'){
   return wrap;
 }
 /* ---- mermaid 图表（CDN 加载，失败时回退为源码） ---- */
-let MermaidState={p:null,ok:null};
+let MermaidState={p:null,ok:null,theme:null};
 const MERMAID_CDNS=[
   'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js',
   'https://unpkg.com/mermaid@10/dist/mermaid.min.js',
@@ -1388,7 +1377,8 @@ function loadMermaid(){
       if(reached&&window.mermaid)break;
     }
     if(!window.mermaid)throw new Error('mermaid cdn unavailable');
-    try{window.mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:mermaidTheme()});}catch(e){}
+    const th=mermaidTheme();
+    try{window.mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:th});MermaidState.theme=th;}catch(e){}
     MermaidState.ok=true;return window.mermaid;
   })().catch(e=>{MermaidState.p=null;if(navigator.onLine!==false)offlineWarn('图表');throw e;});
   return MermaidState.p;
@@ -1405,7 +1395,9 @@ function renderMermaidBlock(block){
   if(!code.trim()){svgBox.innerHTML='';msg.textContent='（空图表）';return;}
   msg.textContent='图表加载中…';
   loadMermaid().then(mr=>{
-    if(window.mermaid)try{window.mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:mermaidTheme()});}catch(e){}
+    // 主题未变时不重复 initialize（每个图表渲染前都会经过这里）
+    const th=mermaidTheme();
+    if(MermaidState.theme!==th){try{mr.initialize({startOnLoad:false,securityLevel:'strict',theme:th});MermaidState.theme=th;}catch(e){}}
     // 消毒：过滤 click 事件中的 javascript: 协议和危险 URL
     const safeCode=sanitizeMermaidCode(code);
     return mr.render(id,safeCode).then(out=>{
@@ -1649,7 +1641,8 @@ function rerenderAsyncBlocks(){
 /* ============================================================
    撤销 / 重做历史 — 块级补丁 + 全量快照混合
    ============================================================ */
-const History={stack:[],idx:-1,locked:false,pending:null,lastCommit:0,lastAction:0,undoKeyHandled:false,maxSize:150};
+// maxBytes：栈内所有快照 md 字符总长上限（每次 struct 提交都是全量快照，大文档下不加钳制会累积数十 MB）
+const History={stack:[],idx:-1,locked:false,pending:null,lastCommit:0,lastAction:0,undoKeyHandled:false,maxSize:150,maxBytes:16*1024*1024};
 function currentMd(){return State.sourceMode?sourceArea.value:serialize();}
 function captureAnchor(){
   if(State.sourceMode)return {ta:sourceArea.selectionStart,te:sourceArea.selectionEnd};
@@ -1674,6 +1667,9 @@ function historyPush(s){
   // 容量钳制为 >=1，避免异常配置下 shift 截断到空栈导致 idx 越界
   const cap=Math.max(1,History.maxSize|0||150);
   while(History.stack.length>cap)History.stack.shift();
+  // 字节钳制：至少保留最新 2 帧（当前 + 可撤销一步）
+  let bytes=0;for(const f of History.stack)bytes+=(f.md||'').length;
+  while(History.stack.length>2&&bytes>History.maxBytes)bytes-=(History.stack.shift().md||'').length;
   History.idx=History.stack.length-1;
   History.lastCommit=s.time;
   History.pending=null;
@@ -1840,21 +1836,22 @@ function undo(){
     if(targetIdx<0)targetIdx=Math.max(0,topBlocks().length-2);
     History.idx--;log('撤销到历史视图: idx=',History.idx);
     restoreSnapshot(History.stack[History.idx],targetIdx);
-    // 最终兜底：确保跳转到修改位置（兼容嵌套滚动容器和空段落焦点）
+    // 最终兜底：仅当 restoreEditorView 未能把选区落进目标块时才介入（否则会抹掉已恢复的列偏移）
     setTimeout(()=>{
       const all=topBlocks();if(!all.length)return;
       const block=all[Math.max(0,Math.min(targetIdx,all.length-1))];
-      if(block){
-        State.activeBlock=block;
-        try{
-          editor.focus({preventScroll:true});
-          const _r=document.createRange();_r.selectNodeContents(block);_r.collapse(true);
-          const _s=getSelection();_s.removeAllRanges();_s.addRange(_r);
-        }catch(e){}
-        if(paperScroll){
-          const rect=block.getBoundingClientRect();
-          paperScroll.scrollTop=Math.max(0,rect.top+paperScroll.scrollTop-80);
-        }
+      if(!block)return;
+      const sel=getSelection();
+      if(sel&&sel.rangeCount&&block.contains(sel.anchorNode))return;
+      State.activeBlock=block;
+      try{
+        editor.focus({preventScroll:true});
+        const _r=document.createRange();_r.selectNodeContents(block);_r.collapse(true);
+        sel.removeAllRanges();sel.addRange(_r);
+      }catch(e){}
+      if(paperScroll){
+        const rect=block.getBoundingClientRect();
+        paperScroll.scrollTop=Math.max(0,rect.top+paperScroll.scrollTop-80);
       }
     },60);
   }
@@ -2219,8 +2216,8 @@ function editSource(insText,selectLen){
     const src=root.textContent;const ns=src.slice(0,c.s)+insText+src.slice(c.e);
     rerenderCode(block,ns,c.s+insText.length);commitHistory('struct');return block;}
   if(!isTextBlock(block))return;
-  const root=block,c=snapCaretOutOfMarkers(block,getCaret(block));if(!c)return;
-  const src=root.textContent;
+  const c=snapCaretOutOfMarkers(block,getCaret(block));if(!c)return;
+  const src=nodeToMd(block);
   const ns=src.slice(0,c.s)+insText+src.slice(c.e);
   const pos=c.s+insText.length;
   const nb=rerenderBlock(block,ns,selectLen?pos-selectLen:pos,pos);
@@ -2561,7 +2558,7 @@ function reorderLists(){
 /* ---- 变更调度器 ---- */
 const scheduleMutate=debounce(()=>{
   ensureTrailingParagraph();refreshOutline();refreshTocAll();updateStatus();saveDraft();
-  if(State.dirHandle||State.workspaceRoot)resolveRelativeImages();
+  if((State.dirHandle||State.workspaceRoot)&&hasUnresolvedImages())resolveRelativeImages();
 },()=>mutateDebounceMs());
 // 大文档（block 数 > 500）时使用更长防抖，避免输入卡顿
 function mutateDebounceMs(){const n=editor?editor.children.length:0;return n>2000?300:n>500?200:120;}
@@ -2674,6 +2671,7 @@ sourceArea.addEventListener('blur',()=>historyFlushPending(),true);
 
 /* ---- 激活块 / 行内编辑标记 ---- */
 let rafSel=null;
+const _selMarks={active:null,editing:[]};
 document.addEventListener('selectionchange',()=>{
   if(rafSel)cancelAnimationFrame(rafSel);
   rafSel=requestAnimationFrame(onSelectionChange);
@@ -2688,18 +2686,22 @@ function onSelectionChange(){
     if(!sel||!sel.rangeCount||!State.editingImg.contains(sel.anchorNode)){commitImage(State.editingImg);State.editingImg=null;}
   }
   const block=activeBlock();
-  $$('.md-block.active').forEach(b=>{if(b!==block)b.classList.remove('active');});
-  if(block&&editor.contains(block)){block.classList.add('active');State.activeBlock=block;updateBlockType(block);
+  // .active / .editing 只在此处添加：记住上次标记的元素直接清理，避免每次光标移动都全量 querySelectorAll
+  const prevActive=_selMarks.active;
+  if(prevActive&&prevActive!==block)prevActive.classList.remove('active');
+  _selMarks.active=null;
+  if(block&&editor.contains(block)){block.classList.add('active');_selMarks.active=block;State.activeBlock=block;updateBlockType(block);
     const cell=block.dataset.type==='table'?activeCell():null,caret=getCaret(cell||editableRoot(block));if(caret)State.lastCaret={block,caret,cell,row:cell?$$('tr',block).indexOf(cell.parentElement):-1,col:cell?cell.cellIndex:-1};
   }
-  $$('.editing',editor).forEach(el=>{if(el!==State.editingMath)el.classList.remove('editing');});
+  for(const el of _selMarks.editing)if(el!==State.editingMath)el.classList.remove('editing');
+  _selMarks.editing.length=0;
   const sel=getSelection();
   if(sel&&sel.rangeCount&&sel.isCollapsed&&block){
     let node=sel.anchorNode;if(node&&node.nodeType===3)node=node.parentElement;
     if(node&&block.contains(node)&&!(node.closest&&node.closest('.codeblock pre'))){
       let p=node;
       while(p&&p!==block){
-        if(p.nodeType===1&&p.matches&&p.matches('strong,em,s,mark,u,a,.md-esc'))p.classList.add('editing');
+        if(p.nodeType===1&&p.matches&&p.matches('strong,em,s,mark,u,a,.md-esc')){p.classList.add('editing');_selMarks.editing.push(p);}
         p=p.parentNode;
       }
     }
@@ -2785,12 +2787,6 @@ editor.addEventListener('contextmenu',e=>{
   menu.classList.add('show');
   menu.style.left=ml+'px';
   menu.style.top=Math.min(e.clientY,window.innerHeight-340)+'px';
-});
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#img-ctx-menu'))$('#img-ctx-menu').classList.remove('show');
-});
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')$('#img-ctx-menu').classList.remove('show');
 });
 function getImgZoom(wrap){
   const im=$('img',wrap);if(!im)return 1;
@@ -2952,7 +2948,6 @@ $('#lightbox').addEventListener('wheel',e=>{
 $('#lightbox-img').addEventListener('pointerdown',e=>{e.preventDefault();Lightbox.drag=true;Lightbox.px=e.clientX;Lightbox.py=e.clientY;$('#lightbox').classList.add('dragging');e.target.setPointerCapture(e.pointerId);});
 $('#lightbox-img').addEventListener('pointermove',e=>{if(!Lightbox.drag)return;Lightbox.x+=e.clientX-Lightbox.px;Lightbox.y+=e.clientY-Lightbox.py;Lightbox.px=e.clientX;Lightbox.py=e.clientY;renderLightbox();});
 $('#lightbox-img').addEventListener('pointerup',e=>{Lightbox.drag=false;$('#lightbox').classList.remove('dragging');try{e.target.releasePointerCapture(e.pointerId);}catch(err){}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#lightbox').classList.contains('show')){e.stopPropagation();closeLightbox();}});
 
 /* 公式编辑器 */
 function openMathEditor(mb){
@@ -3575,10 +3570,10 @@ cmd('settings','偏好与导出设置…','Ctrl+,',openSettings);
 cmd('about','关于 MarkEditor','',()=>showModal('#about-modal'));
 cmd('welcome','欢迎使用文档','',loadWelcome);
 const CmdMap=Object.fromEntries(Cmds.map(c=>[c.id,c]));
+const WRAP_PAIRS={bold:['**','**'],italic:['*','*'],underline:['<u>','</u>'],strike:['~~','~~'],mark:['==','=='],code:['`','`']};
 function doWrap(kind){
-  if(State.sourceMode){wrapTextarea({bold:'**',italic:'*',underline:['<u>','</u>'],strike:'~~',mark:'==',code:'`'}[kind]);return;}
-  const m={bold:['**','**'],italic:['*','*'],underline:['<u>','</u>'],strike:['~~','~~'],mark:['==','=='],code:['`','`']}[kind];
-  if(m)wrapSelection(m[0],m[1]);
+  const m=WRAP_PAIRS[kind];if(!m)return;
+  if(State.sourceMode)wrapTextarea(m);else wrapSelection(m[0],m[1]);
 }
 
 /* ---------- 快捷键匹配 ---------- */
@@ -3624,13 +3619,26 @@ document.addEventListener('keydown',e=>{
   if($('#cmdk').classList.contains('show')||$('.modal-mask.show'))return;
   globalKeydown(e);
 });
+// 唯一的 document 级 Escape 处理：关闭所有弹层（命令面板 / 弹窗 / 查找栏 / 各类右键菜单 / 灯箱）
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAllPopups();}});
 function closeAllPopups(){
   $('#cmdk').classList.remove('show');$('#file-search').classList.remove('show');
   $$('.modal-mask.show').forEach(m=>m.classList.remove('show'));
   $('#findbar').classList.remove('show');$('#sel-toolbar').classList.remove('show');
-  $('#ctx-menu').classList.remove('show');$$('.menu-root.open').forEach(m=>m.classList.remove('open'));
+  $('#ctx-menu').classList.remove('show');$('#img-ctx-menu').classList.remove('show');
+  $$('.menu-root.open,.mi-sub.open').forEach(m=>m.classList.remove('open'));
+  hideFileContextMenu();
+  if($('#lightbox').classList.contains('show'))closeLightbox();
 }
+// 唯一的 document 级“点击外部关闭”处理：菜单 / 子菜单 / 编辑器右键菜单 / 图片右键菜单 / 文件树右键菜单
+document.addEventListener('mousedown',e=>{
+  const t=e.target;
+  if(!t.closest('.menu-root'))$$('.menu-root.open').forEach(x=>x.classList.remove('open'));
+  if(!t.closest('.mi-sub'))$$('.mi-sub.open').forEach(x=>x.classList.remove('open'));
+  if(!t.closest('#ctx-menu'))$('#ctx-menu').classList.remove('show');
+  if(!t.closest('#img-ctx-menu'))$('#img-ctx-menu').classList.remove('show');
+  if(!t.closest('#file-ctx-menu')&&!t.closest('#file-tree .tree-row'))hideFileContextMenu();
+});
 
 /* ---------- 菜单 ---------- */
 const MENUS=[
@@ -3661,10 +3669,6 @@ function buildMenus(){
         $$('.menu-root.open').forEach(x=>x.classList.remove('open'));root.classList.add('open');refreshMenuChecks();
       }
     });
-  });
-  document.addEventListener('mousedown',e=>{
-    if(!e.target.closest('.menu-root'))$$('.menu-root.open').forEach(x=>x.classList.remove('open'));
-    if(!e.target.closest('.mi-sub'))$$('.mi-sub.open').forEach(x=>x.classList.remove('open'));
   });
 }
 async function handleAtPath(root,path){
@@ -3907,7 +3911,6 @@ editor.addEventListener('contextmenu',e=>{
   m.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
   m.style.top=Math.min(e.clientY,window.innerHeight-360)+'px';
 });
-document.addEventListener('mousedown',e=>{if(!e.target.closest('#ctx-menu'))$('#ctx-menu').classList.remove('show');});
 
 /* ---------- outline / TOC ---------- */
 // O(N) 计算每个标题是否拥有更深层级的子标题：单调栈维护最近祖先链，
@@ -3992,7 +3995,7 @@ $('#outline-toggle-all').addEventListener('click',()=>{
   else State.outlineCollapsed.clear();
   syncOutlineVisibility();
 });
-let spyT=null;
+let spyT=null,_spyActive=null;
 let _headingOffsetCache=null; // {tops:[],heads:[]} 在 refreshOutline 后失效
 function invalidateHeadingOffsets(){_headingOffsetCache=null;}
 function getHeadingOffsets(){
@@ -4010,10 +4013,18 @@ paperScroll.addEventListener('scroll',()=>{
     let lo=0,hi=tops.length-1;
     while(lo<=hi){const mid=(lo+hi)>>1;if(tops[mid]<=scrollTop){cur=heads[mid];lo=mid+1;}else hi=mid-1;}
     if(!cur&&heads.length&&tops[0]<paperScroll.scrollTop+paperScroll.clientHeight)cur=heads[0];
-    $$('#outline .ol-item').forEach(b=>b.classList.toggle('active',cur&&b.dataset.target===cur.id));
+    const next=cur?$('#outline .ol-item[data-target="'+cur.id+'"]'):null;
+    if(next===_spyActive&&(!next||next.classList.contains('active')))return;
+    if(_spyActive)_spyActive.classList.remove('active');
+    if(next)next.classList.add('active');
+    _spyActive=next;
   },60);
 });
+// 标题位置随缩放/页宽/侧栏/窗口/图片加载而变化，这些时机必须失效偏移缓存，否则滚动高亮错位
+window.addEventListener('resize',invalidateHeadingOffsets);
+editor.addEventListener('load',e=>{if(e.target.tagName==='IMG')invalidateHeadingOffsets();},true);
 function refreshTocAll(){
+  const tocs=$$('.toc-block',editor);if(!tocs.length)return;
   const heads=$$('.heading',editor);
   const numMap=buildHeadingNumberMap();
   // 链接集合同一时刻对所有 [TOC] 块相同：先构建一次模板，再 clone 到每个块，避免重复创建
@@ -4023,7 +4034,7 @@ function refreshTocAll(){
     a.dataset.target=h.id;a.textContent=(numMap.get(h)||'')+headingPlainText(h);
     a.href='#';tpl.appendChild(a);
   });
-  $$('.toc-block',editor).forEach(toc=>{
+  tocs.forEach(toc=>{
     const list=$('.toc-list',toc);if(!list)return;
     list.innerHTML='';list.appendChild(tpl.cloneNode(true));
   });
@@ -4050,6 +4061,7 @@ function toggleSidebar(){
   const sbt=$('#st-sidebar');if(sbt)sbt.classList.toggle('on',!collapsed);
   const bd=$('#sb-backdrop');
   if(bd)bd.classList.toggle('show',!collapsed&&window.matchMedia('(max-width:820px)').matches);
+  invalidateHeadingOffsets();
 }
 $('#sb-backdrop').addEventListener('click',toggleSidebar);
 window.addEventListener('resize',()=>{
@@ -4167,7 +4179,7 @@ function setZoom(z){
   const n=Number(z);
   State.zoom=Math.max(0.7,Math.min(1.6,Math.round((isFinite(n)?n:1)*100)/100));
   document.documentElement.style.setProperty('--editor-fs',(16*State.zoom).toFixed(1)+'px');
-  $('#st-zoom').textContent=Math.round(State.zoom*100)+'%';saveDraft();
+  $('#st-zoom').textContent=Math.round(State.zoom*100)+'%';saveDraft();invalidateHeadingOffsets();
 }
 $('#zoom-in').onclick=()=>setZoom(State.zoom+0.1);$('#zoom-out').onclick=()=>setZoom(State.zoom-0.1);
 $('#st-zoom').onclick=()=>setZoom(1);
@@ -4177,7 +4189,7 @@ function setPageWidth(k){
   State.pageWidth=k;
   const v=PAGE_WIDTHS[k];
   document.documentElement.style.setProperty('--paper-max',v==='none'?'none':v+'px');
-  saveDraft();refreshMenuChecks();
+  saveDraft();refreshMenuChecks();invalidateHeadingOffsets();
 }
 /* 标题自动编号 */
 function updateHeadingNumbering(){
@@ -4321,7 +4333,11 @@ function replaceOne(){
   }else{
     const src=nodeToMd(m.target);rerenderBlock(m.target,src.slice(0,m.start)+rep+src.slice(m.end),m.start+rep.length);
   }
-  commitHistory('struct');afterImmediate();runFind(true);
+  commitHistory('struct');afterImmediate();
+  // 停留在被替换处的位置（即原来的“下一处”），而非跳回第一个匹配
+  const keep=findIdx<0?0:findIdx;
+  runFind(false);
+  if(findMatches.length)gotoMatch(Math.min(keep,findMatches.length-1));
 }
 function replaceAll(){
   const re=buildFindRegex();if(!re)return;const rep=$('#find-rep').value;let n=0;
@@ -4600,8 +4616,6 @@ $('#file-ctx-menu').addEventListener('click',e=>{
   const item=e.target.closest('.ctx-item');if(!item)return;
   fileCtxAction(item.dataset.act);
 });
-document.addEventListener('mousedown',e=>{if(!e.target.closest('#file-ctx-menu')&&!e.target.closest('#file-tree .tree-row'))hideFileContextMenu();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')hideFileContextMenu();});
 async function listDirectory(handle,path,host,depth){
   host.innerHTML='';const entries=[];
   try{for await(const entry of handle.values())if(entry.kind==='directory'||/\.(md|markdown|txt)$/i.test(entry.name))entries.push(entry);}
@@ -4791,7 +4805,7 @@ function applyWordImageSize(img){
 }
 function cleanInlineHtml(node){
   const c=node.cloneNode(true);
-  c.querySelectorAll('.md-marker,.md-hidden,.math-src,.md-back,.h-anchor').forEach(x=>x.remove());
+  c.querySelectorAll('.md-marker,.md-hidden,.math-src,.md-back').forEach(x=>x.remove());
   c.querySelectorAll('.math-inline').forEach(x=>{const o=$('.math-out',x);x.replaceWith(o||document.createTextNode('$'+(x.dataset.tex||'')+'$'));});
   c.querySelectorAll('.md-img').forEach(x=>{
     const img=$('img',x);if(!img)return;
@@ -4828,7 +4842,7 @@ function emitBlock(b,stack){
   if(t==='quote')return `<blockquote>${cleanInlineHtml(b)}</blockquote>`;
   if(t==='hr')return '<hr>';
   if(t==='toc'){let h='<nav class="toc"><h4>目录</h4><ul>';
-    $$('.toc-list a',b).forEach(a=>h+=`<li class="lvl${a.className.replace('toc-l','')}">${a.textContent}</li>`);return h+'</ul></nav>';}
+    $$('.toc-list a',b).forEach(a=>h+=`<li class="lvl${a.className.replace('toc-l','')}">${escapeHtml(a.textContent)}</li>`);return h+'</ul></nav>';}
   if(t==='codeblock')return `<pre><code class="language${b.dataset.lang?'-'+b.dataset.lang:''}">${escapeHtml($('code',b).textContent)}</code></pre>`;
   if(t==='mermaid'){const svg=$('.mermaid-svg svg',b);return svg?svg.outerHTML:`<pre><code class="language-mermaid">${escapeHtml(b.dataset.code||'')}</code></pre>`;}
   if(t==='math')return `<div class="math-block">${$('.math-out',b)?$('.math-out',b).innerHTML:''}</div>`;
@@ -4972,7 +4986,7 @@ function emitWordBlock(b,stack){
   if(t==='quote')return `<blockquote style="border-left:3pt solid ${WC.quote};background:${WC.codeBg};margin:8pt 0;padding:6pt 10pt;color:${WC.muted};line-height:1.55">${wInline(cleanInlineHtml(b))}</blockquote>`;
   if(t==='hr')return '<hr style="border:none;border-top:1pt solid '+WC.border+';margin:12pt 0">';
   if(t==='toc'){let h='<div style="background:'+WC.codeBg+';padding:8pt 12pt;margin:8pt 0"><b>目录</b>';
-    $$('.toc-list a',b).forEach(a=>h+='<div style="padding-left:'+((+a.className.replace('toc-l','')-1)*14)+'pt">'+a.textContent+'</div>');return h+'</div>';}
+    $$('.toc-list a',b).forEach(a=>h+='<div style="padding-left:'+((+a.className.replace('toc-l','')-1)*14)+'pt">'+escapeHtml(a.textContent)+'</div>');return h+'</div>';}
   if(t==='codeblock')return `<pre style="background:${WC.codeBg};border:.5pt solid ${WC.border};padding:8pt;font-family:Consolas,Courier New,monospace;font-size:9.5pt;white-space:pre-wrap;line-height:1.4;margin:8pt 0"><code style="font-family:Consolas,Courier New,monospace">${escapeHtml($('code',b).textContent)}</code></pre>`;
   if(t==='mermaid'){const svg=$('.mermaid-svg svg',b);return svg?svg.outerHTML:`<pre style="background:${WC.codeBg};border:.5pt solid ${WC.border};padding:8pt;white-space:pre-wrap;font-family:Consolas,monospace;font-size:9.5pt">${escapeHtml(b.dataset.code||'')}</pre>`;}
   if(t==='math')return `<div style="text-align:center;font-family:Cambria Math,Georgia,serif;font-style:italic;margin:10pt 0">${$('.math-out',b)?$('.math-out',b).innerHTML:''}</div>`;
@@ -5098,9 +5112,6 @@ async function buildEditableHtml(){
   // 移除运行时注入的外部脚本（如 mermaid CDN）— 副本会在需要时重新加载
   html=html.replace(/<script[^>]*\ssrc=["']https?:[^"']*["'][^>]*>[\s\S]*?<\/script>/gi,'');
   html=html.replace(/<script[^>]*\ssrc=["']https?:[^"']*["'][^>]*\/?>/gi,'');
-  // 移除旧的嵌入式 markdown（WELCOME 现为唯一数据载体）
-  const emRe=new RegExp('<scr'+'ipt id="embedded-markdown"[\\s\\S]*?<\\/scr'+'ipt>','gi');
-  html=html.replace(emRe,'');
   // 移除已渲染的编辑器内容，避免导出文件携带第二份副本
   // （WELCOME 为唯一数据源；打开时会重新渲染）
   html=html.replace(/(<div id="editor"[^>]*>)[\s\S]*?(<\/div>\s*<textarea id="source-area")/,'$1$2');
@@ -5286,7 +5297,7 @@ window.addEventListener('unhandledrejection',e=>{
 /* ---------- 初始化 ---------- */
 function init(){
   cleanupMermaidArtifacts();buildMenus();buildSelToolbar();syncModeButtons();
-  setTimeout(ensureMathEngine,300);
+  setTimeout(()=>ensureMathEngine().catch(()=>{}),300);
   // 恢复主题/缩放
   let draft=null;
   try{draft=JSON.parse(lsGet('me-draft')||'null');}catch(e){}
@@ -5322,7 +5333,6 @@ function init(){
   restoreLastWorkspace();toast('就绪：直接输入 Markdown 语法开始写作',2200);
 }
 init();
-/*__JS4__*/
 </script>
 </body>
 </html>
