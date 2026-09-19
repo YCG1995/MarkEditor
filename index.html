@@ -177,8 +177,6 @@ input,textarea{font-family:inherit;color:inherit}
 .h2{font-size:1.55em;padding-bottom:.25em;border-bottom:1px solid var(--border)}
 .h3{font-size:1.3em}.h4{font-size:1.12em}.h5{font-size:1em}.h6{font-size:.92em;color:var(--muted)}
 .paragraph{margin-bottom:.55em}
-/* 连续空行序列的首个空行：高度归零不显示（显示空行数 = 源码空行数 - 1），序列化仍还原原空行 */
-.md-block.paragraph.zero-line{height:0;min-height:0;line-height:0;font-size:0;margin:0!important;padding:0;overflow:hidden}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
 strong{font-weight:700}
@@ -1295,7 +1293,7 @@ function buildCallout(type,title,contentMd){
   // 容器本身可编辑（正文子块可打字），仅标题头只读
   el.innerHTML='<div class="callout-head" contenteditable="false"><span class="callout-icon">'+meta.icon+'</span><span class="callout-title" contenteditable="false">'+escapeHtml(t)+'</span></div><div class="callout-body"></div>';
   const body=$('.callout-body',el);
-  body.appendChild(parseMarkdown(contentMd||''));
+  body.appendChild(parseFragment(contentMd||''));
   // 空行不应显示：callout 正文里的空段落块没有排版意义，隐藏它们。
   // 若正文全空则保留首个空段落作为可编辑锚点，避免点不进去。
   const blocks=$$('.md-block',body);
@@ -1532,7 +1530,11 @@ function countBlankLines(lines,start){
   while(k<lines.length&&lines[k].replace(/[\uE000\uE001]/g,'').trim()==='')k++;
   return k-start;
 }
-function parseMarkdown(md){
+// 空行模型（标准 Markdown 语义）：顶层块之间默认以一个空行分隔（见 blockSeparator），
+// 每个可见空段落额外占两行；因此连续 n 个源码空行渲染为 floor(n/2) 个空段落。
+// 文末空行序列额外生成 1 个占位段落（编辑锚点，序列化时只贡献结尾换行）；fragment 模式（粘贴、callout 正文）不生成占位。
+function parseMarkdown(md,opts){
+  const fragment=!!(opts&&opts.fragment);
   const frag=document.createDocumentFragment();
   const lines=md.replace(/\r\n?/g,'\n').split('\n');CurrentParseContext={references:{}};
   State.referenceDefinitions=[];
@@ -1567,7 +1569,12 @@ function parseMarkdown(md){
       push(buildTable(rows));continue;
     }
     const ref=clean.match(/^\s*\[([^\]^]+)\]:\s*<?([^\s>]+)>?(?:\s+["'(]([^"')]+)["')])?\s*$/);
-    if(ref){i++;continue;}
+    if(ref){
+      // 引用定义被移到文末，其上的光标标记前置到下一行（文末则落到占位段落）
+      const mm=line.match(/[\uE000\uE001]/g);
+      if(mm){if(i+1<lines.length)lines[i+1]=mm.join('')+lines[i+1];else if(!fragment)push(buildTextBlock(mm.join('')));}
+      i++;continue;
+    }
     const fn=clean.match(/^\[\^([^\]\s]+)\]:\s*(.*)$/);
     if(fn){const body=[fn[2]];i++;while(i<lines.length&&(/^(?: {2,}|\t)/.test(lines[i])||(!lines[i]&&i+1<lines.length&&/^(?: {2,}|\t)/.test(lines[i+1])))){body.push(lines[i].replace(/^(?: {2,4}|\t)/,''));i++;}push(buildFootnoteDefinition(fn[1],body.join('\n')));continue;}
     // callout：> [!TYPE]
@@ -1582,20 +1589,21 @@ function parseMarkdown(md){
     const isPlainText=!clean.match(/^\s*(>|[-*+]\s|\d+[.)]\s|`{3,}|~{3,})/);
     if(i+1<lines.length&&/^=+\s*$/.test(lines[i+1])&&clean.trim()&&isPlainText){push(buildTextBlock('# '+line));i+=2;continue;}
     if(i+1<lines.length&&/^-+\s*$/.test(lines[i+1])&&clean.trim()&&isPlainText){push(buildTextBlock('## '+line));i+=2;continue;}
-    // blank line(s): render 显示空行数 = 源码空行数 - 1（每个空行生成一个空段落块，但
-    // 连续空行序列的首个块标记为 zero-line：高度 0、不显示，序列化仍旧还原原空行数，源码不被改写）。
+    // blank line(s): 连续 n 个空行 → floor(n/2) 个可见空段落；文末序列再加 1 个占位段落（fragment 除外）
     if(clean.trim()===''){
       const cnt=Math.max(1,countBlankLines(lines,i)); // 至少前进 1，杜绝 i+=0 导致的死循环
-      // 空行保留为 zero-line 块（高度 0 不可见），不再跳过引用之间的空行，
-      // 使 > a\n\n> b 能精确往返为两个独立引用块
-      for(let z=0;z<cnt;z++){
-        // 保留空行上携带的源码光标标记(\uE000/\uE001)，使 restoreCanonicalMarkers 能把光标落回空行位置，
-        // 否则标记在空行分支被丢弃，切回渲染时光标会跳错位置。
-        const mm=lines[i+z].match(/[\uE000\uE001]/g);
-        const eb=buildTextBlock(mm?mm.join(''):'');
-        if(z===0)eb.classList.add('zero-line');
-        push(eb);
+      const atEnd=i+cnt>=lines.length,k=Math.floor(cnt/2),total=k+(atEnd&&!fragment?1:0);
+      // 光标标记(\uE000/\uE001)分配：第 l 行 → 第 floor(l/2) 个空块（钳制）；文末最后一行 → 占位块；
+      // 无空块可落时前置到下一行（光标落到下一块开头），文末则单独生成一个带标记的段落。
+      const marks=new Array(total).fill('');let carry='';
+      for(let l=0;l<cnt;l++){
+        const mm=lines[i+l].match(/[\uE000\uE001]/g);if(!mm)continue;
+        if(!total){carry+=mm.join('');continue;}
+        const idx=(atEnd&&!fragment&&l===cnt-1)?total-1:Math.max(0,Math.min(Math.floor(l/2),k-1));
+        marks[idx]+=mm.join('');
       }
+      for(let z=0;z<total;z++)push(buildTextBlock(marks[z]));
+      if(carry){if(!atEnd)lines[i+cnt]=carry+lines[i+cnt];else push(buildTextBlock(carry));}
       i+=cnt;continue;
     }
     // 原始 HTML 段落块：<p style/align>...</p>（宽松：也接受 </font> 等）
@@ -1609,14 +1617,25 @@ function parseMarkdown(md){
   if(!frag.firstChild)push(buildTextBlock(''));
   return frag;
 }
+// 解析文档片段（粘贴的多行文本等）：parseMarkdown 会重置全局引用定义/解析上下文，
+// 这里保存并合并，避免片段解析把整篇文档的 [id]: url 定义清空
+function parseFragment(md){
+  const savedDefs=State.referenceDefinitions||[],savedCtx=CurrentParseContext;
+  const frag=parseMarkdown(md,{fragment:true});
+  const newDefs=State.referenceDefinitions||[],newRefs=CurrentParseContext.references||{};
+  State.referenceDefinitions=savedDefs.concat(newDefs.filter(d=>!savedDefs.includes(d)));
+  CurrentParseContext={references:Object.assign({},newRefs,savedCtx&&savedCtx.references||{})};
+  return frag;
+}
 function loadMarkdown(md,silent){
   History.locked=true;
   editor.innerHTML='';
   editor.appendChild(parseMarkdown(md));
   ensureTrailingParagraph();refreshOutline();refreshTocAll();updateStatus();
-  State._serCache=md;State._serDirty=false;
+  // 不缓存原始文本：canonical 一律由块重新序列化（归一化），保证 load 帧 / 源码视图 / 光标区间三者一致
+  State._serCache=null;State._serDirty=true;
   History.locked=false;
-  if(!silent){History.stack=[];History.idx=-1;History.pending=null;History.lastCommit=0;History.lastAction=0;History.undoKeyHandled=false;commitHistory('struct');}
+  if(!silent)historyReset();
   if(State.dirHandle||State.workspaceRoot)resolveRelativeImages();
   rerenderAsyncBlocks();
 }
@@ -1639,155 +1658,179 @@ function rerenderAsyncBlocks(){
 }
 
 /* ============================================================
-   撤销 / 重做历史 — 块级补丁 + 全量快照混合
+   撤销 / 重做历史 — 模式无关的 canonical 全文快照 + 块级 diff 恢复
    ============================================================ */
-// maxBytes：栈内所有快照 md 字符总长上限（每次 struct 提交都是全量快照，大文档下不加钳制会累积数十 MB）
-const History={stack:[],idx:-1,locked:false,pending:null,lastCommit:0,lastAction:0,undoKeyHandled:false,maxSize:150,maxBytes:16*1024*1024};
-function currentMd(){return State.sourceMode?sourceArea.value:serialize();}
+// 每一帧都是同构的整篇 canonical Markdown 快照（源码模式下已解码图片占位符），并附带捕获时的模式、
+// 渲染模式光标（anchor）、canonical 文本偏移（pos，用于跨模式恢复）与滚动位置。
+// 撤销/重做只是移动 idx 并把目标帧应用到"当前所在模式"；渲染模式下按块 diff 只替换变化区间。
+// maxBytes：栈内所有快照 md 字符总长上限（大文档下不加钳制会累积数十 MB）；mergeMs：连续打字合并窗口。
+const History={stack:[],idx:-1,locked:false,undoKeyHandled:false,maxSize:200,maxBytes:16*1024*1024,mergeMs:1000};
+function currentMd(){return State.sourceMode?decodeImages(sourceArea.value):serialize();}
+// 渲染模式光标：顶层块号 + 块内文本偏移（表格额外记录行列）；源码模式返回 null
 function captureAnchor(){
-  if(State.sourceMode)return {ta:sourceArea.selectionStart,te:sourceArea.selectionEnd};
+  if(State.sourceMode)return null;
   const b=activeBlock();if(!b)return null;
   const all=topBlocks();const i=all.indexOf(b);
+  if(i<0)return null;
   if(b.dataset.type==='table'){
-    const cell=activeCell();if(cell){const rows=$$('tr',b),c=getCaret(cell);return {i,table:true,row:rows.indexOf(cell.parentElement),col:cell.cellIndex,off:c?c.s:0,end:c?c.e:(c?c.s:0)};}
+    const cell=activeCell();if(cell){const rows=$$('tr',b),c=getCaret(cell);return {i,table:true,row:rows.indexOf(cell.parentElement),col:cell.cellIndex,off:c?c.s:0,end:c?c.e:0};}
   }
   let off=0,end=0;try{const c=getCaret(editableRoot(b));off=c?c.s:0;end=c?c.e:off;}catch(e){}
   return {i,off,end};
 }
-function currentViewSnapshot(){return {anchor:captureAnchor(),scroll:paperScroll.scrollTop,sourceScroll:sourceArea.scrollTop};}
-function snapshot(){return {type:'full',md:currentMd(),...currentViewSnapshot(),time:Date.now()};}
+// canonical 文本偏移（两种模式通用）
+function captureCanonicalPos(){
+  try{
+    if(State.sourceMode){const p=decodeProjection(sourceArea.value);return {start:p.map(sourceArea.selectionStart),end:p.map(sourceArea.selectionEnd)};}
+    return visibleCanonicalBookmark();
+  }catch(e){return null;}
+}
+function currentViewSnapshot(){return {mode:State.sourceMode?'source':'render',anchor:captureAnchor(),pos:captureCanonicalPos(),scroll:paperScroll.scrollTop,sourceScroll:sourceArea.scrollTop};}
+// 打字合并键：活动块所在的顶层块号（callout 内的嵌套块归属其顶层 callout）；源码模式为 -1
+function typingBlockIdx(){
+  if(State.sourceMode)return -1;
+  let b=activeBlock();while(b&&b.parentElement&&b.parentElement!==editor)b=b.parentElement;
+  return topBlocks().indexOf(b);
+}
+function captureFrame(kind){return Object.assign({md:currentMd(),kind,blockIdx:typingBlockIdx(),time:Date.now()},currentViewSnapshot());}
+// 在即将修改文档之前刷新当前帧的视图信息，使撤销回到"改动前"的光标/滚动位置
 function updateCurrentHistoryView(){
   if(History.locked||History.idx<0||!History.stack[History.idx])return;
   Object.assign(History.stack[History.idx],currentViewSnapshot());
 }
-function historyPush(s){
-  if(History.locked)return;
+function historyReset(){
+  History.stack=[];History.idx=-1;History.undoKeyHandled=false;
+  historyPush(captureFrame('load'));
+}
+function historyPush(f){
   History.stack=History.stack.slice(0,History.idx+1);
-  History.stack.push(s);
+  History.stack.push(f);
   // 容量钳制为 >=1，避免异常配置下 shift 截断到空栈导致 idx 越界
-  const cap=Math.max(1,History.maxSize|0||150);
+  const cap=Math.max(1,History.maxSize|0||200);
   while(History.stack.length>cap)History.stack.shift();
   // 字节钳制：至少保留最新 2 帧（当前 + 可撤销一步）
   let bytes=0;for(const f of History.stack)bytes+=(f.md||'').length;
   while(History.stack.length>2&&bytes>History.maxBytes)bytes-=(History.stack.shift().md||'').length;
   History.idx=History.stack.length-1;
-  History.lastCommit=s.time;
-  History.pending=null;
 }
-function historyFlushPending(){
-  if(!History.pending||History.locked)return;
-  const now=Date.now();
-  const {sourceMode,blockId,blockIndex}=History.pending;
-  let md='';
-  if(sourceMode)md=sourceArea.value;
-  else{const all=topBlocks();const b=blockIndex>=0?all[blockIndex]:null;md=b?blockSource(b):'';}
-  const anchor=captureAnchor();
-  const scroll=paperScroll.scrollTop;
-  const sourceScroll=sourceArea.scrollTop;
-  const top=History.stack[History.idx];
-  if(top&&top.type==='patch'&&top.blockIndex===blockIndex&&(now-top.time)<600){
-    top.md=md;top.anchor=anchor;top.scroll=scroll;top.sourceScroll=sourceScroll;top.time=now;
-  }else{
-    historyPush({type:'patch',md,blockId,blockIndex,anchor,scroll,sourceScroll,time:now,kind:'typing'});
-  }
-}
-function historyStartTyping(block){
-  if(History.locked)return;
-  const sourceMode=State.sourceMode;
-  const blockIndex=sourceMode?-1:topBlocks().indexOf(block);
-  const nested=!sourceMode&&blockIndex<0;
-  // 嵌套块（如 callout 正文里的段落）无法用顶层块号定位，patch 历史会损坏撤销。
-  // 对有 pending 的旧 patch 先落盘，然后清空 pending，让后续输入走 full-snapshot 撤销（已安全支持嵌套）。
-  if(nested){
-    if(History.pending)historyFlushPending();
-    History.pending=null;
-    return;
-  }
-  if(History.pending){
-    if(History.pending.sourceMode===sourceMode&&History.pending.blockIndex===blockIndex)return;
-    historyFlushPending();
-  }
-  History.pending={sourceMode,blockId:block?block.id:null,blockIndex,oldMd:sourceMode?sourceArea.value:(block?blockSource(block):''),oldAnchor:captureAnchor(),oldScroll:paperScroll.scrollTop,oldSourceScroll:sourceArea.scrollTop,time:Date.now()};
-}
-function historyFinishTyping(){historyFlushPending();}
 function commitHistory(kind){
   if(History.locked)return;
   markDirty();
-  if(kind==='typing'){
-    if(History.pending){historyFlushPending();return;}
-    // 无挂起的补丁：回退到全量快照（如由 input 事件或合成事件处理的删除）。
-    const s=snapshot();
-    const top=History.stack[History.idx];
-    if(top&&top.type==='full'&&top.md===s.md)return;
-    historyPush(s);
-    return;
-  }
-  historyFlushPending();
-  const s=snapshot();
+  const f=captureFrame(kind==='typing'?'typing':'struct');
   const top=History.stack[History.idx];
-  if(top&&top.type==='full'&&top.md===s.md)return;
-  historyPush(s);
-}
-function restorePatch(s){
-  if(!s)return;
-  History.locked=true;
-  if(State.sourceMode){
-    sourceArea.value=s.md;
-    const p=s.anchor&&s.anchor.ta!=null?s.anchor.ta:s.md.length,q=s.anchor&&s.anchor.te!=null?s.anchor.te:p;
-    requestAnimationFrame(()=>{sourceArea.focus({preventScroll:true});try{sourceArea.setSelectionRange(p,q);}catch(e){}sourceArea.scrollTop=s.sourceScroll||0;paperScroll.scrollTop=s.scroll||0;});
-  }else{
-    const all=topBlocks();
-    let block=all[s.blockIndex];
-    if(!block||block.id!==s.blockId)block=all.find(b=>b.id===s.blockId)||null;
-    // patch 的 md 就是目标块的完整源码：块缺失（如嵌套在 callout 内导致顶层定位失败）
-    // 或解析出多个块时，按记录的 blockIndex 原位插回/替换，而不是 restoreSnapshot(自身)
-    // ——后者会再次进入本函数形成无限递归，且"回退到当前栈帧"等于撤销无效。
-    const frag=parseMarkdown(s.md);
-    if(!frag.firstElementChild){
-      warnLog('Patch produced empty fragment, skipping');
-    }else if(block){
-      block.replaceWith(frag);
-      ensureTrailingParagraph();
-      State._serDirty=true;
-      scheduleMutate();
-      restoreEditorView(s.anchor,s.scroll);
-    }else{
-      warnLog('Patch target block missing, re-inserting at recorded index',s.blockIndex);
-      const all2=topBlocks();
-      const ref=all2[Math.min(Math.max(0,s.blockIndex),all2.length)];
-      if(ref)editor.insertBefore(frag,ref);else editor.appendChild(frag);
-      ensureTrailingParagraph();
-      State._serDirty=true;
-      scheduleMutate();
-      restoreEditorView(s.anchor,s.scroll,s.blockIndex);
-    }
+  // 内容未变：只刷新视图信息，不产生新步
+  if(top&&top.md===f.md){Object.assign(top,{mode:f.mode,anchor:f.anchor,pos:f.pos,scroll:f.scroll,sourceScroll:f.sourceScroll});return;}
+  // 同一块内的连续输入/删除在 mergeMs 内合并为一步（停顿、切块、结构操作、模式切换均开新步）
+  if(f.kind==='typing'&&top&&top.kind==='typing'&&History.idx===History.stack.length-1&&top.mode===f.mode&&top.blockIdx===f.blockIdx&&(f.time-top.time)<History.mergeMs){
+    Object.assign(top,f);return;
   }
-  History.locked=false;
+  historyPush(f);
+}
+function applyFrame(f){
+  if(!f)return;
+  History.locked=true;
+  try{
+    if(State.sourceMode)applyFrameSource(f);else applyFrameRender(f);
+  }catch(err){
+    console.error('[MarkEditor] 应用历史帧失败，回退整篇重建:',err);
+    if(!State.sourceMode){editor.innerHTML='';editor.appendChild(parseMarkdown(f.md));ensureTrailingParagraph();flushBlockMutations();State._serCache=f.md;State._serDirty=false;refreshOutline();refreshTocAll();updateStatus();rerenderAsyncBlocks();}
+  }finally{History.locked=false;}
   State.dirty=State.lastSavedMd!==persistedMd();updateFileStatus();saveDraft();
   if((State.dirHandle||State.workspaceRoot||State.fileHandle)&&hasUnresolvedImages())resolveRelativeImages();
 }
-function restoreEditorView(anchor,scroll,targetIdx){
-  if(targetIdx!=null&&targetIdx>=0&&anchor&&(anchor.i==null||anchor.i<0)){anchor=Object.assign({},anchor,{i:targetIdx});}
+function applyFrameSource(f){
+  sourceArea.value=encodeImages(f.md);
+  const L=sourceArea.value.length;
+  let p=0,q=0;
+  if(f.pos){p=canonicalToDisplayOffset(f.pos.start);q=canonicalToDisplayOffset(f.pos.end);}
+  if(!Number.isFinite(p))p=0;if(!Number.isFinite(q))q=p;
+  p=Math.max(0,Math.min(p,L));q=Math.max(p,Math.min(q,L));
+  const sameMode=f.mode==='source';
+  requestAnimationFrame(()=>{
+    sourceArea.focus({preventScroll:true});try{sourceArea.setSelectionRange(p,q);}catch(e){}
+    if(sameMode){sourceArea.scrollTop=f.sourceScroll||0;paperScroll.scrollTop=f.scroll||0;}
+    ensureTextareaCaretVisible(p);
+  });
+}
+function ensureTextareaCaretVisible(pos){
+  try{
+    const y=textareaCaretY(sourceArea,pos),r=sourceArea.getBoundingClientRect();
+    if(y<r.top+8)sourceArea.scrollTop-=(r.top+8-y);
+    else if(y>r.bottom-40)sourceArea.scrollTop+=(y-(r.bottom-40));
+  }catch(e){}
+}
+// 收集 nodes 中自身匹配或后代匹配 selector 的元素
+function collectIn(nodes,selector){const out=[];nodes.forEach(n=>{if(n.matches&&n.matches(selector))out.push(n);out.push(...$$(selector,n));});return out;}
+function applyFrameRender(f){
+  const frag=parseMarkdown(f.md);
+  const fresh=Array.from(frag.children).filter(c=>c.classList&&c.classList.contains('md-block'));
+  const old=topBlocks();
+  const oldMd=old.map(blockToMd),newMd=fresh.map(blockToMdUncached);
+  const n=old.length,m=fresh.length;
+  let p=0;while(p<n&&p<m&&oldMd[p]===newMd[p])p++;
+  let q=0;while(q<n-p&&q<m-p&&oldMd[n-1-q]===newMd[m-1-q])q++;
+  const removed=old.slice(p,n-q),inserted=fresh.slice(p,m-q);
+  if(removed.length||inserted.length){
+    const ref=old[n-q]||null;
+    removed.forEach(b=>b.remove());
+    const df=document.createDocumentFragment();inserted.forEach(b=>df.appendChild(b));
+    if(ref)editor.insertBefore(df,ref);else editor.appendChild(df);
+  }
+  ensureTrailingParagraph();
+  flushBlockMutations();
+  State._serCache=f.md;State._serDirty=false;
+  log('应用历史帧: 移除',removed.length,'块, 插入',inserted.length,'块');
+  // 异步块（Mermaid/KaTeX）只对新插入区间渲染，未变化的块不重绘
+  const mer=collectIn(inserted,'.mermaid-block');
+  if(mer.length){const go=()=>mer.forEach(b=>renderMermaidBlock(b));if(window.mermaid)go();else loadMermaid().then(go).catch(()=>{});}
+  const maths=collectIn(inserted,'.math-inline,.math-block');
+  if(maths.length)ensureMathEngine().then(()=>{if(MathEngine.katex)maths.forEach(mb=>{const tex=mb.dataset.tex;const out=$('.math-out',mb);if(tex&&out)out.innerHTML=renderMath(tex,mb.classList.contains('math-block')||mb.classList.contains('math-block-inline'));});}).catch(()=>{});
+  refreshOutline();refreshTocAll();updateStatus();
+  restoreEditorView(f);
+}
+// 把 canonical 文本偏移映射为渲染模式光标（块号 + 块内偏移）
+function anchorFromCanonicalPos(pos){
+  if(!pos)return null;
+  const ranges=canonicalBlockRanges();if(!ranges.length)return null;
+  const locate=off=>{
+    // 区间有序：取首个 end>=off 的块，落在块间分隔符内时归属下一块起点
+    const r=ranges.find(x=>off<=x.end)||ranges[ranges.length-1];
+    const b=r.block,t=b.dataset.type;
+    if(t==='table')return {i:r.index,off:0};
+    let prefix=0;if(['codeblock','math','frontmatter'].includes(t))prefix=r.text.indexOf('\n')+1;
+    const len=textNodes(editableRoot(b)).reduce((a,tn)=>a+tn.nodeValue.length,0);
+    return {i:r.index,off:Math.max(0,Math.min(off-r.start-prefix,len))};
+  };
+  const s=locate(pos.start),e=locate(pos.end);
+  return {i:s.i,off:s.off,end:s.i===e.i?Math.max(s.off,e.off):s.off};
+}
+function ensureCaretVisible(){
+  try{
+    const sel=getSelection();if(!sel||!sel.rangeCount)return;
+    const r=sel.getRangeAt(0).cloneRange();r.collapse(true);
+    let rect=r.getBoundingClientRect();
+    if(!rect||(!rect.height&&!rect.width)){const b=activeBlock();if(!b)return;rect=b.getBoundingClientRect();}
+    const vp=paperScroll.getBoundingClientRect();
+    if(rect.top<vp.top+16)paperScroll.scrollTop-=(vp.top+16-rect.top);
+    else if(rect.bottom>vp.bottom-16)paperScroll.scrollTop+=(rect.bottom-(vp.bottom-16));
+  }catch(e){}
+}
+function restoreEditorView(f){
+  const sameMode=f.mode==='render';
+  const anchor=(sameMode&&f.anchor)||anchorFromCanonicalPos(f.pos)||f.anchor;
   const apply=()=>{
     const all=topBlocks();if(!all.length)return false;
     const raw=anchor&&Number.isFinite(anchor.i)?anchor.i:0,index=Math.max(0,Math.min(raw,all.length-1)),block=all[index];
     const start=Math.max(0,anchor&&Number.isFinite(anchor.off)?anchor.off:0),end=Math.max(start,anchor&&Number.isFinite(anchor.end)?anchor.end:start);
     try{
       let focusRoot=editableRoot(block);
-      // 先滚动到修改位置（用getBoundingClientRect+scrollTop，兼容嵌套滚动容器）
-      if(paperScroll){
-        const _rect=block.getBoundingClientRect();
-        const _target=Math.max(0,_rect.top+paperScroll.scrollTop-80);
-        if(Math.abs(paperScroll.scrollTop-_target)>2)paperScroll.scrollTop=_target;
-      }
       if(anchor&&anchor.table&&block.dataset.type==='table'){
         const row=$$('tr',block)[Math.max(0,anchor.row||0)],cell=row&&row.children[Math.max(0,anchor.col||0)];
         if(cell){editor.focus({preventScroll:true});cell.focus({preventScroll:true});focusRoot=cell;setCaret(cell,start,end);cell.classList.add('cell-active');cell.style.caretColor='transparent';void cell.offsetHeight;cell.style.caretColor='var(--text)';}
         else{focusBlock(block,start);setCaret(focusRoot,start,end);}
       }else{
-        // 先尝试标准focus+setCaret
         focusBlock(block,start);setCaret(focusRoot,start,end);
-        // 兜底：空段落等场景setCaret可能失败，手动设置Range
+        // 兜底：空段落等场景 setCaret 可能失败，手动设置 Range
         try{
           const _sel=getSelection();
           if(!_sel||!_sel.rangeCount||!block.contains(_sel.anchorNode)){
@@ -1801,64 +1844,21 @@ function restoreEditorView(anchor,scroll,targetIdx){
       const sel=getSelection(),ok=!!(sel&&sel.rangeCount&&focusRoot.contains(sel.anchorNode));log('恢复撤销光标:',{index,start,end,table:!!(anchor&&anchor.table),ok});return ok;
     }catch(e){console.error('[MarkEditor] 恢复撤销光标失败:',e);return false;}
   };
-  // 同步立即应用一次 + 下一帧（布局完成后）再应用一次；
-  // 不再使用 40ms 定时重试——异步块（Mermaid/图片）渲染或用户在撤销后立即输入时，
-  // 迟到的重试会把光标强行拉回旧位置，反而制造跳动。
-  apply();requestAnimationFrame(()=>apply());
-}
-function restoreSnapshot(s,targetIdx){
-  if(!s)return;
-  if(s.type==='patch'){restorePatch(s);return;}
-  History.locked=true;
-  if(State.sourceMode){
-    sourceArea.value=s.md;
-    const p=s.anchor&&s.anchor.ta!=null?s.anchor.ta:s.md.length,q=s.anchor&&s.anchor.te!=null?s.anchor.te:p;
-    requestAnimationFrame(()=>{sourceArea.focus({preventScroll:true});try{sourceArea.setSelectionRange(p,q);}catch(e){}sourceArea.scrollTop=s.sourceScroll||0;paperScroll.scrollTop=s.scroll||0;});
-  }else{
-    editor.innerHTML='';editor.appendChild(parseMarkdown(s.md));
-    ensureTrailingParagraph();
-    State._serCache=s.md;State._serDirty=false;
-    requestAnimationFrame(()=>{
-      refreshOutline();refreshTocAll();updateStatus();
-      restoreEditorView(s.anchor,s.scroll,targetIdx);
-    });
-  }
-  History.locked=false;
-  State.dirty=State.lastSavedMd!==persistedMd();updateFileStatus();saveDraft();
-  if((State.dirHandle||State.workspaceRoot||State.fileHandle)&&hasUnresolvedImages())resolveRelativeImages();
-  rerenderAsyncBlocks();
+  // 同模式帧优先恢复记录的滚动位置；随后只在光标不可见时才滚动（不再强制把块顶对齐到固定偏移）
+  if(sameMode&&Number.isFinite(f.scroll))paperScroll.scrollTop=f.scroll;
+  apply();
+  // 同步立即应用一次 + 下一帧（布局完成后）再应用一次；不使用延时重试，避免迟到的重试把光标拉回旧位置
+  requestAnimationFrame(()=>{if(sameMode&&Number.isFinite(f.scroll))paperScroll.scrollTop=f.scroll;apply();ensureCaretVisible();});
 }
 function undo(){
-  History.lastAction=Date.now();
-  if(History.idx>0){
-    const current=History.stack[History.idx];
-    let targetIdx=current&&current.anchor&&current.anchor.i>=0?current.anchor.i:topBlocks().indexOf(activeBlock());
-    if(targetIdx<0)targetIdx=Math.max(0,topBlocks().length-2);
-    History.idx--;log('撤销到历史视图: idx=',History.idx);
-    restoreSnapshot(History.stack[History.idx],targetIdx);
-    // 最终兜底：仅当 restoreEditorView 未能把选区落进目标块时才介入（否则会抹掉已恢复的列偏移）
-    setTimeout(()=>{
-      const all=topBlocks();if(!all.length)return;
-      const block=all[Math.max(0,Math.min(targetIdx,all.length-1))];
-      if(!block)return;
-      const sel=getSelection();
-      if(sel&&sel.rangeCount&&block.contains(sel.anchorNode))return;
-      State.activeBlock=block;
-      try{
-        editor.focus({preventScroll:true});
-        const _r=document.createRange();_r.selectNodeContents(block);_r.collapse(true);
-        sel.removeAllRanges();sel.addRange(_r);
-      }catch(e){}
-      if(paperScroll){
-        const rect=block.getBoundingClientRect();
-        paperScroll.scrollTop=Math.max(0,rect.top+paperScroll.scrollTop-80);
-      }
-    },60);
-  }
+  if(History.idx<=0)return;
+  History.idx--;log('撤销到历史帧: idx=',History.idx);
+  applyFrame(History.stack[History.idx]);
 }
 function redo(){
-  History.lastAction=Date.now();
-  if(History.idx<History.stack.length-1){History.idx++;log('重做到历史视图: idx=',History.idx);restoreSnapshot(History.stack[History.idx]);}
+  if(History.idx>=History.stack.length-1)return;
+  History.idx++;log('重做到历史帧: idx=',History.idx);
+  applyFrame(History.stack[History.idx]);
 }
 
 /* ============================================================
@@ -1949,7 +1949,47 @@ function tableToMd(block){
 }
 function escapeCellSource(s){return String(s).replace(/\n/g,'<br>').replace(/\|/g,'\\|');}
 function cellText(cell){return escapeCellSource(nodeToMd(cell)||'');}
+// 块级序列化缓存：blockToMd 结果按块元素缓存；editor 上的 MutationObserver 记录任何子树变更，
+// serialize()/blockToMd() 入口通过 takeRecords() 同步消费记录并失效受影响的顶层块。
+// 这样每次按键的全文序列化只需重算被改动的块 + 一次字符串 join，使"每帧全文快照"的撤销模型代价可控。
+const _blockMdCache=new WeakMap();
+const _blockMutations=new MutationObserver(()=>{});
+_blockMutations.observe(editor,{childList:true,characterData:true,attributes:true,attributeOldValue:true,subtree:true});
+// 影响序列化结果的 class（列表类型等）；active/cell-active/editing 之类纯视觉 class 的切换不失效缓存
+const _MD_CLASS_RE=/\b(ordered|task|md-block|md-marker|md-hidden|md-pandoc|md-autolink|md-bare-link|md-img|footnote-ref|math-inline|math-block-inline|emoji-shortcode|block-content|li-body|code-actions|table-tools|math-hint|col-resizer)\b/g;
+function mdClassSig(v){const m=String(v||'').match(_MD_CLASS_RE);return m?m.sort().join(' '):'';}
+// 失效 node 所有 .md-block 祖先（含嵌套在 callout 内的子块与其顶层块）
+function invalidateBlockAncestors(node){
+  let el=node&&node.nodeType===3?node.parentElement:node;
+  while(el&&el!==editor){if(el.classList&&el.classList.contains('md-block'))_blockMdCache.delete(el);el=el.parentElement;}
+}
+// 消费 DOM 变更记录并失效对应块缓存；有任何内容变更时同时标记全文序列化缓存过期。返回变更记录数。
+function flushBlockMutations(){
+  const recs=_blockMutations.takeRecords();
+  let n=0;
+  for(const r of recs){
+    if(r.type==='attributes'){
+      if(r.target===editor)continue;
+      if(r.attributeName==='class'&&mdClassSig(r.oldValue)===mdClassSig(r.target.getAttribute('class')))continue;
+    }
+    n++;
+    invalidateBlockAncestors(r.target);
+    // 顶层 childList 变更：被移入的节点若是曾脱离 DOM 又复用的块，其缓存可能过期，一并失效
+    if(r.type==='childList')for(const a of r.addedNodes){if(a.nodeType===1&&a.classList.contains('md-block'))_blockMdCache.delete(a);}
+  }
+  if(n)State._serDirty=true;
+  return n;
+}
+function invalidateBlockMd(b){if(b)_blockMdCache.delete(b);}
 function blockToMd(b){
+  flushBlockMutations();
+  const cached=_blockMdCache.get(b);
+  if(cached!==undefined)return cached;
+  const md=blockToMdUncached(b);
+  _blockMdCache.set(b,md);
+  return md;
+}
+function blockToMdUncached(b){
   switch(b.dataset.type){
     case 'codeblock':{
       const lang=b.dataset.lang||'',code=$('code',b).textContent,ch=(b.dataset.fence||'```')[0];
@@ -1984,11 +2024,36 @@ function blockToMd(b){
 }
 /* 仅 editor 的直接子块（callout-body 等为嵌套，不算顶层） */
 function topBlocks(){return Array.from(editor.children).filter(c=>c.classList&&c.classList.contains('md-block'));}
+function isEmptyPara(b){return !!b&&b.dataset.type==='paragraph'&&blockToMd(b)==='';}
+// 相邻顶层块之间的分隔符（标准 Markdown 语义）：
+// 列表项-列表项 / 引用行-引用行 → "\n"（紧凑列表 / 同一 blockquote）；
+// 以 2+ 空格结尾的段落 → 段落 → "\n"（硬换行续行）；其余 → "\n\n"（一个空行）。
+function blockSeparator(prev,cur){
+  const a=prev.dataset.type,b=cur.dataset.type;
+  if(a===b&&(a==='list'||a==='quote'))return '\n';
+  if(a==='paragraph'&&b==='paragraph'&&/ {2,}$/.test(blockToMd(prev)))return '\n';
+  return '\n\n';
+}
+// 顶层块布局：每块的 canonical 文本与其前置分隔符。文末占位空段落的分隔符为 "\n"（只贡献结尾换行）。
+// serialize() 与 canonicalBlockRanges() 都基于此，保证源码文本与光标偏移一致。
+function topBlockLayout(blocks=topBlocks()){
+  const n=blocks.length,out=[];
+  for(let i=0;i<n;i++){
+    const b=blocks[i],text=blockToMd(b);
+    const sep=i===0?'':(i===n-1&&isEmptyPara(b))?'\n':blockSeparator(blocks[i-1],b);
+    out.push({block:b,text,sep});
+  }
+  return out;
+}
 function serialize(){
+  // 有未消费的 DOM 变更记录 → 缓存一定过期（即便调用方忘了 markDirty）
+  if(flushBlockMutations())State._serDirty=true;
   if(!State._serDirty&&State._serCache!=null)return State._serCache;
-  const md=topBlocks().map(blockToMd).join('\n');
+  const lay=topBlockLayout();let md='';for(const r of lay)md+=r.sep+r.text;
   const refs=State.referenceDefinitions&&State.referenceDefinitions.length?State.referenceDefinitions.join('\n'):'';
-  const out=refs?md+'\n\n'+refs:md;
+  // 追加引用定义时吸收占位段落的结尾换行，避免每次往返多出一个空行
+  const trail=lay.length>1&&isEmptyPara(lay[lay.length-1].block);
+  const out=refs?(trail?md.slice(0,-1):md)+'\n\n'+refs:md;
   State._serCache=out;State._serDirty=false;return out;
 }
 function ensureTrailingParagraph(){
@@ -2159,8 +2224,6 @@ function rerenderBlock(block,src,cStart,cEnd){
   }else if(oldType==='paragraph'&&info.type==='paragraph'){
     invalidateTextNodes(block);
     block.innerHTML=fresh.innerHTML;
-    // 空行锚点(zero-line)一旦获得内容，恢复为普通段落，避免被零高样式裁剪文本
-    if(src.trim())block.classList.remove('zero-line');
   }else{
     block.replaceWith(fresh);block=fresh;
   }
@@ -2372,7 +2435,8 @@ function stripInline(){
   rerenderBlock(block,before+clean+after,s,s+clean.length);
   markDirty();
 }
-/* 移除空行：渲染模式直接删除空段落block；源码模式压缩连续空行 */
+/* 移除空行：渲染模式直接删除空段落block；源码模式把 3+ 连续换行压成 2 个（块间保留标准的 1 个空行，
+   等价于删除全部可见空段落，两种模式结果一致） */
 function removeBlankLines(){
   const cleanMd=md=>{
     let c=md.replace(/\n{3,}/g,'\n\n');
@@ -2590,7 +2654,7 @@ editor.addEventListener('beforeinput',e=>{
       const selLen=c.e-c.s;
       const rightChar=src[c.s]||'';
       const shouldPair=isBracket||selLen>0||!rightChar||/[\s\u0000-\u001f)}\]'"`'"'">，。、；：！？）】」』]/u.test(rightChar);
-      if(shouldPair){e.preventDefault();historyStartTyping(block);try{const selected=src.slice(c.s,c.e),fresh=rerenderBlock(block,src.slice(0,c.s)+e.data+selected+close+src.slice(c.e),c.s+1,c.s+1+selected.length);if(fresh)State.activeBlock=fresh;}finally{historyFinishTyping();}return;}
+      if(shouldPair){e.preventDefault();const selected=src.slice(c.s,c.e),fresh=rerenderBlock(block,src.slice(0,c.s)+e.data+selected+close+src.slice(c.e),c.s+1,c.s+1+selected.length);if(fresh)State.activeBlock=fresh;commitHistory('typing');return;}
     }
   }
   if(['math','hr','toc'].includes(t)){e.preventDefault();return;}
@@ -2601,7 +2665,6 @@ editor.addEventListener('beforeinput',e=>{
     if(e.inputType==='insertLineBreak')handleLineBreak();else handleEnter(false);
     commitHistory('struct');return;
   }
-  if((e.inputType==='insertText'||e.inputType==='insertCompositionText')&&(isTextBlock(block)||t==='codeblock'||t==='table')){historyStartTyping(block);}
 });
 editor.addEventListener('input',e=>{
   if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;
@@ -2618,7 +2681,7 @@ editor.addEventListener('input',e=>{
   else if(isTextBlock(block))rerenderBlock(block,nodeToMd(block),target);
   commitHistory('typing');
 });
-editor.addEventListener('compositionstart',e=>{if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;updateCurrentHistoryView();State.composing=true;const block=activeBlock();if(block)historyStartTyping(block);});
+editor.addEventListener('compositionstart',e=>{if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;updateCurrentHistoryView();State.composing=true;});
 editor.addEventListener('compositionend',e=>{
   if(e.target.closest&&e.target.closest('.math-inline.editing,.md-img.img-editing,.math-src-edit,.mermaid-edit'))return;
   State.composing=false;
@@ -2666,8 +2729,6 @@ editor.addEventListener('keydown',e=>{
     if(handleBackspace()){e.preventDefault();commitHistory('struct');}
   }else globalKeydown(e);
 });
-editor.addEventListener('blur',()=>historyFlushPending(),true);
-sourceArea.addEventListener('blur',()=>historyFlushPending(),true);
 
 /* ---- 激活块 / 行内编辑标记 ---- */
 let rafSel=null;
@@ -3294,7 +3355,10 @@ editor.addEventListener('paste',e=>{
   insertTextAtCaret(text);
 });
 function insertTextAtCaret(text){
-  let block=activeBlock();if(!block){loadMarkdown(text);return;}
+  let block=activeBlock();
+  updateCurrentHistoryView();
+  // 无活动块：把文本作为块追加到文档末尾（而不是整篇重载并清空撤销历史）
+  if(!block){const frag=parseFragment(text.replace(/\r\n?/g,'\n'));const first=frag.firstElementChild;editor.appendChild(frag);reorderLists();if(first){const last=topBlocks().pop();if(last)focusBlock(last);}afterImmediate();scheduleMutate();commitHistory('struct');return;}
   if(block.dataset.type==='codeblock'){editSource(text);return;}
   if(!isTextBlock(block))return;
   const lines=text.replace(/\r\n?/g,'\n').split('\n');
@@ -3303,7 +3367,7 @@ function insertTextAtCaret(text){
   const c=getCaret(block),src=nodeToMd(block);
   block=rerenderBlock(block,src.slice(0,c.s)+lines[0],undefined)||block;
   const tail=src.slice(c.e);
-  const frag=parseMarkdown(lines.slice(1).join('\n')+(tail?('\n'+tail):''));
+  const frag=parseFragment(lines.slice(1).join('\n')+(tail?('\n'+tail):''));
   let last=block;
   while(frag.firstChild){last.after(frag.firstChild);last=last.nextElementSibling;}
   reorderLists();focusBlock(block,nodeToMd(block).length);scheduleMutate();commitHistory('struct');
@@ -3360,7 +3424,7 @@ document.addEventListener('drop',async e=>{
         let modernHandle=null;
         if(hasRel&&item.getAsFileSystemHandle){try{modernHandle=await item.getAsFileSystemHandle();}catch(_){}}
         releaseImageUrls();State.filename=file.name;State.currentPath=file.name;State.fileHandle=null;State.workspaceRoot=null;State.dirHandle=dirHandle;
-        try{loadMarkdown(text);markSaved(text);}
+        try{loadMarkdown(text);markSaved();}
         catch(err){
           const msg=err&&err.message?err.message:String(err);
           if(/Data URL|malformed|exceeded/i.test(msg)){
@@ -3400,7 +3464,7 @@ document.addEventListener('drop',async e=>{
     if(!confirmDiscard())return;
     if(f.size>50*1024*1024){toast('文件过大（'+(f.size/1024/1024).toFixed(1)+'MB），建议拆分后打开');return;}
     const r=new FileReader();
-    r.onload=()=>{releaseImageUrls();State.filename=f.name;State.currentPath=f.name;State.fileHandle=null;State.workspaceRoot=null;State.dirHandle=null;try{loadMarkdown(r.result);markSaved(r.result);}catch(err){toast('解析失败: '+(err.message||err));return;}toast('已打开 '+f.name);};
+    r.onload=()=>{releaseImageUrls();State.filename=f.name;State.currentPath=f.name;State.fileHandle=null;State.workspaceRoot=null;State.dirHandle=null;try{loadMarkdown(r.result);markSaved();}catch(err){toast('解析失败: '+(err.message||err));return;}toast('已打开 '+f.name);};
     r.onerror=()=>toast('读取文件失败');
     r.readAsText(f);
   }
@@ -3601,16 +3665,19 @@ function matchHotkey(e){
 }
 // parseHot 和 Cmds 均已定义，统一填充缓存热键（在 cmd() 注册时 parseHot 尚未定义，故延迟到此处）
 Cmds.forEach(c=>{c._hot=parseHot(c.hot);});
+// 键盘触发的撤销/重做已由我们处理：随后同一事件循环内到达的 beforeinput(historyUndo/Redo) 应被吞掉；
+// 若 keydown 被 preventDefault 导致 beforeinput 根本不触发，标志在下一轮宏任务自动清除，避免吞掉之后的右键菜单撤销
+function markUndoKeyHandled(){History.undoKeyHandled=true;setTimeout(()=>{History.undoKeyHandled=false;},0);}
 function globalKeydown(e){
   if(e.isComposing||State.composing)return false;
   // Ctrl+Shift+Z -> 重做（未注册为单独的命令快捷键）
   if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='z'){
-    e.preventDefault();History.undoKeyHandled=true;redo();e.__meHandled=true;return true;
+    e.preventDefault();markUndoKeyHandled();redo();e.__meHandled=true;return true;
   }
   const c=matchHotkey(e);
   if(!c)return false;
   e.preventDefault();
-  if(c.id==='undo'||c.id==='redo')History.undoKeyHandled=true;
+  if(c.id==='undo'||c.id==='redo')markUndoKeyHandled();
   c.run();if(c.id!=='undo'&&c.id!=='redo')commitHistory('struct');e.__meHandled=true;return true;
 }
 document.addEventListener('keydown',e=>{
@@ -4069,9 +4136,12 @@ window.addEventListener('resize',()=>{
   if(window.matchMedia('(min-width:821px)').matches)bd.classList.remove('show');
   else if(!$('#sidebar').classList.contains('collapsed'))bd.classList.add('show');
 });
-function canonicalBlockRanges(){let pos=0;return topBlocks().map((block,i)=>{const text=blockToMd(block),range={block,index:i,start:pos,end:pos+text.length,text};pos=range.end+1;return range;});}
+function canonicalBlockRanges(){let pos=0;return topBlockLayout().map((r,i)=>{pos+=r.sep.length;const range={block:r.block,index:i,start:pos,end:pos+r.text.length,text:r.text};pos=range.end;return range;});}
 function visibleCanonicalBookmark(ranges=canonicalBlockRanges()){
-  const block=activeBlock(),range=ranges.find(r=>r.block===block);if(!block||!range)return {start:0,end:0};
+  let block=activeBlock(),range=ranges.find(r=>r.block===block);
+  // 嵌套块（callout 正文）不在顶层区间表中：退化为其顶层块的起点，避免映射到文档开头
+  if(block&&!range){let t=block;while(t&&t.parentElement&&t.parentElement!==editor)t=t.parentElement;range=ranges.find(r=>r.block===t);if(range)return {start:range.start,end:range.start};}
+  if(!block||!range)return {start:0,end:0};
   if(block.dataset.type==='table'){
     const saved=State.lastCaret&&State.lastCaret.block===block?State.lastCaret:null,cell=activeCell()||(saved&&saved.cell);if(cell){const rows=$$('tr',block),row=rows.indexOf(cell.parentElement),col=cell.cellIndex,c=getCaret(cell)||(saved&&saved.caret)||{s:0,e:0},lines=range.text.split('\n'),lineIndex=row===0?0:row+1,lineStart=lines.slice(0,lineIndex).reduce((n,x)=>n+x.length+1,0),cells=$$('th,td',cell.parentElement).map(cellText),cellStart=2+cells.slice(0,col).reduce((n,x)=>n+x.length+3,0),raw=nodeToMd(cell);return {start:range.start+lineStart+cellStart+escapeCellSource(raw.slice(0,c.s)).length,end:range.start+lineStart+cellStart+escapeCellSource(raw.slice(0,c.e)).length};}
   }
@@ -4083,45 +4153,30 @@ function textareaCaretY(ta,pos){
   const cs=getComputedStyle(ta),rect=ta.getBoundingClientRect(),mirror=document.createElement('div');mirror.style.cssText='position:fixed;visibility:hidden;white-space:pre-wrap;overflow-wrap:break-word;left:'+rect.left+'px;top:'+(rect.top-ta.scrollTop)+'px;width:'+rect.width+'px;padding:'+cs.padding+';border:'+cs.border+';font:'+cs.font+';line-height:'+cs.lineHeight+';letter-spacing:'+cs.letterSpacing+';tab-size:'+cs.tabSize+';box-sizing:border-box;';
   mirror.textContent=ta.value.slice(0,pos);const mark=document.createElement('span');mark.textContent='\u200b';mirror.appendChild(mark);document.body.appendChild(mirror);const y=mark.getBoundingClientRect().top;mirror.remove();return y;
 }
-function firstTextNode(el){const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);return w.nextNode()||el;}
-function lastTextNode(el){const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let last=null,n;while((n=w.nextNode()))last=n;return last||el;}
-// 若落点节点位于不可见的 zero-line 空行块内，把它重定位到相邻可见块（前块末尾，否则后块开头），
-// 保证切回渲染后光标可见且位置合理；未落在 zero-line 则原样返回。
-function caretAnchorFor(hit){
-  const el=hit&&hit.node?(hit.node.nodeType===3?hit.node.parentElement:hit.node):null;
-  const zl=el&&el.closest&&el.closest('.zero-line');
-  if(!zl)return hit;
-  let p=zl.previousElementSibling;
-  while(p&&p.matches&&p.matches('.zero-line'))p=p.previousElementSibling;
-  if(p){const t=lastTextNode(p);return {node:t,offset:t.nodeValue?t.nodeValue.length:0};}
-  let nx=zl.nextElementSibling;
-  while(nx&&nx.matches&&nx.matches('.zero-line'))nx=nx.nextElementSibling;
-  if(nx){const t=firstTextNode(nx);return {node:t,offset:0};}
-  return {node:zl,offset:0};
-}
 function restoreCanonicalMarkers(canonical,start,end,oldY){
   const A='\uE000',B='\uE001',collapsed=start===end,marked=canonical.slice(0,end)+(collapsed?'':B)+canonical.slice(end);const withStart=marked.slice(0,start)+A+marked.slice(start);
-  loadMarkdown(withStart,true);paper.classList.remove('source');State.sourceMode=false;ensureTrailingParagraph();
+  loadMarkdown(withStart,true);State._serDirty=true;paper.classList.remove('source');State.sourceMode=false;ensureTrailingParagraph();
   requestAnimationFrame(()=>{const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT),hits={};let n;while((n=walker.nextNode())){for(const token of [A,B]){const i=n.nodeValue.indexOf(token);if(i>=0)hits[token]={node:n,offset:i};}}
     if(hits[A]){
       const same=!collapsed&&hits[B]&&hits[A].node===hits[B].node;
       const endOf=collapsed?hits[A].offset:hits[B].offset-(same&&hits[B].offset>hits[A].offset?1:0);
       if(hits[B])hits[B].node.nodeValue=hits[B].node.nodeValue.replace(B,'');hits[A].node.nodeValue=hits[A].node.nodeValue.replace(A,'');
-      // zero-line(不可见空行)上的落点重定位到相邻可见块，保证光标可见且不跳错
-      const sA=caretAnchorFor(hits[A]);
-      const eA=collapsed?sA:caretAnchorFor({node:hits[B].node,offset:endOf});
+      const sA=hits[A];
+      const eA=collapsed?sA:{node:hits[B].node,offset:endOf};
       const root=(sA.node.nodeType===3?(sA.node.parentElement?sA.node.parentElement.closest('th,td'):null):sA.node.closest? sA.node.closest('th,td'):null)||editor;root.focus&&root.focus({preventScroll:true});
       const r=document.createRange();r.setStart(sA.node,sA.offset);
       if(collapsed)r.collapse(true);else r.setEnd(eA.node,eA.offset);
       const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
-      State._serCache=canonical;State._serDirty=false;const newY=selectionViewportY();paperScroll.scrollTop+=newY-oldY;requestAnimationFrame(()=>{paperScroll.scrollTop+=selectionViewportY()-oldY;});
-    }else{warnLog('源码光标标记未能映射回可视 DOM');State._serCache=canonical;State._serDirty=false;}
+      State._serDirty=true;const newY=selectionViewportY();paperScroll.scrollTop+=newY-oldY;requestAnimationFrame(()=>{paperScroll.scrollTop+=selectionViewportY()-oldY;});
+    }else{warnLog('源码光标标记未能映射回可视 DOM');State._serDirty=true;}
     // 兜底：无论标记是否映射成功，全局清除残留的私用区光标标记，防止泄漏到文档
     const w2=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);let x;
     while((x=w2.nextNode())){if(x.nodeValue.indexOf(A)>=0||x.nodeValue.indexOf(B)>=0)x.nodeValue=x.nodeValue.split(A).join('').split(B).join('');}
   });
 }
 function toggleSource(){
+  // 模式切换不是撤销步骤，但要先把当前帧的光标/滚动刷成切换前的状态
+  updateCurrentHistoryView();
   if(State.sourceMode){
     try{
       const oldY=textareaCaretY(sourceArea,sourceArea.selectionStart),projection=decodeProjection(sourceArea.value),start=projection.map(sourceArea.selectionStart),end=projection.map(sourceArea.selectionEnd);
@@ -4132,7 +4187,8 @@ function toggleSource(){
       const first=topBlocks()[0];if(first)focusBlock(first,0);
     }
   }else{
-    const oldY=selectionViewportY(),ranges=canonicalBlockRanges(),canonical=ranges.map(r=>r.text).join('\n'),bookmark=visibleCanonicalBookmark(ranges),display=encodeImages(canonical);
+    // canonical 用 serialize()：与块区间拼接一致，且末尾追加的 [id]: url 引用定义不会在切换时丢失（不影响前面块的偏移）
+    const oldY=selectionViewportY(),ranges=canonicalBlockRanges(),canonical=serialize(),bookmark=visibleCanonicalBookmark(ranges),display=encodeImages(canonical);
     let start=canonicalToDisplayOffset(bookmark.start),end=canonicalToDisplayOffset(bookmark.end);
     // 光标映射兜底：NaN/undefined/越界时回退到合理位置
     if(!Number.isFinite(start))start=0;
@@ -4386,16 +4442,23 @@ function decodeProjection(display){
 }
 function decodeImages(md){return decodeProjection(md).text;}
 sourceArea.addEventListener('beforeinput',e=>{
-  if(/^history(?:Undo|Redo)$/.test(e.inputType||'')){e.preventDefault();return;}
-  updateCurrentHistoryView();historyStartTyping(null);
+  // 接管 textarea 原生撤销/重做（右键菜单、系统快捷键）；键盘 Ctrl+Z 已在 keydown 中处理过则跳过
+  if(/^history(?:Undo|Redo)$/.test(e.inputType||'')){
+    e.preventDefault();
+    if(History.undoKeyHandled){History.undoKeyHandled=false;return;}
+    if(e.inputType==='historyUndo')undo();else redo();
+    return;
+  }
+  if(State.composing)return;
+  updateCurrentHistoryView();
 });
 sourceArea.addEventListener('keydown',e=>{
   if(e.ctrlKey||e.metaKey||['Tab','Backspace','Delete','Enter'].includes(e.key))updateCurrentHistoryView();
   if(e.key==='Tab'){e.preventDefault();wrapTextareaSel('  ','');return;}
   globalKeydown(e);
 });
-sourceArea.addEventListener('compositionstart',()=>{updateCurrentHistoryView();historyStartTyping(null);});
-sourceArea.addEventListener('compositionend',()=>{commitHistory('typing');});
+sourceArea.addEventListener('compositionstart',()=>{updateCurrentHistoryView();State.composing=true;});
+sourceArea.addEventListener('compositionend',()=>{State.composing=false;markDirty();saveDraft();commitHistory('typing');});
 function wrapTextarea(pair){
   const ta=sourceArea,[a,b]=[ta.selectionStart,ta.selectionEnd];
   const v=ta.value,sel=v.slice(a,b);
@@ -4462,7 +4525,7 @@ async function openMdFile(fileHandle,path='',skipConfirm=false){
   catch(e){toast('读取文件失败: '+(e.message||e));return false;}
   releaseImageUrls();State.filename=file.name;State.fileHandle=fileHandle;State.currentPath=path||file.name;
   State.dirHandle=State.workspaceRoot||State.dirHandle;
-  try{loadMarkdown(text);markSaved(text);}
+  try{loadMarkdown(text);markSaved();}
   catch(err){const m=err&&err.message?err.message:String(err);toast(/Data URL|malformed|exceeded/i.test(m)?'打开失败：文件可能包含超大内嵌图片，建议用相对路径引用图片':'解析失败: '+m);return false;}
   refreshFileTreeActive();
   await recordRecent('file',fileHandle,{path:State.currentPath,dirHandle:State.workspaceRoot||State.dirHandle,workspace:!!State.workspaceRoot});
@@ -4669,7 +4732,7 @@ async function fileOpenFile(){
       if(file.size>50*1024*1024){toast('文件过大（'+(file.size/1024/1024).toFixed(1)+'MB），建议拆分后打开');return;}
       const text=await file.text();
       releaseImageUrls();State.filename=file.name;State.currentPath=file.name;State.fileHandle=handle;State.workspaceRoot=null;State.dirHandle=null;
-      try{loadMarkdown(text);markSaved(text);}
+      try{loadMarkdown(text);markSaved();}
       catch(err){const m=err&&err.message?err.message:String(err);toast(/Data URL|malformed|exceeded/i.test(m)?'打开失败：文件可能包含超大内嵌图片，建议用相对路径引用图片':'解析失败: '+m);return;}
       if(/!\[[^\]]*\]\((?!https?:|data:|\/|file:|#)[^)]+\)/.test(text)){
         const old=await findRecentHandle('file',handle);
@@ -4688,7 +4751,7 @@ async function fileOpenFile(){
 fileInput.addEventListener('change',()=>{
   const f=fileInput.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{releaseImageUrls();State.filename=f.name;State.currentPath=f.name;State.fileHandle=null;State.workspaceRoot=null;State.dirHandle=null;loadMarkdown(r.result);markSaved(r.result);toast('已打开 '+f.name+'（相对路径图片需用 Chrome/Edge 打开以支持目录选择）');};
+  r.onload=()=>{releaseImageUrls();State.filename=f.name;State.currentPath=f.name;State.fileHandle=null;State.workspaceRoot=null;State.dirHandle=null;loadMarkdown(r.result);markSaved();toast('已打开 '+f.name+'（相对路径图片需用 Chrome/Edge 打开以支持目录选择）');};
   r.readAsText(f);
 });
 function releaseImageUrls(){State.imageUrls.forEach(url=>URL.revokeObjectURL(url));State.imageUrls.clear();State.imageUrlCache.clear();}
@@ -5189,7 +5252,7 @@ function saveDraft(){
 }
 // 注：editor 不再单独绑定 saveDraft——rerenderBlock/rerenderCode/rerenderCell 均会
 // scheduleMutate()/afterImmediate()，其中已包含 saveDraft()，重复绑定会让每次输入多调度一次
-sourceArea.addEventListener('input',()=>{markDirty();saveDraft();commitHistory('typing');});
+sourceArea.addEventListener('input',()=>{markDirty();saveDraft();if(!State.composing)commitHistory('typing');});
 window.addEventListener('beforeunload',e=>{
   // 只有未保存到磁盘时才提示（自动草稿不等于保存到磁盘）
   if(State.dirty||State.lastSavedMd===null){
