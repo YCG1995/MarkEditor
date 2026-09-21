@@ -750,7 +750,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 /* 版本号宏：发版时与 neutralino.config.json 的 version 一同修改；下载地址由版本号推导 */
-const APP_VERSION='1.0.8';
+const APP_VERSION='1.0.9';
 const APP_REPO='https://github.com/YCG1995/MarkEditor',APP_SITE='https://md.ycgi.top';
 const APP_RELEASE=APP_REPO+'/releases/tag/v'+APP_VERSION;
 /* 调试日志开关：生产环境保持 false，需要诊断时本地改为 true */
@@ -1041,10 +1041,12 @@ function inlineRender(src,depth=0){
   });
 
   // 7) 白名单内的原始 HTML 标签（正则交替项即白名单）
-  s=s.replace(/&lt;(\/?)(kbd|sub|sup|small|abbr|br|mark|u)\s*&gt;/gi,(_,sl,tag)=>{
+  //    标签文本作为隐藏标记保留在元素内：光标进入时显示 <u>…</u> 源码，序列化时原样回写
+  s=s.replace(/&lt;(\/?)(kbd|sub|sup|small|abbr|br|mark|u)\s*&gt;/gi,(m,sl,tag)=>{
     tag=tag.toLowerCase();
-    if(tag==='br'&&sl)return '<br>';
-    return '<'+sl+tag+'>';
+    if(tag==='br')return '<br>';
+    const mk=hold('<span class="md-marker md-hidden">'+m+'</span>');
+    return sl?mk+'</'+tag+'>':'<'+tag+'>'+mk;
   });
 
   if(State.settings.markdown.emoji)s=s.replace(/(^|[^\w]):([a-z0-9_+-]+):(?=$|[^\w])/gi,(m,pre,name)=>{const emoji=EMOJI_SHORTCODES[name.toLowerCase()];return emoji?pre+hold('<span class="emoji-shortcode" data-code="'+escapeAttr(name)+'">'+emoji+'</span>'):m;});
@@ -2795,7 +2797,7 @@ function onSelectionChange(){
     if(node&&block.contains(node)&&!(node.closest&&node.closest('.codeblock pre'))){
       let p=node;
       while(p&&p!==block){
-        if(p.nodeType===1&&p.matches&&p.matches('strong,em,s,mark,u,a,.md-esc')){p.classList.add('editing');_selMarks.editing.push(p);}
+        if(p.nodeType===1&&p.matches&&p.matches('strong,em,s,del,mark,u,code,kbd,sub,sup,small,abbr,a,.md-esc')){p.classList.add('editing');_selMarks.editing.push(p);}
         p=p.parentNode;
       }
     }
@@ -2910,7 +2912,9 @@ async function pasteImageClipboard(){
   catch(err){warnLog('读取系统图片剪贴板失败，尝试内部剪贴板:',err);}
   if(State.imageClipboard){editSource(State.imageClipboard);toast('已粘贴图片');return true;}toast('剪贴板中没有图片');return false;
 }
+$('#img-ctx-menu').addEventListener('mousedown',e=>e.preventDefault());
 $('#img-ctx-menu').addEventListener('click',async e=>{
+  updateCurrentHistoryView();
   const subItem=e.target.closest('.ctx-submenu .ctx-item');
   if(subItem){
     // 点击了子菜单内的缩放级别
@@ -4015,7 +4019,9 @@ editor.addEventListener('contextmenu',e=>{
   m.innerHTML='';CTX.forEach(id=>{if(id==='-'){m.insertAdjacentHTML('beforeend','<div class="mi-sep"></div>');return;}
     const c=CmdMap[id];const b=document.createElement('button');b.className='mi';
     b.innerHTML='<span>'+escapeHtml(c.title)+'</span><span class="mi-k">'+(c.hot?escapeHtml(hotLabel(c.hot)):'')+'</span>';
-    b.onclick=()=>{m.classList.remove('show');c.run();commitHistory('struct');};m.appendChild(b);});
+    // 与菜单栏一致：mousedown 不抢编辑器焦点/选区；执行前刷新当前帧视图，撤销才能回到右键位置而不是上一次编辑处
+    b.addEventListener('mousedown',ev=>ev.preventDefault());
+    b.onclick=()=>{m.classList.remove('show');updateCurrentHistoryView();c.run();if(c.id!=='undo'&&c.id!=='redo')commitHistory('struct');};m.appendChild(b);});
   m.classList.add('show');
   m.style.left=Math.min(e.clientX,window.innerWidth-220)+'px';
   m.style.top=Math.min(e.clientY,window.innerHeight-360)+'px';
