@@ -4,7 +4,7 @@
 
 一个 HTML 文件就是全部：无需安装、无需联网、无需注册，双击即用。支持数学公式、Mermaid 图表、多主题、导出 Word/HTML/PDF、本地工作区直读直写。
 
-[![version](https://img.shields.io/badge/version-1.0.8-blue)](https://github.com/YCG1995/MarkEditor/releases)
+[![version](https://img.shields.io/badge/version-1.0.9-blue)](https://github.com/YCG1995/MarkEditor/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![platform](https://img.shields.io/badge/platform-cross--platform-orange)](#下载)
 [![online](https://img.shields.io/badge/在线体验-MarkEditor-brightgreen)](#在线体验)
@@ -25,13 +25,13 @@
 
 | 平台 | 下载 |
 | --- | --- |
-| Windows 10/11 x64 | [MarkEditor-1.0.8-windows-x64.zip](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-windows-x64.zip) |
-| macOS Intel (x64) | [MarkEditor-1.0.8-macos-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-macos-x64.tar.gz) |
-| macOS Apple Silicon (M1+) | [MarkEditor-1.0.8-macos-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-macos-arm64.tar.gz) |
-| macOS 通用 (Universal) | [MarkEditor-1.0.8-macos-universal.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-macos-universal.tar.gz) |
-| Linux x64 | [MarkEditor-1.0.8-linux-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-linux-x64.tar.gz) |
-| Linux arm64 | [MarkEditor-1.0.8-linux-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-linux-arm64.tar.gz) |
-| Linux armhf | [MarkEditor-1.0.8-linux-armhf.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.8/MarkEditor-1.0.8-linux-armhf.tar.gz) |
+| Windows 10/11 x64 | [MarkEditor-1.0.9-windows-x64.zip](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-windows-x64.zip) |
+| macOS Intel (x64) | [MarkEditor-1.0.9-macos-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-macos-x64.tar.gz) |
+| macOS Apple Silicon (M1+) | [MarkEditor-1.0.9-macos-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-macos-arm64.tar.gz) |
+| macOS 通用 (Universal) | [MarkEditor-1.0.9-macos-universal.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-macos-universal.tar.gz) |
+| Linux x64 | [MarkEditor-1.0.9-linux-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-linux-x64.tar.gz) |
+| Linux arm64 | [MarkEditor-1.0.9-linux-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-linux-arm64.tar.gz) |
+| Linux armhf | [MarkEditor-1.0.9-linux-armhf.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.0.9/MarkEditor-1.0.9-linux-armhf.tar.gz) |
 
 更多版本见 [Releases](https://github.com/YCG1995/MarkEditor/releases)。
 
