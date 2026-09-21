@@ -279,10 +279,14 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .hr-block hr{border:none;border-top:2px solid var(--border);height:0}
 
 /* 表格 */
-.table-block{margin:.6em 0 .9em;overflow-x:visible;position:relative}
+/* 列数很多时表格在块内横向滚动而不是被 #paper-scroll 裁掉；contain:layout 让单元格内容变化只重排表格自身，
+   不再牵动整篇文档的布局（大表格逐键输入卡顿的主因之一） */
+.table-block{margin:.6em 0 .9em;overflow-x:auto;overflow-y:hidden;position:relative;padding:2px 0 4px;contain:layout}
 .table-block table{border-collapse:collapse;width:100%;font-size:.95em}
 .table-block th,.table-block td{border:1px solid var(--border);padding:7px 12px;min-width:48px;outline:none;vertical-align:middle;text-align:left;caret-color:var(--text)}
 .table-block th{background:var(--code-bg);font-weight:600;position:relative}.col-resizer{position:absolute;right:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:2}.col-resizer:hover{background:var(--accent)}
+/* 最后一列的拖柄不超出表格，避免滚动容器出现多余的 3px 横向滚动 */
+.table-block th:last-child .col-resizer{right:0}
 .table-block td.cell-active,.table-block th.cell-active{box-shadow:inset 0 0 0 2px var(--accent)}
 .table-block td.cell-selected,.table-block th.cell-selected{background:var(--accent-bg,rgba(0,120,255,.12))!important;box-shadow:inset 0 0 0 1px var(--accent)}
 .table-block [data-align="left"]{text-align:left}.table-block [data-align="center"]{text-align:center}.table-block [data-align="right"]{text-align:right}
@@ -1948,7 +1952,15 @@ function tableToMd(block){
   return rows.join('\n');
 }
 function escapeCellSource(s){return String(s).replace(/\n/g,'<br>').replace(/\|/g,'\\|');}
-function cellText(cell){return escapeCellSource(nodeToMd(cell)||'');}
+// 单元格源码缓存：大表格（数千单元格）每键重算整表 tableToMd 代价 ~ms 级；
+// 与块缓存同源失效（flushBlockMutations 只失效被改动的单元格），tableToMd 只需拼接。
+const _cellMdCache=new WeakMap();
+function cellText(cell){
+  flushBlockMutations();
+  let v=_cellMdCache.get(cell);
+  if(v===undefined){v=escapeCellSource(nodeToMd(cell)||'');_cellMdCache.set(cell,v);}
+  return v;
+}
 // 块级序列化缓存：blockToMd 结果按块元素缓存；editor 上的 MutationObserver 记录任何子树变更，
 // serialize()/blockToMd() 入口通过 takeRecords() 同步消费记录并失效受影响的顶层块。
 // 这样每次按键的全文序列化只需重算被改动的块 + 一次字符串 join，使"每帧全文快照"的撤销模型代价可控。
@@ -1958,10 +1970,14 @@ _blockMutations.observe(editor,{childList:true,characterData:true,attributes:tru
 // 影响序列化结果的 class（列表类型等）；active/cell-active/editing 之类纯视觉 class 的切换不失效缓存
 const _MD_CLASS_RE=/\b(ordered|task|md-block|md-marker|md-hidden|md-pandoc|md-autolink|md-bare-link|md-img|footnote-ref|math-inline|math-block-inline|emoji-shortcode|block-content|li-body|code-actions|table-tools|math-hint|col-resizer)\b/g;
 function mdClassSig(v){const m=String(v||'').match(_MD_CLASS_RE);return m?m.sort().join(' '):'';}
-// 失效 node 所有 .md-block 祖先（含嵌套在 callout 内的子块与其顶层块）
+// 失效 node 所有 .md-block 祖先（含嵌套在 callout 内的子块与其顶层块）及所在表格单元格
 function invalidateBlockAncestors(node){
   let el=node&&node.nodeType===3?node.parentElement:node;
-  while(el&&el!==editor){if(el.classList&&el.classList.contains('md-block'))_blockMdCache.delete(el);el=el.parentElement;}
+  while(el&&el!==editor){
+    if(el.classList&&el.classList.contains('md-block'))_blockMdCache.delete(el);
+    else if(el.tagName==='TD'||el.tagName==='TH')_cellMdCache.delete(el);
+    el=el.parentElement;
+  }
 }
 // 消费 DOM 变更记录并失效对应块缓存；有任何内容变更时同时标记全文序列化缓存过期。返回变更记录数。
 function flushBlockMutations(){
@@ -1975,7 +1991,13 @@ function flushBlockMutations(){
     n++;
     invalidateBlockAncestors(r.target);
     // 顶层 childList 变更：被移入的节点若是曾脱离 DOM 又复用的块，其缓存可能过期，一并失效
-    if(r.type==='childList')for(const a of r.addedNodes){if(a.nodeType===1&&a.classList.contains('md-block'))_blockMdCache.delete(a);}
+    if(r.type==='childList')for(const a of r.addedNodes){
+      if(a.nodeType!==1)continue;
+      if(a.classList.contains('md-block'))_blockMdCache.delete(a);
+      // 被移入/复用的单元格（整行移动、列插入等）缓存同样可能过期
+      if(a.tagName==='TD'||a.tagName==='TH')_cellMdCache.delete(a);
+      else if(a.querySelectorAll)for(const c of a.querySelectorAll('td,th'))_cellMdCache.delete(c);
+    }
   }
   if(n)State._serDirty=true;
   return n;
@@ -2255,10 +2277,15 @@ function ensureColResizer(cell){
 }
 function rerenderCell(cell){
   const c=getCaret(cell);if(!c)return;
-  cell.innerHTML=cellRender(cellText(cell));
-  invalidateTextNodes(cell);
-  ensureColResizer(cell);
-  setCaret(cell,c.s,c.e);
+  const html=cellRender(cellText(cell));
+  // 纯文本输入时渲染结果与当前 DOM 完全一致：跳过 innerHTML 重建（省去大表格一次额外的重排与光标重置）
+  const rz=$('.col-resizer',cell),cur=rz?cell.innerHTML.replace(rz.outerHTML,''):cell.innerHTML;
+  invalidateTextNodes(cell); // 浏览器可能新建了文本节点（如向空单元格首次输入），缓存必须失效
+  if(cur!==html){
+    cell.innerHTML=html;
+    ensureColResizer(cell);
+    setCaret(cell,c.s,c.e);
+  }
   markDirty();
 }
 
@@ -4156,23 +4183,37 @@ function textareaCaretY(ta,pos){
 function restoreCanonicalMarkers(canonical,start,end,oldY){
   const A='\uE000',B='\uE001',collapsed=start===end,marked=canonical.slice(0,end)+(collapsed?'':B)+canonical.slice(end);const withStart=marked.slice(0,start)+A+marked.slice(start);
   loadMarkdown(withStart,true);State._serDirty=true;paper.classList.remove('source');State.sourceMode=false;ensureTrailingParagraph();
-  requestAnimationFrame(()=>{const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT),hits={};let n;while((n=walker.nextNode())){for(const token of [A,B]){const i=n.nodeValue.indexOf(token);if(i>=0)hits[token]={node:n,offset:i};}}
-    if(hits[A]){
-      const same=!collapsed&&hits[B]&&hits[A].node===hits[B].node;
-      const endOf=collapsed?hits[A].offset:hits[B].offset-(same&&hits[B].offset>hits[A].offset?1:0);
-      if(hits[B])hits[B].node.nodeValue=hits[B].node.nodeValue.replace(B,'');hits[A].node.nodeValue=hits[A].node.nodeValue.replace(A,'');
-      const sA=hits[A];
-      const eA=collapsed?sA:{node:hits[B].node,offset:endOf};
-      const root=(sA.node.nodeType===3?(sA.node.parentElement?sA.node.parentElement.closest('th,td'):null):sA.node.closest? sA.node.closest('th,td'):null)||editor;root.focus&&root.focus({preventScroll:true});
-      const r=document.createRange();r.setStart(sA.node,sA.offset);
-      if(collapsed)r.collapse(true);else r.setEnd(eA.node,eA.offset);
-      const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
-      State._serDirty=true;const newY=selectionViewportY();paperScroll.scrollTop+=newY-oldY;requestAnimationFrame(()=>{paperScroll.scrollTop+=selectionViewportY()-oldY;});
-    }else{warnLog('源码光标标记未能映射回可视 DOM');State._serDirty=true;}
-    // 兜底：无论标记是否映射成功，全局清除残留的私用区光标标记，防止泄漏到文档
-    const w2=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);let x;
-    while((x=w2.nextNode())){if(x.nodeValue.indexOf(A)>=0||x.nodeValue.indexOf(B)>=0)x.nodeValue=x.nodeValue.split(A).join('').split(B).join('');}
-  });
+  requestAnimationFrame(()=>placeCanonicalMarkers(collapsed,oldY));
+}
+// 标记删除后若文本节点变空（光标原本落在空段落上），把它替换为 <br> 占位：
+// 否则空段落没有 <br> 会失去高度（看起来"空行消失"），光标也无处安放。返回可用的落点。
+function healMarkerNode(node,offset){
+  if(!node||node.nodeType!==3||node.nodeValue!=='')return {node,offset};
+  const p=node.parentElement;if(!p)return {node,offset};
+  const idx=Array.from(p.childNodes).indexOf(node);node.remove();
+  if(!p.textContent&&!p.querySelector('br'))p.appendChild(document.createElement('br'));
+  const b=p.closest('.md-block');if(b)invalidateTextNodes(editableRoot(b));
+  return {node:p,offset:Math.max(0,idx)};
+}
+function placeCanonicalMarkers(collapsed,oldY){
+  const A='\uE000',B='\uE001';
+  const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT),hits={};let n;while((n=walker.nextNode())){for(const token of [A,B]){const i=n.nodeValue.indexOf(token);if(i>=0)hits[token]={node:n,offset:i};}}
+  if(hits[A]){
+    const same=!collapsed&&hits[B]&&hits[A].node===hits[B].node;
+    const endOf=collapsed?hits[A].offset:hits[B].offset-(same&&hits[B].offset>hits[A].offset?1:0);
+    if(hits[B])hits[B].node.nodeValue=hits[B].node.nodeValue.replace(B,'');hits[A].node.nodeValue=hits[A].node.nodeValue.replace(A,'');
+    const sA=healMarkerNode(hits[A].node,hits[A].offset);
+    const eA=collapsed?sA:(same?(sA.node===hits[A].node?{node:sA.node,offset:endOf}:sA):healMarkerNode(hits[B].node,endOf));
+    const root=(sA.node.nodeType===3?(sA.node.parentElement?sA.node.parentElement.closest('th,td'):null):sA.node.closest? sA.node.closest('th,td'):null)||editor;root.focus&&root.focus({preventScroll:true});
+    const r=document.createRange();r.setStart(sA.node,sA.offset);
+    if(collapsed)r.collapse(true);else r.setEnd(eA.node,eA.offset);
+    const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
+    State._serDirty=true;const newY=selectionViewportY();paperScroll.scrollTop+=newY-oldY;requestAnimationFrame(()=>{paperScroll.scrollTop+=selectionViewportY()-oldY;});
+  }else{warnLog('源码光标标记未能映射回可视 DOM');State._serDirty=true;}
+  // 兜底：无论标记是否映射成功，全局清除残留的私用区光标标记，防止泄漏到文档；变空的节点同样补 <br>
+  const w2=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT),stale=[];let x;
+  while((x=w2.nextNode())){if(x.nodeValue.indexOf(A)>=0||x.nodeValue.indexOf(B)>=0)stale.push(x);}
+  for(const t of stale){t.nodeValue=t.nodeValue.split(A).join('').split(B).join('');healMarkerNode(t,0);}
 }
 function toggleSource(){
   // 模式切换不是撤销步骤，但要先把当前帧的光标/滚动刷成切换前的状态
