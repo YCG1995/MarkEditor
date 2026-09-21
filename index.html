@@ -362,6 +362,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 .modal{background:var(--ui-bg);border:1px solid var(--ui-border);border-radius:12px;box-shadow:var(--menu-shadow);width:420px;max-width:92vw;overflow:hidden;animation:menuIn .15s ease}
 .modal-head{padding:14px 18px 6px;font-weight:700;font-size:15px}
 .modal-body{padding:8px 18px 16px}
+.about-grid{display:grid;grid-template-columns:max-content 1fr;gap:8px 14px;font-size:13.5px;line-height:1.7;align-items:start}
+.about-label{color:var(--ui-muted,var(--muted));white-space:nowrap}
+.about-grid a{color:var(--accent);text-decoration:none;word-break:break-all}.about-grid a:hover{text-decoration:underline}
+.about-desc{color:var(--ui-muted,var(--muted));font-size:12.5px}
 .modal label{display:block;font-size:12px;color:var(--ui-muted);margin:10px 0 5px}
 .modal input[type=text],.modal input[type=url],.modal input[type=number],.modal select{width:100%;background:var(--ui-bg2);color:var(--ui-text);border:1px solid var(--ui-border);border-radius:7px;padding:8px 11px;outline:none;font-size:13.5px}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}.settings-grid .full{grid-column:1/-1}.modal label.check-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ui-text)}
 .modal input:focus{border-color:var(--accent)}
@@ -656,14 +660,12 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 <!-- 关于弹窗 -->
 <div class="modal-mask" id="about-modal" role="dialog" aria-modal="true" aria-label="关于">
   <div class="modal">
-    <div class="modal-head">MarkEditor · 离线 Markdown 编辑器</div>
-    <div class="modal-body" style="line-height:1.8;font-size:13.5px">
-      单文件、零依赖、可完全离线运行的所见即所得 Markdown 编辑器，支持：<br>
-      <b>排版：</b>标题（H1–H6，可自动编号）/ 粗斜体 / 删除线 / 高亮 / 下划线 / 行内代码 / 代码块（语法高亮、行号、一键复制）/ 引用 / 有序·无序·任务列表（可嵌套、自动编号）/ 表格（浮动工具栏增删行列、切换对齐、导出 CSV）/ 链接 / 图片（拖拽/粘贴插入，可内嵌 Base64）/ 分割线 / 脚注 / Callout 提示块 / Front Matter。<br>
-      <b>进阶：</b>数学公式（TeX 子集，块级与行内，可点击编辑）/ Mermaid 流程图 / [TOC] 目录 / 源码模式 / 专注模式（F8）/ 打字机模式（F9）/ 全屏（F11）/ 多主题 / 缩放 / 页面宽度 / 查找替换 / 命令面板（Ctrl+Shift+P）。<br>
-      <b>大纲：</b>左侧大纲随标题自动生成，支持<b>层级折叠/展开</b>与一键全部折叠；手机等窄屏（≤820px）默认折叠，只显示顶层标题。<br>
-      <b>文件：</b>工作区管理（文件树、右键菜单：重命名/副本/删除/复制路径/属性等）/ 快速打开（Ctrl+P）/ 工作区全局搜索（Ctrl+Shift+F）/ 打开保存 .md / 导出 HTML（静态，零脚本）/ 导出可编辑 HTML（内嵌文档，禁脚本环境自动静态降级）/ 导出 Word（.doc）。<br>
-      <span style="color:var(--muted)">提示：直接输入 Markdown 语法即可即时渲染；Ctrl+Shift+P 打开命令面板搜索全部 72 个命令；Ctrl+, 打开偏好设置。</span>
+    <div class="modal-head">MarkEditor</div>
+    <div class="modal-body about-grid">
+      <span class="about-label">版本</span><span id="about-version"></span>
+      <span class="about-label">GitHub</span><span><a id="about-repo" target="_blank" rel="noopener"></a><br><span class="about-desc">MarkEditor — 单文件离线 Markdown 编辑器，Typora 的开源免费替代品。无需安装，双击即用，支持数学公式、Mermaid 图表、多主题、导出 Word/HTML、本地文件系统直读直写。</span></span>
+      <span class="about-label">在线地址</span><span><a id="about-site" target="_blank" rel="noopener"></a></span>
+      <span class="about-label">下载地址</span><span><a id="about-download" target="_blank" rel="noopener"></a></span>
     </div>
     <div class="modal-foot"><button class="btn btn-primary" data-close>知道了</button></div>
   </div>
@@ -747,6 +749,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
    ============================================================ */
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+/* 版本号宏：发版时与 neutralino.config.json 的 version 一同修改；下载地址由版本号推导 */
+const APP_VERSION='1.0.8';
+const APP_REPO='https://github.com/YCG1995/MarkEditor',APP_SITE='https://md.ycgi.top';
+const APP_RELEASE=APP_REPO+'/releases/tag/v'+APP_VERSION;
 /* 调试日志开关：生产环境保持 false，需要诊断时本地改为 true */
 const DEBUG=false;
 const log=(...a)=>{if(DEBUG)console.info('[MarkEditor]',...a);};
@@ -3658,6 +3664,15 @@ cmd('headingStart2','编号起始 · H2','',()=>setHeadingStartLevel(2));
 cmd('headingStart3','编号起始 · H3','',()=>setHeadingStartLevel(3));
 cmd('headingStart4','编号起始 · H4','',()=>setHeadingStartLevel(4));
 cmd('settings','偏好与导出设置…','Ctrl+,',openSettings);
+// 关于弹窗内容由版本号宏填充，版本只在 APP_VERSION 一处维护
+function fillAboutModal(){
+  $('#about-version').textContent='V'+APP_VERSION;
+  const set=(sel,href,text)=>{const a=$(sel);a.href=href;a.textContent=text;};
+  set('#about-repo',APP_REPO,APP_REPO.replace(/^https?:\/\/github\.com\//,''));
+  set('#about-site',APP_SITE,APP_SITE.replace(/^https?:\/\//,''));
+  set('#about-download',APP_RELEASE,'Release MarkEditor v'+APP_VERSION);
+}
+fillAboutModal();
 cmd('about','关于 MarkEditor','',()=>showModal('#about-modal'));
 cmd('welcome','欢迎使用文档','',loadWelcome);
 const CmdMap=Object.fromEntries(Cmds.map(c=>[c.id,c]));
