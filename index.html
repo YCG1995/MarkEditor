@@ -2,7 +2,7 @@
 <html lang="zh-CN" data-theme="github-light">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>MarkEditor</title>
 <style>
 
@@ -153,7 +153,7 @@ input,textarea{font-family:inherit;color:inherit}
 #paper-scroll{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
 #paper{max-width:var(--paper-max,860px);margin:28px auto 120px;background:var(--paper);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);min-height:calc(100% - 148px);padding:56px 64px 80px;transition:var(--transition)}
 #paper.fs{max-width:none;margin:0;border:none;border-radius:0;box-shadow:none;min-height:100%}
-#editor{outline:none;font-size:var(--editor-fs);line-height:1.7;color:var(--text);word-wrap:break-word;white-space:pre-wrap}
+#editor{outline:none;font-size:var(--editor-fs);line-height:var(--editor-lh,1.7);font-family:var(--editor-font,inherit);color:var(--text);word-wrap:break-word;white-space:pre-wrap}
 #source-area{width:100%;min-height:70vh;resize:none;outline:none;border:none;background:var(--paper);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.7;padding:0;display:none}
 #paper.source #editor{display:none}
 #paper.source #source-area{display:block}
@@ -173,7 +173,13 @@ input,textarea{font-family:inherit;color:inherit}
 .math-inline:not(.editing) .math-out{display:inline}
 
 /* headings */
-.heading{font-weight:700;line-height:1.35;margin:.6em 0 .35em}
+.heading{font-weight:700;line-height:1.35;margin:.6em 0 .35em;position:relative}
+.heading-fold{position:absolute;left:-22px;top:50%;transform:translateY(-50%);width:18px;height:18px;
+  display:flex;align-items:center;justify-content:center;border-radius:4px;color:var(--muted);
+  font-size:13px;line-height:1;cursor:pointer;user-select:none;opacity:.35;transition:opacity .12s,background .12s}
+.heading:hover .heading-fold,.heading-fold:focus{opacity:1;background:var(--code-bg)}
+.heading-fold:hover{color:var(--accent)}
+.fold-hidden{display:none!important}
 .h1{font-size:1.9em;padding-bottom:.28em;border-bottom:1px solid var(--border)}
 .h2{font-size:1.55em;padding-bottom:.25em;border-bottom:1px solid var(--border)}
 .h3{font-size:1.3em}.h4{font-size:1.12em}.h5{font-size:1em}.h6{font-size:.92em;color:var(--muted)}
@@ -208,6 +214,11 @@ code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);border-ra
 .ctx-menu .ctx-item.has-sub.sub-left>.ctx-submenu{left:auto;right:100%;margin-right:2px}
 .tree-row.context-target{background:var(--ui-hover);border-radius:5px}
 img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outline-offset:2px}
+/* 相对路径图片缺失：直接显示原始路径，方便定位和批量修复 */
+.md-img.img-missing{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 9px;border:1px dashed #cf222e;border-radius:6px;background:rgba(207,34,46,.06);color:#cf222e;font:.82em/1.5 var(--mono);vertical-align:middle}
+.md-img.img-missing img{display:none}
+.md-img.img-missing::before{content:"⚠ 图片未找到";font-weight:700}
+.md-img.img-missing::after{content:attr(data-missing-path);max-width:46em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
 
 /* blockquote */
 .quote{border-left:4px solid var(--quote-border);background:var(--quote-bg);padding:.35em 0 .35em 14px;margin:.3em 0 .55em;color:var(--muted);border-radius:0 6px 6px 0}
@@ -324,6 +335,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 #app.focus-mode .md-block.active{opacity:1}
 
 /* ---------- 状态栏 ---------- */
+#mobile-bar{display:none}
 #statusbar{flex:0 0 30px;display:flex;align-items:center;gap:4px;padding:0 12px;background:var(--ui-bg);border-top:1px solid var(--ui-border);font-size:12px;color:var(--ui-muted);-webkit-user-select:none;user-select:none}
 .st-label{padding:2px 8px;border-radius:5px}
 .st-label:hover{background:var(--ui-hover)}
@@ -434,10 +446,11 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
 #sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90}
 #sb-backdrop.show{display:block}
 @media (max-width:820px){
-  :root{--editor-fs:15.5px}
-  #app{height:100vh;height:100dvh}
-  /* menubar: compact, horizontally scrollable menus */
-  #menubar{height:44px;flex-basis:44px;padding:0 6px;gap:1px;overflow:hidden}
+  :root{--editor-fs:16px}
+  #app{height:100vh;height:var(--app-height,100dvh)}
+  /* menubar: compact, horizontally scrollable menus；顶部留刘海安全区 */
+  #menubar{height:calc(44px + env(safe-area-inset-top));flex-basis:calc(44px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 6px 0;gap:1px;overflow:hidden}
+  #btn-app-window{display:none}
   #menubar::-webkit-scrollbar{display:none}
   .app-logo{padding:0 6px 0 2px;font-size:13px;flex:0 0 auto}
   .app-logo svg{width:16px;height:16px}
@@ -447,21 +460,34 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   .menu-root{flex:0 0 auto}
   .menu-spacer{display:none}
   .mb-btn{width:36px;height:36px;flex:0 0 36px}
-  .menu-dropdown{position:fixed;top:44px;left:6px;right:6px;min-width:0;width:auto;max-height:60vh;border-radius:10px;padding:6px}
+  .menu-dropdown{position:fixed;top:calc(44px + env(safe-area-inset-top));left:6px;right:6px;min-width:0;width:auto;max-height:60vh;border-radius:10px;padding:6px}
   .mi{padding:11px 12px;font-size:15px}
   .mi-sub>.mi-sub-panel{position:static;min-width:0;box-shadow:none;border:none;background:var(--ui-hover);margin:2px 0;padding:4px}
   /* sidebar as overlay drawer */
   #sb-resize{display:none}
-  #sidebar{position:fixed;top:44px;bottom:0;left:0;width:82vw;max-width:320px;flex-basis:auto;z-index:100;
+  #sidebar{position:fixed;top:calc(44px + env(safe-area-inset-top));bottom:calc(34px + env(safe-area-inset-bottom));left:0;width:82vw;max-width:320px;flex-basis:auto;z-index:100;
     transform:translateX(0);transition:transform .22s ease;box-shadow:var(--menu-shadow)}
   #sidebar.collapsed{margin-left:0;transform:translateX(-105%);border-right:1px solid var(--ui-border)}
+  /* 常驻快捷格式栏：9 个高频动作一屏放下，拇指可达 */
+  #mobile-bar{display:flex;flex:0 0 48px;align-items:center;gap:2px;padding:4px 6px;background:var(--ui-bg);border-top:1px solid var(--ui-border);overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #mobile-bar::-webkit-scrollbar{display:none}
+  .mbar-btn{flex:0 0 40px;height:40px;border-radius:8px;font-size:15px;line-height:1;color:var(--ui-text);background:var(--ui-bg2);border:1px solid var(--ui-border);display:flex;align-items:center;justify-content:center;touch-action:manipulation;transition:background .12s,transform .12s}
+  .mbar-btn:active{background:var(--ui-hover);transform:scale(.95)}
   /* 纸张全宽，舒适的触摸间距 */
   #paper-scroll{-webkit-overflow-scrolling:touch}
-  #paper{margin:0 auto 80px;padding:20px 16px 60px;border:none;border-radius:0;box-shadow:none;min-height:calc(100% - 80px)}
+  #paper{margin:0 auto 80px;padding:20px 16px 60px;border:none;border-radius:0;box-shadow:none;min-height:calc(100% - 80px);width:100%;max-width:100%}
   #paper.fs{padding:18px 14px 60px}
+  /* iOS 聚焦 contenteditable 时字号低于 16px 会被自动放大，这里托底 */
+  #editor{font-size:max(16px,var(--editor-fs))}
   .md-block{margin-bottom:.5em}
-  .heading .h-anchor{left:auto;right:100%;opacity:.5}
+  /* 折叠按钮移到标题右侧，避免 left:-22px 被纸张/页面裁掉；触摸区放大到 28px */
+  .heading{padding-right:32px}
+  .heading-fold{left:auto;right:0;width:28px;height:28px;font-size:15px;opacity:.9;background:var(--code-bg);border-radius:6px}
   /* bigger touch targets for markers / checkboxes */
+  .sb-tab{padding:10px 8px;font-size:14px}
+  .file-action{width:34px;height:34px}
+  .tree-row{min-height:40px;padding:8px 7px}
+  #outline .ol-item{min-height:40px;padding-top:8px;padding-bottom:8px}
   .task-box{width:20px;height:20px;top:.28em}
   .list-item{padding-left:30px}
   .list-item[data-indent="1"]{padding-left:52px}
@@ -474,13 +500,17 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   .table-tools{position:static;margin:6px 0 0;flex-wrap:wrap}
   .codeblock{overflow:visible}
   .codeblock pre{padding:12px 12px 10px}
-  .table-block{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .table-block table{min-width:420px}
+  .codeblock code{font-size:14.5px}
+  .table-block{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;min-width:0}
+  .table-block table{min-width:100%}
+  .md-img.img-missing::after{max-width:60vw}
   .table-block.has-focus .table-tools{display:flex;gap:4px;flex-wrap:wrap}
   .tt-btn,.code-lang,.code-copy,.mermaid-toggle{padding:6px 11px;font-size:13px}
   /* selection floating toolbar */
   #sel-toolbar{max-width:94vw;flex-wrap:wrap}
   .sel-btn{width:38px;height:38px;font-size:15px}
+  /* 手机端只保留高频格式，避免工具栏换成两行遮住选中的文字 */
+  .sel-btn[data-cmd="strike"],.sel-btn[data-cmd="inlineCode"],.sel-btn[data-cmd="clearInline"]{display:none}
   /* find bar full width */
   #findbar{top:8px;left:8px;right:8px;width:auto;border-radius:10px}
   /* modals & command palette */
@@ -490,10 +520,11 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   .cmdk-box{width:100%;max-width:100%}
   .cmdk-item{padding:13px 14px;font-size:15px}
   /* 状态栏紧凑：保留块类型 / 字数 / 文件名，隐藏模式切换与缩放 */
-  #statusbar{padding:0 8px;font-size:11px;gap:2px;overflow:hidden;height:34px;flex-basis:34px}
+  #statusbar{padding:0 8px env(safe-area-inset-bottom);font-size:11px;gap:2px;overflow:hidden;height:calc(34px + env(safe-area-inset-bottom));flex-basis:calc(34px + env(safe-area-inset-bottom))}
   #statusbar .st-sep,#st-source,#st-focus,#st-typewriter,#zoom-out,#st-zoom,#zoom-in{display:none}
-  .st-sidebar-btn{padding:3px 6px;font-size:0;gap:0}
-  #st-block-type{flex:0 0 auto}
+  .st-sidebar-btn{width:44px;height:34px;padding:0;font-size:0;gap:0;display:flex;align-items:center;justify-content:center;flex:0 0 44px}
+  .st-sidebar-btn svg{width:18px;height:18px}
+  #st-block-type{flex:0 0 auto;min-width:0}
   #st-count{flex:0 0 auto}
   #st-file{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .st-spacer{display:none}
@@ -524,6 +555,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   #paper{display:block!important;max-width:none!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;border:none!important;border-radius:0!important;box-shadow:none!important;padding:0!important;overflow:visible!important}
   #editor{display:block!important;height:auto!important;min-height:0!important;overflow:visible!important}
   .md-hidden,.md-marker,.math-src{display:none!important}
+  .fold-hidden{display:revert!important}.heading-fold{display:none!important}
   .md-block,.table-block,.codeblock{break-inside:auto;page-break-inside:auto}.heading{break-after:avoid-page;page-break-after:avoid}
   @page{@top-left{content:normal}@top-center{content:normal}@top-right{content:normal}@bottom-left{content:normal}@bottom-center{content:counter(page);font-size:9pt;color:#666}@bottom-right{content:normal}}
   .table-block{overflow:visible!important}
@@ -601,6 +633,19 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     </main>
   </div>
 
+  <!-- ============ 移动端快捷格式栏（仅窄屏显示） ============ -->
+  <div id="mobile-bar" role="toolbar" aria-label="移动端快捷格式栏">
+    <button class="mbar-btn" data-cmd="undo" title="撤销">↶</button>
+    <button class="mbar-btn" data-cmd="redo" title="重做">↷</button>
+    <button class="mbar-btn" data-cmd="bold" title="加粗"><b>B</b></button>
+    <button class="mbar-btn" data-cmd="italic" title="斜体"><i>I</i></button>
+    <button class="mbar-btn" data-cmd="h1" title="一级标题">H1</button>
+    <button class="mbar-btn" data-cmd="ul" title="无序列表">•≡</button>
+    <button class="mbar-btn" data-cmd="codeblock" title="代码块">&lt;/&gt;</button>
+    <button class="mbar-btn" data-cmd="quote" title="引用">❝</button>
+    <button class="mbar-btn" data-cmd="link" title="链接">🔗</button>
+  </div>
+
   <!-- ============ 状态栏 ============ -->
   <footer id="statusbar" role="contentinfo" aria-label="状态栏">
     <span class="st-btn st-sidebar-btn" id="st-sidebar" title="切换侧边栏 (Ctrl+Shift+L)">
@@ -610,6 +655,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     <span class="st-label" id="st-block-type">段落</span>
     <span class="st-sep"></span>
     <span class="st-label" id="st-count">0 字</span>
+    <span class="st-label" id="st-sel" style="display:none"></span>
     <span class="st-label" id="st-file" title="点击重命名">untitled.md</span>
     <span class="st-btn" id="st-hn" title="标题自动编号起始级别，点击循环切换" style="display:none"></span>
     <span class="st-spacer"></span>
@@ -686,6 +732,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   <label>页边距（pt）<input id="set-margin" type="number" min="20" max="144"></label>
   <label class="check-row"><input id="set-frontmatter" type="checkbox">导出 Front Matter</label>
   <label class="check-row"><input id="set-autodraft" type="checkbox">自动保存草稿到本机浏览器（公用电脑建议关闭）</label>
+  <label class="check-row"><input id="set-autosave" type="checkbox">打开文件后自动保存到磁盘（停止输入约 6 秒）</label>
+  <label>正文字号（px）<input id="set-editor-fs" type="number" min="12" max="24" step="1"></label>
+  <label>行高<input id="set-editor-lh" type="number" min="1.2" max="2.4" step="0.05"></label>
+  <label class="full">正文字体（留空使用默认）<input id="set-editor-font" type="text" placeholder="例如：Noto Serif SC, Songti SC, serif"></label>
   <label class="full">页眉<input id="set-header" type="text"></label><label class="full">页脚<input id="set-footer" type="text"></label>
 </div><div class="modal-foot"><button class="btn" data-close>取消</button><button class="btn" id="settings-reset">恢复默认</button><button class="btn btn-primary" id="settings-ok">保存设置</button></div></div></div>
 
@@ -766,6 +816,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     EMPTY_IMAGE_SRC: () => EMPTY_IMAGE_SRC,
     RecentStore: () => RecentStore,
     State: () => State,
+    applyAppearance: () => applyAppearance,
     bootstrap_core: () => bootstrap_core,
     confirmDiscard: () => confirmDiscard,
     countWords: () => countWords,
@@ -777,6 +828,9 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     findRecentHandle: () => findRecentHandle,
     getRecent: () => getRecent,
     hasUnresolvedImages: () => hasUnresolvedImages,
+    idbDraftClear: () => idbDraftClear,
+    idbDraftGet: () => idbDraftGet,
+    idbDraftPut: () => idbDraftPut,
     imagePreviewSrc: () => imagePreviewSrc,
     isMac: () => isMac,
     isUnresolvedImageWrap: () => isUnresolvedImageWrap,
@@ -924,6 +978,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     commitSettings: () => commitSettings,
     computeHasChild: () => computeHasChild,
     configuredPrint: () => configuredPrint,
+    copyRich: () => copyRich,
     decodeImages: () => decodeImages,
     decodeProjection: () => decodeProjection,
     doWrap: () => doWrap,
@@ -1118,25 +1173,25 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     };
     let t = escapeHtml(rawTex);
     t = t.replace(/\\left\s*([.()[\]|\\])/g, "$1").replace(/\\right\s*([.()[\]|\\])/g, "$1");
-    t = t.replace(/\\(?:text|mathrm|operatorname)\s*\{([^{}]*)\}/g, (_, x) => hold('<span style="font-style:normal">' + x + "</span>"));
-    for (let i = 0; i < 8; i++) {
+    t = t.replace(/\\(?:text|mathrm|operatorname)\s*\{([^{}]*)\}/g, (_, x2) => hold('<span style="font-style:normal">' + x2 + "</span>"));
+    for (let i2 = 0; i2 < 8; i2++) {
       const n = t.replace(/\\(?:dfrac|tfrac|frac)\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (_, a, b) => hold('<span class="md-mfrac"><span>' + a + "</span><span>" + b + "</span></span>"));
       if (n === t) break;
       t = n;
     }
     t = t.replace(/\\(?:dbin|tbin|bin)?om\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (_, a, b) => hold('<span class="md-mfrac" style="font-size:.85em"><span>(<span>' + a + "</span>)</span><span>(<span>" + b + "</span>)</span></span>"));
-    for (let i = 0; i < 4; i++) {
-      const n = t.replace(/\\sqrt\s*(?:\[[^\]]*\])?\s*\{([^{}]*)\}/g, (_, x) => hold('√<span class="md-mroot">' + x + "</span>"));
+    for (let i2 = 0; i2 < 4; i2++) {
+      const n = t.replace(/\\sqrt\s*(?:\[[^\]]*\])?\s*\{([^{}]*)\}/g, (_, x2) => hold('√<span class="md-mroot">' + x2 + "</span>"));
       if (n === t) break;
       t = n;
     }
     t = t.replace(/\\sqrt\s*([A-Za-z0-9])/g, "√$1");
-    t = t.replace(/\\(hat|bar|vec|dot|tilde|ddot)\s*\{([^{}]*)\}/g, (_, k, x) => {
+    t = t.replace(/\\(hat|bar|vec|dot|tilde|ddot)\s*\{([^{}]*)\}/g, (_, k, x2) => {
       const map = { hat: ["̂"], bar: ["̄"], vec: ["⃗"], dot: ["̇"], tilde: ["̃"], ddot: ["̈"] };
-      return hold(x + "<span>" + map[k][0] + "</span>");
+      return hold(x2 + "<span>" + map[k][0] + "</span>");
     });
-    for (let i = 0; i < 6; i++) {
-      const n = t.replace(/\^\{([^{}]*)\}/g, (_, x) => hold("<sup>" + x + "</sup>")).replace(/_\{([^{}]*)\}/g, (_, x) => hold("<sub>" + x + "</sub>")).replace(/\^(\S)/g, (_, x) => hold("<sup>" + x + "</sup>")).replace(/_(\S)/g, (_, x) => hold("<sub>" + x + "</sub>"));
+    for (let i2 = 0; i2 < 6; i2++) {
+      const n = t.replace(/\^\{([^{}]*)\}/g, (_, x2) => hold("<sup>" + x2 + "</sup>")).replace(/_\{([^{}]*)\}/g, (_, x2) => hold("<sub>" + x2 + "</sub>")).replace(/\^(\S)/g, (_, x2) => hold("<sup>" + x2 + "</sup>")).replace(/_(\S)/g, (_, x2) => hold("<sub>" + x2 + "</sub>"));
       if (n === t) break;
       t = n;
     }
@@ -1147,7 +1202,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
       return m;
     });
     t = t.replace(/\\([{}| ,;!#%&])/g, "$1").replace(/~/g, " ");
-    t = t.replace(/\u0003(\d+)\u0004/g, (_, i) => stash[+i]);
+    t = t.replace(/\u0003(\d+)\u0004/g, (_, i2) => stash[+i2]);
     return t;
   }
 
@@ -1214,6 +1269,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     WC: () => WC,
     WELCOME: () => WELCOME,
     applyWordImageSize: () => applyWordImageSize,
+    autoSaveToDisk: () => autoSaveToDisk,
     bootstrap_io: () => bootstrap_io,
     buildEditableHtml: () => buildEditableHtml,
     buildExportBody: () => buildExportBody,
@@ -1230,7 +1286,9 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     embedImagesBase64: () => embedImagesBase64,
     emitBlock: () => emitBlock,
     emitWordBlock: () => emitWordBlock,
+    encodeForSave: () => encodeForSave,
     exportDocCss: () => exportDocCss,
+    exportDocx: () => exportDocx,
     exportEditableHtml: () => exportEditableHtml,
     exportHtml: () => exportHtml,
     exportWord: () => exportWord,
@@ -1248,6 +1306,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     openMdFile: () => openMdFile,
     parentDirHandle: () => parentDirHandle,
     pickImage: () => pickImage,
+    readTextFile: () => readTextFile,
     refreshFileTree: () => refreshFileTree,
     refreshFileTreeActive: () => refreshFileTreeActive,
     refreshWorkspaceIndex: () => refreshWorkspaceIndex,
@@ -1262,6 +1321,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     sanitizeExportHtml: () => sanitizeExportHtml,
     saveDraft: () => saveDraft,
     saveWorkspaceState: () => saveWorkspaceState,
+    scheduleAutoSave: () => scheduleAutoSave,
     showFileContextMenu: () => showFileContextMenu,
     switchSidebarPane: () => switchSidebarPane,
     wInline: () => wInline,
@@ -1321,7 +1381,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
       }
       if (tag === "a") return "[" + inner + "](" + (n.getAttribute("href") || "") + ")";
       if (tag === "img") return "![" + (n.getAttribute("alt") || "image") + "](" + (n.getAttribute("src") || "") + ")";
-      if (tag === "blockquote") return "\n" + inner.trim().split("\n").map((x) => "> " + x).join("\n") + "\n";
+      if (tag === "blockquote") return "\n" + inner.trim().split("\n").map((x2) => "> " + x2).join("\n") + "\n";
       if (tag === "li") {
         const ordered = n.parentElement.tagName === "OL";
         return "\n" + "  ".repeat(Math.max(0, depth - 1)) + (ordered ? Array.from(n.parentElement.children).indexOf(n) + 1 + ". " : "- ") + inner.trim();
@@ -1468,6 +1528,21 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
       }
       const rich = dt.getData("text/html"), converted = rich && !e.shiftKey ? htmlToMarkdown(rich) : "", text = converted || dt.getData("text/plain");
       if (!text) return;
+      const urlText = text.trim();
+      if (/^(?:https?:\/\/|mailto:)\S+$/i.test(urlText)) {
+        const block = activeBlock();
+        if (block && isTextBlock(block)) {
+          const c = getCaret(block);
+          if (c && c.e > c.s) {
+            const src = nodeToMd(block), sel = src.slice(c.s, c.e);
+            const ns = src.slice(0, c.s) + "[" + sel + "](" + urlText + ")" + src.slice(c.e);
+            const pos = c.s + 1 + sel.length + 2 + urlText.length;
+            rerenderBlock(block, ns, pos, pos);
+            commitHistory("struct");
+            return;
+          }
+        }
+      }
       insertTextAtCaret(text);
     });
     document.addEventListener("dragenter", (e) => {
@@ -1506,9 +1581,9 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
             }
             let text;
             try {
-              text = await file.text();
-            } catch (err) {
-              toast("读取文件内容失败: " + (err.message || err));
+              text = (await readTextFile(file)).text;
+            } catch (err2) {
+              toast("读取文件内容失败: " + (err2.message || err2));
               return;
             }
             const hasRel = /!\[[^\]]*\]\((?!https?:|data:|\/|file:|#)[^)]+\)/.test(text);
@@ -1535,8 +1610,8 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
             try {
               loadMarkdown(text);
               markSaved();
-            } catch (err) {
-              const msg = err && err.message ? err.message : String(err);
+            } catch (err2) {
+              const msg = err2 && err2.message ? err2.message : String(err2);
               if (/Data URL|malformed|exceeded/i.test(msg)) {
                 toast("打开失败：文件可能包含超大内嵌图片，建议用相对路径引用图片");
               } else {
@@ -1581,25 +1656,20 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
           toast("文件过大（" + (f.size / 1024 / 1024).toFixed(1) + "MB），建议拆分后打开");
           return;
         }
-        const r = new FileReader();
-        r.onload = () => {
+        try {
+          const { text } = await readTextFile(f);
           releaseImageUrls();
           State.filename = f.name;
           State.currentPath = f.name;
           State.fileHandle = null;
           State.workspaceRoot = null;
           State.dirHandle = null;
-          try {
-            loadMarkdown(r.result);
-            markSaved();
-          } catch (err) {
-            toast("解析失败: " + (err.message || err));
-            return;
-          }
+          loadMarkdown(text);
+          markSaved();
           toast("已打开 " + f.name);
-        };
-        r.onerror = () => toast("读取文件失败");
-        r.readAsText(f);
+        } catch (err2) {
+          toast("读取文件失败: " + (err2.message || err2));
+        }
       }
     });
     $("#paper-scroll").addEventListener("mousedown", (e) => {
@@ -1608,6 +1678,1039 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
         ensureTrailingParagraph();
       }, 0);
     });
+  }
+
+  // src/modules/docx.js
+  var docx_exports = {};
+  __export(docx_exports, {
+    buildDocx: () => buildDocx,
+    docxFilename: () => docxFilename
+  });
+
+  // node_modules/fflate/esm/browser.js
+  var u8 = Uint8Array;
+  var u16 = Uint16Array;
+  var i32 = Int32Array;
+  var fleb = new u8([
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    0,
+    /* unused */
+    0,
+    0,
+    /* impossible */
+    0
+  ]);
+  var fdeb = new u8([
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    3,
+    3,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    10,
+    10,
+    11,
+    11,
+    12,
+    12,
+    13,
+    13,
+    /* unused */
+    0,
+    0
+  ]);
+  var clim = new u8([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]);
+  var freb = function(eb, start) {
+    var b = new u16(31);
+    for (var i2 = 0; i2 < 31; ++i2) {
+      b[i2] = start += 1 << eb[i2 - 1];
+    }
+    var r = new i32(b[30]);
+    for (var i2 = 1; i2 < 30; ++i2) {
+      for (var j = b[i2]; j < b[i2 + 1]; ++j) {
+        r[j] = j - b[i2] << 5 | i2;
+      }
+    }
+    return { b, r };
+  };
+  var _a = freb(fleb, 2);
+  var fl = _a.b;
+  var revfl = _a.r;
+  fl[28] = 258, revfl[258] = 28;
+  var _b = freb(fdeb, 0);
+  var fd = _b.b;
+  var revfd = _b.r;
+  var rev = new u16(32768);
+  for (i = 0; i < 32768; ++i) {
+    x = (i & 43690) >> 1 | (i & 21845) << 1;
+    x = (x & 52428) >> 2 | (x & 13107) << 2;
+    x = (x & 61680) >> 4 | (x & 3855) << 4;
+    rev[i] = ((x & 65280) >> 8 | (x & 255) << 8) >> 1;
+  }
+  var x;
+  var i;
+  var hMap = (function(cd, mb, r) {
+    var s = cd.length;
+    var i2 = 0;
+    var l = new u16(mb);
+    for (; i2 < s; ++i2) {
+      if (cd[i2])
+        ++l[cd[i2] - 1];
+    }
+    var le = new u16(mb);
+    for (i2 = 1; i2 < mb; ++i2) {
+      le[i2] = le[i2 - 1] + l[i2 - 1] << 1;
+    }
+    var co;
+    if (r) {
+      co = new u16(1 << mb);
+      var rvb = 15 - mb;
+      for (i2 = 0; i2 < s; ++i2) {
+        if (cd[i2]) {
+          var sv = i2 << 4 | cd[i2];
+          var r_1 = mb - cd[i2];
+          var v = le[cd[i2] - 1]++ << r_1;
+          for (var m = v | (1 << r_1) - 1; v <= m; ++v) {
+            co[rev[v] >> rvb] = sv;
+          }
+        }
+      }
+    } else {
+      co = new u16(s);
+      for (i2 = 0; i2 < s; ++i2) {
+        if (cd[i2]) {
+          co[i2] = rev[le[cd[i2] - 1]++] >> 15 - cd[i2];
+        }
+      }
+    }
+    return co;
+  });
+  var flt = new u8(288);
+  for (i = 0; i < 144; ++i)
+    flt[i] = 8;
+  var i;
+  for (i = 144; i < 256; ++i)
+    flt[i] = 9;
+  var i;
+  for (i = 256; i < 280; ++i)
+    flt[i] = 7;
+  var i;
+  for (i = 280; i < 288; ++i)
+    flt[i] = 8;
+  var i;
+  var fdt = new u8(32);
+  for (i = 0; i < 32; ++i)
+    fdt[i] = 5;
+  var i;
+  var flm = /* @__PURE__ */ hMap(flt, 9, 0);
+  var fdm = /* @__PURE__ */ hMap(fdt, 5, 0);
+  var shft = function(p) {
+    return (p + 7) / 8 | 0;
+  };
+  var slc = function(v, s, e) {
+    if (s == null || s < 0)
+      s = 0;
+    if (e == null || e > v.length)
+      e = v.length;
+    return new u8(v.subarray(s, e));
+  };
+  var ec = [
+    "unexpected EOF",
+    "invalid block type",
+    "invalid length/literal",
+    "invalid distance",
+    "stream finished",
+    "no stream handler",
+    ,
+    // determined by compression function
+    "no callback",
+    "invalid UTF-8 data",
+    "extra field too long",
+    "date not in range 1980-2099",
+    "filename too long",
+    "stream finishing",
+    "invalid zip data"
+    // determined by unknown compression method
+  ];
+  var err = function(ind, msg, nt) {
+    var e = new Error(msg || ec[ind]);
+    e.code = ind;
+    if (Error.captureStackTrace)
+      Error.captureStackTrace(e, err);
+    if (!nt)
+      throw e;
+    return e;
+  };
+  var wbits = function(d, p, v) {
+    v <<= p & 7;
+    var o = p / 8 | 0;
+    d[o] |= v;
+    d[o + 1] |= v >> 8;
+  };
+  var wbits16 = function(d, p, v) {
+    v <<= p & 7;
+    var o = p / 8 | 0;
+    d[o] |= v;
+    d[o + 1] |= v >> 8;
+    d[o + 2] |= v >> 16;
+  };
+  var hTree = function(d, mb) {
+    var t = [];
+    for (var i2 = 0; i2 < d.length; ++i2) {
+      if (d[i2])
+        t.push({ s: i2, f: d[i2] });
+    }
+    var s = t.length;
+    var t2 = t.slice();
+    if (!s)
+      return { t: et, l: 0 };
+    if (s == 1) {
+      var v = new u8(t[0].s + 1);
+      v[t[0].s] = 1;
+      return { t: v, l: 1 };
+    }
+    t.sort(function(a, b) {
+      return a.f - b.f;
+    });
+    t.push({ s: -1, f: 25001 });
+    var l = t[0], r = t[1], i0 = 0, i1 = 1, i22 = 2;
+    t[0] = { s: -1, f: l.f + r.f, l, r };
+    while (i1 != s - 1) {
+      l = t[t[i0].f < t[i22].f ? i0++ : i22++];
+      r = t[i0 != i1 && t[i0].f < t[i22].f ? i0++ : i22++];
+      t[i1++] = { s: -1, f: l.f + r.f, l, r };
+    }
+    var maxSym = t2[0].s;
+    for (var i2 = 1; i2 < s; ++i2) {
+      if (t2[i2].s > maxSym)
+        maxSym = t2[i2].s;
+    }
+    var tr = new u16(maxSym + 1);
+    var mbt = ln(t[i1 - 1], tr, 0);
+    if (mbt > mb) {
+      var i2 = 0, dt = 0;
+      var lft = mbt - mb, cst = 1 << lft;
+      t2.sort(function(a, b) {
+        return tr[b.s] - tr[a.s] || a.f - b.f;
+      });
+      for (; i2 < s; ++i2) {
+        var i2_1 = t2[i2].s;
+        if (tr[i2_1] > mb) {
+          dt += cst - (1 << mbt - tr[i2_1]);
+          tr[i2_1] = mb;
+        } else
+          break;
+      }
+      dt >>= lft;
+      while (dt > 0) {
+        var i2_2 = t2[i2].s;
+        if (tr[i2_2] < mb)
+          dt -= 1 << mb - tr[i2_2]++ - 1;
+        else
+          ++i2;
+      }
+      for (; i2 >= 0 && dt; --i2) {
+        var i2_3 = t2[i2].s;
+        if (tr[i2_3] == mb) {
+          --tr[i2_3];
+          ++dt;
+        }
+      }
+      mbt = mb;
+    }
+    return { t: new u8(tr), l: mbt };
+  };
+  var ln = function(n, l, d) {
+    return n.s == -1 ? Math.max(ln(n.l, l, d + 1), ln(n.r, l, d + 1)) : l[n.s] = d;
+  };
+  var lc = function(c) {
+    var s = c.length;
+    while (s && !c[--s])
+      ;
+    var cl = new u16(++s);
+    var cli = 0, cln = c[0], cls = 1;
+    var w = function(v) {
+      cl[cli++] = v;
+    };
+    for (var i2 = 1; i2 <= s; ++i2) {
+      if (c[i2] == cln && i2 != s)
+        ++cls;
+      else {
+        if (!cln && cls > 2) {
+          for (; cls > 138; cls -= 138)
+            w(32754);
+          if (cls > 2) {
+            w(cls > 10 ? cls - 11 << 5 | 28690 : cls - 3 << 5 | 12305);
+            cls = 0;
+          }
+        } else if (cls > 3) {
+          w(cln), --cls;
+          for (; cls > 6; cls -= 6)
+            w(8304);
+          if (cls > 2)
+            w(cls - 3 << 5 | 8208), cls = 0;
+        }
+        while (cls--)
+          w(cln);
+        cls = 1;
+        cln = c[i2];
+      }
+    }
+    return { c: cl.subarray(0, cli), n: s };
+  };
+  var clen = function(cf, cl) {
+    var l = 0;
+    for (var i2 = 0; i2 < cl.length; ++i2)
+      l += cf[i2] * cl[i2];
+    return l;
+  };
+  var wfblk = function(out, pos, dat) {
+    var s = dat.length;
+    var o = shft(pos + 2);
+    out[o] = s & 255;
+    out[o + 1] = s >> 8;
+    out[o + 2] = out[o] ^ 255;
+    out[o + 3] = out[o + 1] ^ 255;
+    for (var i2 = 0; i2 < s; ++i2)
+      out[o + i2 + 4] = dat[i2];
+    return (o + 4 + s) * 8;
+  };
+  var wblk = function(dat, out, final, syms, lf, df, eb, li, bs, bl, p) {
+    wbits(out, p++, final);
+    ++lf[256];
+    var _a2 = hTree(lf, 15), dlt = _a2.t, mlb = _a2.l;
+    var _b2 = hTree(df, 15), ddt = _b2.t, mdb = _b2.l;
+    var _c = lc(dlt), lclt = _c.c, nlc = _c.n;
+    var _d = lc(ddt), lcdt = _d.c, ndc = _d.n;
+    var lcfreq = new u16(19);
+    for (var i2 = 0; i2 < lclt.length; ++i2)
+      ++lcfreq[lclt[i2] & 31];
+    for (var i2 = 0; i2 < lcdt.length; ++i2)
+      ++lcfreq[lcdt[i2] & 31];
+    var _e = hTree(lcfreq, 7), lct = _e.t, mlcb = _e.l;
+    var nlcc = 19;
+    for (; nlcc > 4 && !lct[clim[nlcc - 1]]; --nlcc)
+      ;
+    var flen = bl + 5 << 3;
+    var ftlen = clen(lf, flt) + clen(df, fdt) + eb;
+    var dtlen = clen(lf, dlt) + clen(df, ddt) + eb + 14 + 3 * nlcc + clen(lcfreq, lct) + 2 * lcfreq[16] + 3 * lcfreq[17] + 7 * lcfreq[18];
+    if (bs >= 0 && flen <= ftlen && flen <= dtlen)
+      return wfblk(out, p, dat.subarray(bs, bs + bl));
+    var lm, ll, dm, dl;
+    wbits(out, p, 1 + (dtlen < ftlen)), p += 2;
+    if (dtlen < ftlen) {
+      lm = hMap(dlt, mlb, 0), ll = dlt, dm = hMap(ddt, mdb, 0), dl = ddt;
+      var llm = hMap(lct, mlcb, 0);
+      wbits(out, p, nlc - 257);
+      wbits(out, p + 5, ndc - 1);
+      wbits(out, p + 10, nlcc - 4);
+      p += 14;
+      for (var i2 = 0; i2 < nlcc; ++i2)
+        wbits(out, p + 3 * i2, lct[clim[i2]]);
+      p += 3 * nlcc;
+      var lcts = [lclt, lcdt];
+      for (var it = 0; it < 2; ++it) {
+        var clct = lcts[it];
+        for (var i2 = 0; i2 < clct.length; ++i2) {
+          var len = clct[i2] & 31;
+          wbits(out, p, llm[len]), p += lct[len];
+          if (len > 15)
+            wbits(out, p, clct[i2] >> 5 & 127), p += clct[i2] >> 12;
+        }
+      }
+    } else {
+      lm = flm, ll = flt, dm = fdm, dl = fdt;
+    }
+    for (var i2 = 0; i2 < li; ++i2) {
+      var sym = syms[i2];
+      if (sym > 255) {
+        var len = sym >> 18 & 31;
+        wbits16(out, p, lm[len + 257]), p += ll[len + 257];
+        if (len > 7)
+          wbits(out, p, sym >> 23 & 31), p += fleb[len];
+        var dst = sym & 31;
+        wbits16(out, p, dm[dst]), p += dl[dst];
+        if (dst > 3)
+          wbits16(out, p, sym >> 5 & 8191), p += fdeb[dst];
+      } else {
+        wbits16(out, p, lm[sym]), p += ll[sym];
+      }
+    }
+    wbits16(out, p, lm[256]);
+    return p + ll[256];
+  };
+  var deo = /* @__PURE__ */ new i32([65540, 131080, 131088, 131104, 262176, 1048704, 1048832, 2114560, 2117632]);
+  var et = /* @__PURE__ */ new u8(0);
+  var dflt = function(dat, lvl, plvl, pre, post, st) {
+    var s = st.z || dat.length;
+    var o = new u8(pre + s + 5 * (1 + Math.ceil(s / 7e3)) + post);
+    var w = o.subarray(pre, o.length - post);
+    var lst = st.l;
+    var pos = (st.r || 0) & 7;
+    if (lvl) {
+      if (pos)
+        w[0] = st.r >> 3;
+      var opt = deo[lvl - 1];
+      var n = opt >> 13, c = opt & 8191;
+      var msk_1 = (1 << plvl) - 1;
+      var prev = st.p || new u16(32768), head = st.h || new u16(msk_1 + 1);
+      var bs1_1 = Math.ceil(plvl / 3), bs2_1 = 2 * bs1_1;
+      var hsh = function(i3) {
+        return (dat[i3] ^ dat[i3 + 1] << bs1_1 ^ dat[i3 + 2] << bs2_1) & msk_1;
+      };
+      var syms = new i32(25e3);
+      var lf = new u16(288), df = new u16(32);
+      var lc_1 = 0, eb = 0, i2 = st.i || 0, li = 0, wi = st.w || 0, bs = 0;
+      for (; i2 + 2 < s; ++i2) {
+        var hv = hsh(i2);
+        var imod = i2 & 32767, pimod = head[hv];
+        prev[imod] = pimod;
+        head[hv] = imod;
+        if (wi <= i2) {
+          var rem = s - i2;
+          if ((lc_1 > 7e3 || li > 24576) && (rem > 423 || !lst)) {
+            pos = wblk(dat, w, 0, syms, lf, df, eb, li, bs, i2 - bs, pos);
+            li = lc_1 = eb = 0, bs = i2;
+            for (var j = 0; j < 286; ++j)
+              lf[j] = 0;
+            for (var j = 0; j < 30; ++j)
+              df[j] = 0;
+          }
+          var l = 2, d = 0, ch_1 = c, dif = imod - pimod & 32767;
+          if (rem > 2 && hv == hsh(i2 - dif)) {
+            var maxn = Math.min(n, rem) - 1;
+            var maxd = Math.min(32767, i2);
+            var ml = Math.min(258, rem);
+            while (dif <= maxd && --ch_1 && imod != pimod) {
+              if (dat[i2 + l] == dat[i2 + l - dif]) {
+                var nl = 0;
+                for (; nl < ml && dat[i2 + nl] == dat[i2 + nl - dif]; ++nl)
+                  ;
+                if (nl > l) {
+                  l = nl, d = dif;
+                  if (nl > maxn)
+                    break;
+                  var mmd = Math.min(dif, nl - 2);
+                  var md = 0;
+                  for (var j = 0; j < mmd; ++j) {
+                    var ti = i2 - dif + j & 32767;
+                    var pti = prev[ti];
+                    var cd = ti - pti & 32767;
+                    if (cd > md)
+                      md = cd, pimod = ti;
+                  }
+                }
+              }
+              imod = pimod, pimod = prev[imod];
+              dif += imod - pimod & 32767;
+            }
+          }
+          if (d) {
+            syms[li++] = 268435456 | revfl[l] << 18 | revfd[d];
+            var lin = revfl[l] & 31, din = revfd[d] & 31;
+            eb += fleb[lin] + fdeb[din];
+            ++lf[257 + lin];
+            ++df[din];
+            wi = i2 + l;
+            ++lc_1;
+          } else {
+            syms[li++] = dat[i2];
+            ++lf[dat[i2]];
+          }
+        }
+      }
+      for (i2 = Math.max(i2, wi); i2 < s; ++i2) {
+        syms[li++] = dat[i2];
+        ++lf[dat[i2]];
+      }
+      pos = wblk(dat, w, lst, syms, lf, df, eb, li, bs, i2 - bs, pos);
+      if (!lst) {
+        st.r = pos & 7 | w[pos / 8 | 0] << 3;
+        pos -= 7;
+        st.h = head, st.p = prev, st.i = i2, st.w = wi;
+      }
+    } else {
+      for (var i2 = st.w || 0; i2 < s + lst; i2 += 65535) {
+        var e = i2 + 65535;
+        if (e >= s) {
+          w[pos / 8 | 0] = lst;
+          e = s;
+        }
+        pos = wfblk(w, pos + 1, dat.subarray(i2, e));
+      }
+      st.i = s;
+    }
+    return slc(o, 0, pre + shft(pos) + post);
+  };
+  var crct = /* @__PURE__ */ (function() {
+    var t = new Int32Array(256);
+    for (var i2 = 0; i2 < 256; ++i2) {
+      var c = i2, k = 9;
+      while (--k)
+        c = (c & 1 && -306674912) ^ c >>> 1;
+      t[i2] = c;
+    }
+    return t;
+  })();
+  var crc = function() {
+    var c = -1;
+    return {
+      p: function(d) {
+        var cr = c;
+        for (var i2 = 0; i2 < d.length; ++i2)
+          cr = crct[cr & 255 ^ d[i2]] ^ cr >>> 8;
+        c = cr;
+      },
+      d: function() {
+        return ~c;
+      }
+    };
+  };
+  var dopt = function(dat, opt, pre, post, st) {
+    if (!st) {
+      st = { l: 1 };
+      if (opt.dictionary) {
+        var dict = opt.dictionary.subarray(-32768);
+        var newDat = new u8(dict.length + dat.length);
+        newDat.set(dict);
+        newDat.set(dat, dict.length);
+        dat = newDat;
+        st.w = dict.length;
+      }
+    }
+    return dflt(dat, opt.level == null ? 6 : opt.level, opt.mem == null ? st.l ? Math.ceil(Math.max(8, Math.min(13, Math.log(dat.length))) * 1.5) : 20 : 12 + opt.mem, pre, post, st);
+  };
+  var mrg = function(a, b) {
+    var o = {};
+    for (var k in a)
+      o[k] = a[k];
+    for (var k in b)
+      o[k] = b[k];
+    return o;
+  };
+  var wbytes = function(d, b, v) {
+    for (; v; ++b)
+      d[b] = v, v >>>= 8;
+  };
+  function deflateSync(data, opts) {
+    return dopt(data, opts || {}, 0, 0);
+  }
+  var fltn = function(d, p, t, o) {
+    for (var k in d) {
+      var val = d[k], n = p + k, op = o;
+      if (Array.isArray(val))
+        op = mrg(o, val[1]), val = val[0];
+      if (ArrayBuffer.isView(val))
+        t[n] = [val, op];
+      else {
+        t[n += "/"] = [new u8(0), op];
+        fltn(val, n, t, o);
+      }
+    }
+  };
+  var te = typeof TextEncoder != "undefined" && /* @__PURE__ */ new TextEncoder();
+  var td = typeof TextDecoder != "undefined" && /* @__PURE__ */ new TextDecoder();
+  var tds = 0;
+  try {
+    td.decode(et, { stream: true });
+    tds = 1;
+  } catch (e) {
+  }
+  function strToU8(str, latin1) {
+    if (latin1) {
+      var ar_1 = new u8(str.length);
+      for (var i2 = 0; i2 < str.length; ++i2)
+        ar_1[i2] = str.charCodeAt(i2);
+      return ar_1;
+    }
+    if (te)
+      return te.encode(str);
+    var l = str.length;
+    var ar = new u8(str.length + (str.length >> 1));
+    var ai = 0;
+    var w = function(v) {
+      ar[ai++] = v;
+    };
+    for (var i2 = 0; i2 < l; ++i2) {
+      if (ai + 5 > ar.length) {
+        var n = new u8(ai + 8 + (l - i2 << 1));
+        n.set(ar);
+        ar = n;
+      }
+      var c = str.charCodeAt(i2);
+      if (c < 128 || latin1)
+        w(c);
+      else if (c < 2048)
+        w(192 | c >> 6), w(128 | c & 63);
+      else if (c > 55295 && c < 57344)
+        c = 65536 + (c & 1023 << 10) | str.charCodeAt(++i2) & 1023, w(240 | c >> 18), w(128 | c >> 12 & 63), w(128 | c >> 6 & 63), w(128 | c & 63);
+      else
+        w(224 | c >> 12), w(128 | c >> 6 & 63), w(128 | c & 63);
+    }
+    return slc(ar, 0, ai);
+  }
+  var exfl = function(ex) {
+    var le = 0;
+    if (ex) {
+      for (var k in ex) {
+        var l = ex[k].length;
+        if (l > 65535)
+          err(9);
+        le += l + 4;
+      }
+    }
+    return le;
+  };
+  var wzh = function(d, b, f, fn, u, c, ce, co) {
+    var fl2 = fn.length, ex = f.extra, col = co && co.length;
+    var exl = exfl(ex);
+    wbytes(d, b, ce != null ? 33639248 : 67324752), b += 4;
+    if (ce != null)
+      d[b++] = 20, d[b++] = f.os;
+    d[b] = 20, b += 2;
+    d[b++] = f.flag << 1 | (c < 0 && 8), d[b++] = u && 8;
+    d[b++] = f.compression & 255, d[b++] = f.compression >> 8;
+    var dt = new Date(f.mtime == null ? Date.now() : f.mtime), y = dt.getFullYear() - 1980;
+    if (y < 0 || y > 119)
+      err(10);
+    wbytes(d, b, y << 25 | dt.getMonth() + 1 << 21 | dt.getDate() << 16 | dt.getHours() << 11 | dt.getMinutes() << 5 | dt.getSeconds() >> 1), b += 4;
+    if (c != -1) {
+      wbytes(d, b, f.crc);
+      wbytes(d, b + 4, c < 0 ? -c - 2 : c);
+      wbytes(d, b + 8, f.size);
+    }
+    wbytes(d, b + 12, fl2);
+    wbytes(d, b + 14, exl), b += 16;
+    if (ce != null) {
+      wbytes(d, b, col);
+      wbytes(d, b + 6, f.attrs);
+      wbytes(d, b + 10, ce), b += 14;
+    }
+    d.set(fn, b);
+    b += fl2;
+    if (exl) {
+      for (var k in ex) {
+        var exf = ex[k], l = exf.length;
+        wbytes(d, b, +k);
+        wbytes(d, b + 2, l);
+        d.set(exf, b + 4), b += 4 + l;
+      }
+    }
+    if (col)
+      d.set(co, b), b += col;
+    return b;
+  };
+  var wzf = function(o, b, c, d, e) {
+    wbytes(o, b, 101010256);
+    wbytes(o, b + 8, c);
+    wbytes(o, b + 10, c);
+    wbytes(o, b + 12, d);
+    wbytes(o, b + 16, e);
+  };
+  function zipSync(data, opts) {
+    if (!opts)
+      opts = {};
+    var r = {};
+    var files = [];
+    fltn(data, "", r, opts);
+    var o = 0;
+    var tot = 0;
+    for (var fn in r) {
+      var _a2 = r[fn], file = _a2[0], p = _a2[1];
+      var compression = p.level == 0 ? 0 : 8;
+      var f = strToU8(fn), s = f.length;
+      var com = p.comment, m = com && strToU8(com), ms = m && m.length;
+      var exl = exfl(p.extra);
+      if (s > 65535)
+        err(11);
+      var d = compression ? deflateSync(file, p) : file, l = d.length;
+      var c = crc();
+      c.p(file);
+      files.push(mrg(p, {
+        size: file.length,
+        crc: c.d(),
+        c: d,
+        f,
+        m,
+        u: s != fn.length || m && com.length != ms,
+        o,
+        compression
+      }));
+      o += 30 + s + exl + l;
+      tot += 76 + 2 * (s + exl) + (ms || 0) + l;
+    }
+    var out = new u8(tot + 22), oe = o, cdl = tot - o;
+    for (var i2 = 0; i2 < files.length; ++i2) {
+      var f = files[i2];
+      wzh(out, f.o, f, f.f, f.u, f.c.length);
+      var badd = 30 + f.f.length + exfl(f.extra);
+      out.set(f.c, f.o + badd);
+      wzh(out, o, f, f.f, f.u, f.c.length, f.o, f.m), o += 16 + badd + (f.m ? f.m.length : 0);
+    }
+    wzf(out, o, files.length, cdl, oe);
+    return out;
+  }
+
+  // src/modules/docx.js
+  var W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+  var R_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  function xmlEsc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  }
+  var SKIP_CLASSES = ["md-marker", "md-hidden", "md-src", "md-back", "math-src", "math-src-edit", "col-resizer", "code-copy", "code-lang", "toc-list"];
+  function isSkipped(n) {
+    if (n.nodeType !== 1) return false;
+    return SKIP_CLASSES.some((c) => n.classList && n.classList.contains(c)) || n.tagName && /^(script|style)$/i.test(n.tagName);
+  }
+  function run(text, fmt = {}) {
+    if (text == null || text === "") return "";
+    const rPr = [];
+    if (fmt.mono) rPr.push('<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:eastAsia="Microsoft YaHei"/>');
+    if (fmt.bold) rPr.push("<w:b/><w:bCs/>");
+    if (fmt.italic) rPr.push("<w:i/><w:iCs/>");
+    if (fmt.strike) rPr.push("<w:strike/>");
+    if (fmt.color) rPr.push('<w:color w:val="' + fmt.color + '"/>');
+    if (fmt.size) rPr.push('<w:sz w:val="' + fmt.size + '"/><w:szCs w:val="' + fmt.size + '"/>');
+    if (fmt.highlight) rPr.push('<w:highlight w:val="yellow"/>');
+    if (fmt.underline) rPr.push('<w:u w:val="single"/>');
+    if (fmt.sub) rPr.push('<w:vertAlign w:val="subscript"/>');
+    if (fmt.sup) rPr.push('<w:vertAlign w:val="superscript"/>');
+    const space = /^\s|\s$/.test(text) ? ' xml:space="preserve"' : "";
+    return "<w:r>" + (rPr.length ? "<w:rPr>" + rPr.join("") + "</w:rPr>" : "") + "<w:t" + space + ">" + xmlEsc(text) + "</w:t></w:r>";
+  }
+  function drawingRun(imgInfo, idCounter) {
+    const cx = Math.max(1, Math.round(imgInfo.cx)), cy = Math.max(1, Math.round(imgInfo.cy));
+    const id = idCounter.n++;
+    return '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="' + cx + '" cy="' + cy + '"/><wp:docPr id="' + id + '" name="Picture ' + id + '"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="' + id + '" name="' + xmlEsc(imgInfo.file) + '"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="' + imgInfo.relId + '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + cx + '" cy="' + cy + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+  }
+  function collectRuns(node, fmt, ctx) {
+    let out = "";
+    for (const n of node.childNodes) {
+      if (n.nodeType === 3) {
+        out += run(n.nodeValue, fmt);
+        continue;
+      }
+      if (n.nodeType !== 1) continue;
+      if (isSkipped(n)) continue;
+      const tag = n.tagName.toLowerCase();
+      if (tag === "br") {
+        out += "<w:r><w:br/></w:r>";
+        continue;
+      }
+      if (tag === "img") {
+        const src = n.getAttribute("src") || "";
+        const info = ctx.images.get(src);
+        if (info) out += drawingRun(info, ctx.idCounter);
+        else out += run("[图片" + (n.getAttribute("alt") ? ": " + n.getAttribute("alt") : "") + "]", fmt);
+        continue;
+      }
+      if (n.classList && n.classList.contains("math-inline")) {
+        out += run("$" + (n.dataset.tex || "") + "$", Object.assign({}, fmt, { italic: false }));
+        continue;
+      }
+      if (n.classList && n.classList.contains("md-img")) {
+        const im = $("img", n);
+        const src = im && (im.getAttribute("src") || "");
+        const info = src && ctx.images.get(src);
+        out += info ? drawingRun(info, ctx.idCounter) : run("[图片]", fmt);
+        continue;
+      }
+      const f = Object.assign({}, fmt);
+      if (tag === "strong" || tag === "b") f.bold = true;
+      if (tag === "em" || tag === "i") f.italic = true;
+      if (tag === "del" || tag === "s" || tag === "strike") f.strike = true;
+      if (tag === "u") f.underline = true;
+      if (tag === "mark") f.highlight = true;
+      if (tag === "code") f.mono = true;
+      if (tag === "a") {
+        f.underline = true;
+        f.color = "0563C1";
+      }
+      if (tag === "sub") f.sub = true;
+      if (tag === "sup") f.sup = true;
+      out += collectRuns(n, f, ctx);
+    }
+    return out;
+  }
+  function paragraph(inner, pPr = "") {
+    return "<w:p>" + (pPr ? "<w:pPr>" + pPr + "</w:pPr>" : "") + inner + "</w:p>";
+  }
+  function blockToXml(b, ctx) {
+    const t = b.dataset.type;
+    if (t === "heading") {
+      const level = +b.dataset.level || 1;
+      return paragraph(collectRuns(b, { bold: true }, ctx), '<w:pStyle w:val="Heading' + Math.min(6, Math.max(1, level)) + '"/><w:outlineLvl w:val="' + (level - 1) + '"/>');
+    }
+    if (t === "paragraph" || t === "html-p") return paragraph(collectRuns(b, {}, ctx));
+    if (t === "quote") return paragraph(collectRuns(b, {}, ctx), '<w:pStyle w:val="Quote"/>');
+    if (t === "list") {
+      const info = detectLine(blockSource(b));
+      const indent = Math.max(0, info.indent || 0);
+      const body = $(".li-body", b) || b;
+      let prefix = "";
+      if (info.task) prefix = info.checked ? "☑ " : "☐ ";
+      else if (info.ordered) prefix = (info.order || 1) + ". ";
+      else prefix = "• ";
+      return paragraph(
+        run(prefix, { bold: !!info.task }) + collectRuns(body, {}, ctx),
+        '<w:ind w:left="' + (360 + indent * 360) + '" w:hanging="240"/>'
+      );
+    }
+    if (t === "codeblock") {
+      const code = $("code", b) ? $("code", b).textContent : "";
+      return code.split("\n").map((line) => paragraph(run(line === "" ? " " : line, { mono: true }), '<w:pStyle w:val="Code"/>')).join("");
+    }
+    if (t === "math") return paragraph(run("$$" + (b.dataset.tex || "") + "$$", {}), '<w:jc w:val="center"/>');
+    if (t === "mermaid") {
+      return (b.dataset.code || "").split("\n").map((line) => paragraph(run(line === "" ? " " : line, { mono: true }), '<w:pStyle w:val="Code"/>')).join("");
+    }
+    if (t === "hr") {
+      return '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="D0D7DE"/></w:pBdr></w:pPr></w:p>';
+    }
+    if (t === "table") return tableXml(b, ctx);
+    if (t === "callout") {
+      const title = $(".callout-title", b) ? $(".callout-title", b).textContent : "";
+      const body = $(".callout-body", b);
+      let inner = title ? paragraph(run(title, { bold: true, color: "0969DA" }), '<w:shd w:val="clear" w:color="auto" w:fill="F6F8FA"/>') : "";
+      if (body) $$(".md-block", body).forEach((sb) => {
+        inner += blockToXml(sb, ctx);
+      });
+      return inner;
+    }
+    if (t === "toc") {
+      let inner = paragraph(run("目录", { bold: true }));
+      $$(".toc-list a", b).forEach((a) => {
+        inner += paragraph(run(a.textContent, {}));
+      });
+      return inner;
+    }
+    if (t === "frontmatter") return State.settings.export.frontMatter ? paragraph(run(b.dataset.src || "", { mono: true })) : "";
+    if (t === "footnote") {
+      return paragraph(run("[" + (b.dataset.footnote || "") + "] ", { sup: true }) + collectRuns($(".block-content", b) || b, {}, ctx));
+    }
+    return paragraph(collectRuns(b, {}, ctx));
+  }
+  function tableXml(b, ctx) {
+    const table = $("table", b);
+    if (!table) return "";
+    const rows = $$("tr", table);
+    if (!rows.length) return "";
+    const cols = Math.max(1, $$("th,td", rows[0]).length);
+    const colW = Math.floor(ctx.contentWidth / cols);
+    const grid = "<w:tblGrid>" + Array(cols).fill('<w:gridCol w:w="' + colW + '"/>').join("") + "</w:tblGrid>";
+    const borders = ["top", "left", "bottom", "right", "insideH", "insideV"].map((s) => "<w:" + s + ' w:val="single" w:sz="4" w:space="0" w:color="D0D7DE"/>').join("");
+    const trs = rows.map((tr) => {
+      const cells = $$("th,td", tr);
+      const isHead = tr.parentElement && tr.parentElement.tagName === "THEAD";
+      return "<w:tr>" + cells.map((c) => {
+        const align = c.dataset.align || "left";
+        const shade = isHead ? '<w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>' : "";
+        return '<w:tc><w:tcPr><w:tcW w:w="' + colW + '" w:type="dxa"/>' + shade + "</w:tcPr>" + paragraph(collectRuns(c, { bold: isHead }, ctx), '<w:jc w:val="' + (align === "center" ? "center" : align === "right" ? "right" : "left") + '"/>') + "</w:tc>";
+      }).join("") + "</w:tr>";
+    }).join("");
+    return '<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>' + borders + "</w:tblBorders></w:tblPr>" + grid + trs + "</w:tbl>";
+  }
+  async function imageToPng(img) {
+    const src = img.getAttribute("src") || "";
+    let blob = null, outW = img.naturalWidth || img.width || 800, outH = img.naturalHeight || img.height || 600;
+    if (img.complete && img.naturalWidth > 0) {
+      try {
+        const maxPx = 4096;
+        const scale = Math.min(1, maxPx / Math.max(img.naturalWidth, img.naturalHeight));
+        const cv = document.createElement("canvas");
+        cv.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        cv.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+        blob = await new Promise((res) => cv.toBlob(res, "image/png"));
+        outW = cv.width;
+        outH = cv.height;
+      } catch (e) {
+        blob = null;
+      }
+    }
+    if (!blob) {
+      try {
+        const r = await fetch(src);
+        if (r.ok) blob = await r.blob();
+      } catch (e) {
+        blob = null;
+      }
+    }
+    if (!blob) return null;
+    return { buf: new Uint8Array(await blob.arrayBuffer()), width: outW, height: outH };
+  }
+  async function collectImages(maxWidthEmu) {
+    const map = /* @__PURE__ */ new Map();
+    const idCounter = { n: 1 };
+    let n = 0;
+    for (const img of $$("#editor img")) {
+      const src = img.getAttribute("src") || "";
+      if (!src || map.has(src)) continue;
+      const buf = await imageToPng(img);
+      if (!buf) continue;
+      const nw = buf.width || 800;
+      const nh = buf.height || 600;
+      const zoom = (() => {
+        const z = img.style.zoom;
+        if (!z) return 1;
+        const v = parseFloat(z);
+        return Number.isFinite(v) ? z.includes("%") ? v / 100 : v : 1;
+      })();
+      let cx = nw * 9525 * zoom, cy = nh * 9525 * zoom;
+      if (cx > maxWidthEmu) {
+        cy = cy * (maxWidthEmu / cx);
+        cx = maxWidthEmu;
+      }
+      n++;
+      map.set(src, { relId: "rIdImg" + n, file: "image" + n + ".png", buf: buf.buf, cx, cy, id: idCounter.n });
+    }
+    return { map, idCounter };
+  }
+  function contentTypes(hasHeader, hasFooter) {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/>' + (hasHeader ? '<Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>' : "") + (hasFooter ? '<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>' : "") + "</Types>";
+  }
+  function rootRels() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+  }
+  function docRels(images, hasHeader, hasFooter) {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + (hasHeader ? '<Relationship Id="rIdHeader1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>' : "") + (hasFooter ? '<Relationship Id="rIdFooter1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>' : "") + '<Relationship Id="rIdSettings" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>' + Array.from(images.values()).map(
+      (i2) => '<Relationship Id="' + i2.relId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/' + i2.file.replace(/^media\//, "") + '"/>'
+    ).join("") + "</Relationships>";
+  }
+  function stylesXml(bodySize) {
+    const sz = Math.max(14, Math.min(48, Math.round(bodySize || 21)));
+    const h = [];
+    const sizes = { 1: 40, 2: 32, 3: 26, 4: 24, 5: 21, 6: 20 };
+    for (let i2 = 1; i2 <= 6; i2++) {
+      h.push('<w:style w:type="paragraph" w:styleId="Heading' + i2 + '"><w:name w:val="heading ' + i2 + '"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="120"/><w:outlineLvl w:val="' + (i2 - 1) + '"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val="' + sizes[i2] + '"/><w:szCs w:val="' + sizes[i2] + '"/></w:rPr></w:style>');
+    }
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:styles xmlns:w="' + W_NS + '"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Microsoft YaHei"/><w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>' + h.join("") + '<w:style w:type="paragraph" w:styleId="Quote"><w:name w:val="Quote"/><w:basedOn w:val="Normal"/><w:pPr><w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="D0D7DE"/></w:pBdr><w:spacing w:before="120" w:after="120"/><w:ind w:left="360"/></w:pPr><w:rPr><w:i/><w:iCs/><w:color w:val="57606A"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Code"><w:name w:val="Code"/><w:basedOn w:val="Normal"/><w:pPr><w:shd w:val="clear" w:color="auto" w:fill="F6F8FA"/><w:spacing w:after="0" w:line="240" w:lineRule="auto"/></w:pPr><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:eastAsia="Consolas"/><w:sz w:val="19"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Header"><w:name w:val="header"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="0"/></w:pPr><w:rPr><w:color w:val="808080"/><w:sz w:val="18"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Footer"><w:name w:val="footer"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="0"/></w:pPr><w:rPr><w:color w:val="808080"/><w:sz w:val="18"/></w:rPr></w:style></w:styles>';
+  }
+  function pageField(instr) {
+    const code = " " + instr + "  \\* MERGEFORMAT ";
+    return '<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve">' + code + '</w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r>';
+  }
+  function hfXml(kind, text) {
+    const parts = String(text || "").split(/(\{page\}|\{pages\})/g);
+    let runs = "";
+    for (const p of parts) {
+      if (p === "{page}") runs += pageField("PAGE");
+      else if (p === "{pages}") runs += pageField("NUMPAGES");
+      else if (p) runs += run(p, { size: 18, color: "808080" });
+    }
+    const jc = kind === "hdr" ? "right" : "center";
+    const style = kind === "hdr" ? "Header" : "Footer";
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:' + kind + ' xmlns:w="' + W_NS + '" xmlns:r="' + R_NS + '">' + paragraph(runs, '<w:pStyle w:val="' + style + '"/><w:jc w:val="' + jc + '"/>') + "</w:" + kind + ">";
+  }
+  function settingsXml() {
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:settings xmlns:w="' + W_NS + '"><w:defaultTabStop w:val="420"/><w:updateFields w:val="true"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>';
+  }
+  function pageSetup() {
+    const paper2 = (State.settings.export.paper || "A4").toUpperCase();
+    const portrait = (State.settings.export.orientation || "portrait") !== "landscape";
+    let w = 11906, h = 16838;
+    if (paper2 === "A3") {
+      w = 16838;
+      h = 23810;
+    } else if (paper2 === "LETTER") {
+      w = 12240;
+      h = 15840;
+    }
+    if (!portrait) {
+      const t = w;
+      w = h;
+      h = t;
+    }
+    const margin = Math.max(20, Math.min(144, Number(State.settings.export.margin) || 64));
+    const m = Math.round(margin * 20);
+    const bodySize = Math.max(14, Math.min(48, Math.round((Number(State.settings.export.fontSize) || 10.5) * 2)));
+    const imgPct = Math.max(10, Math.min(100, Number(State.settings.export.imageWidth) || 100));
+    return {
+      w,
+      h,
+      m,
+      contentWidth: w - m * 2,
+      contentWidthEmu: (w - m * 2) * 635,
+      imgMaxEmu: Math.round((w - m * 2) * 635 * imgPct / 100),
+      bodySize,
+      header: String(State.settings.export.header || "").trim(),
+      footer: String(State.settings.export.footer || "").trim()
+    };
+  }
+  async function buildDocx() {
+    const page = pageSetup();
+    const { map, idCounter } = await collectImages(page.imgMaxEmu);
+    const ctx = { images: map, idCounter, contentWidth: page.contentWidth };
+    let body = "";
+    for (const b of topBlocks()) {
+      try {
+        body += blockToXml(b, ctx);
+      } catch (e) {
+        console.warn("[MarkEditor] docx 块导出跳过:", b.dataset.type, e);
+      }
+    }
+    if (!body) body = paragraph("");
+    const hasHeader = !!page.header, hasFooter = !!page.footer;
+    const sect = "<w:sectPr>" + (hasHeader ? '<w:headerReference w:type="default" r:id="rIdHeader1"/>' : "") + (hasFooter ? '<w:footerReference w:type="default" r:id="rIdFooter1"/>' : "") + '<w:pgSz w:w="' + page.w + '" w:h="' + page.h + '"/><w:pgMar w:top="' + page.m + '" w:right="' + page.m + '" w:bottom="' + page.m + '" w:left="' + page.m + '" w:header="720" w:footer="720" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="312"/></w:sectPr>';
+    const doc = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:document xmlns:w="' + W_NS + '" xmlns:r="' + R_NS + '" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>' + body + sect + "</w:body></w:document>";
+    const files = {
+      "[Content_Types].xml": strToU8(contentTypes(hasHeader, hasFooter)),
+      "_rels/.rels": strToU8(rootRels()),
+      "word/document.xml": strToU8(doc),
+      "word/styles.xml": strToU8(stylesXml(page.bodySize)),
+      "word/settings.xml": strToU8(settingsXml()),
+      "word/_rels/document.xml.rels": strToU8(docRels(map, hasHeader, hasFooter))
+    };
+    if (hasHeader) files["word/header1.xml"] = strToU8(hfXml("hdr", page.header));
+    if (hasFooter) files["word/footer1.xml"] = strToU8(hfXml("ftr", page.footer));
+    for (const info of map.values()) files["word/media/" + info.file] = info.buf;
+    return zipSync(files, { level: 6 });
+  }
+  function docxFilename() {
+    return (State.filename || "untitled").replace(/\.(md|markdown|txt)$/i, "") + ".docx";
   }
 
   // src/modules/io.js
@@ -1623,6 +2726,81 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 6e4);
   }
+  async function readTextFile(file) {
+    const buf = await file.arrayBuffer(), bytes = new Uint8Array(buf);
+    let text = "", encoding = "utf-8";
+    if (bytes.length >= 3 && bytes[0] === 239 && bytes[1] === 187 && bytes[2] === 191) {
+      text = new TextDecoder("utf-8").decode(bytes.subarray(3));
+      encoding = "utf-8-bom";
+    } else {
+      try {
+        text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      } catch (e) {
+        try {
+          text = new TextDecoder("gb18030").decode(bytes);
+          encoding = "gb18030";
+        } catch (e2) {
+          text = new TextDecoder("utf-8").decode(bytes);
+          encoding = "utf-8";
+        }
+      }
+    }
+    State.encoding = encoding;
+    State.eol = /\r\n/.test(text) ? "crlf" : "lf";
+    return { text, encoding, eol: State.eol };
+  }
+  function encodeForSave(md) {
+    let text = String(md == null ? "" : md);
+    if (State.eol === "crlf") text = text.replace(/\r?\n/g, "\r\n");
+    if (State.encoding === "utf-8-bom" && text.charCodeAt(0) !== 65279) text = "\uFEFF" + text;
+    return text;
+  }
+  function scheduleAutoSave() {
+    if (!State.fileHandle || !State.dirty) return;
+    if (State.autosavePaused) return;
+    if (State.settings && State.settings.markdown && State.settings.markdown.autoSave === false) return;
+    clearTimeout(State.autoSaveTimer);
+    State.autoSaveTimer = setTimeout(() => {
+      autoSaveToDisk();
+    }, 6e3);
+  }
+  async function autoSaveToDisk() {
+    if (!State.fileHandle || !State.dirty || State.autosavePaused) return false;
+    if (State.settings && State.settings.markdown && State.settings.markdown.autoSave === false) return false;
+    try {
+      if (!await ensureHandlePermission(State.fileHandle, "readwrite", false)) return false;
+      const before = await State.fileHandle.getFile();
+      if (State.lastSavedMtime && before.lastModified !== State.lastSavedMtime) {
+        State.autosavePaused = true;
+        toast("检测到文件已被其他程序修改，已暂停自动保存；请手动保存并确认保留哪个版本", 6500);
+        return false;
+      }
+      const md = persistedMd();
+      if (md === State.lastSavedMd) {
+        State.dirty = false;
+        updateFileStatus();
+        return false;
+      }
+      const writable = await State.fileHandle.createWritable();
+      await writable.write(encodeForSave(md));
+      await writable.close();
+      State.lastSavedMtime = (await State.fileHandle.getFile()).lastModified;
+      State.lastAutoSaveAt = Date.now();
+      markSaved(md);
+      const se = $("#st-file");
+      if (se) {
+        se.textContent = "✓ 已自动保存";
+        setTimeout(() => {
+          updateFileStatus();
+        }, 1600);
+      }
+      log("自动保存完成:", State.filename, md.length, "字符");
+      return true;
+    } catch (e) {
+      warnLog("自动保存失败:", e);
+      return false;
+    }
+  }
   function switchSidebarPane(id) {
     $$(".sb-tab").forEach((b) => b.classList.toggle("active", b.dataset.pane === id));
     $$(".sb-pane").forEach((p) => p.classList.toggle("active", p.id === id));
@@ -1634,6 +2812,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     State.fileHandle = null;
     State.currentPath = "";
     State.dirHandle = State.workspaceRoot;
+    State.lastSavedMtime = 0;
+    State.autosavePaused = false;
+    State.eol = "lf";
+    State.encoding = "utf-8";
     loadMarkdown("");
     markSaved("");
     focusBlock(editor.firstElementChild, 0);
@@ -1647,6 +2829,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     State.fileHandle = null;
     State.currentPath = "";
     State.dirHandle = State.workspaceRoot;
+    State.lastSavedMtime = 0;
+    State.autosavePaused = false;
+    State.eol = "lf";
+    State.encoding = "utf-8";
     loadMarkdown(restoreExportImages(WELCOME));
     markSaved("");
     focusBlock(editor.firstElementChild, 0);
@@ -1684,7 +2870,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
         toast("文件过大（" + (file.size / 1024 / 1024).toFixed(1) + "MB），建议拆分后打开");
         return false;
       }
-      text = await file.text();
+      text = (await readTextFile(file)).text;
     } catch (e) {
       toast("读取文件失败: " + (e.message || e));
       return false;
@@ -1694,11 +2880,13 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     State.fileHandle = fileHandle;
     State.currentPath = path || file.name;
     State.dirHandle = State.workspaceRoot || State.dirHandle;
+    State.lastSavedMtime = file.lastModified;
+    State.autosavePaused = false;
     try {
       loadMarkdown(text);
       markSaved();
-    } catch (err) {
-      const m = err && err.message ? err.message : String(err);
+    } catch (err2) {
+      const m = err2 && err2.message ? err2.message : String(err2);
       toast(/Data URL|malformed|exceeded/i.test(m) ? "打开失败：文件可能包含超大内嵌图片，建议用相对路径引用图片" : "解析失败: " + m);
       return false;
     }
@@ -1731,7 +2919,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     }
     return dir;
   }
-  function showFileContextMenu(row, entry, path, kind, x, y) {
+  function showFileContextMenu(row, entry, path, kind, x2, y) {
     $$("#file-tree .tree-row.context-target").forEach((r) => r.classList.remove("context-target"));
     row.classList.add("context-target");
     ctxFileInfo = { row, entry, path, kind };
@@ -1766,7 +2954,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     menu.innerHTML = items.join("");
     menu.classList.add("show");
     const mw = menu.offsetWidth || 200, mh = menu.offsetHeight || 300;
-    menu.style.left = Math.min(x, window.innerWidth - mw - 4) + "px";
+    menu.style.left = Math.min(x2, window.innerWidth - mw - 4) + "px";
     menu.style.top = Math.min(y, window.innerHeight - mh - 4) + "px";
   }
   function hideFileContextMenu() {
@@ -1839,12 +3027,12 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
         }
         const base = entry.name.replace(/\.(md|markdown|txt)$/i, "");
         const ext = entry.name.match(/\.(md|markdown|txt)$/i)?.[0] || ".md";
-        let name = base + " 副本" + ext, i = 2;
+        let name = base + " 副本" + ext, i2 = 2;
         while (true) {
           try {
             await dir.getFileHandle(name);
-            name = base + " 副本 (" + i + ")" + ext;
-            i++;
+            name = base + " 副本 (" + i2 + ")" + ext;
+            i2++;
           } catch (e) {
             break;
           }
@@ -1954,7 +3142,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
           let count = 0;
           try {
             for await (const e of entry.values()) count++;
-          } catch (err) {
+          } catch (err2) {
           }
           info2 += "\n项目数：" + count;
         }
@@ -2130,8 +3318,8 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
         try {
           loadMarkdown(text);
           markSaved();
-        } catch (err) {
-          const m = err && err.message ? err.message : String(err);
+        } catch (err2) {
+          const m = err2 && err2.message ? err2.message : String(err2);
           toast(/Data URL|malformed|exceeded/i.test(m) ? "打开失败：文件可能包含超大内嵌图片，建议用相对路径引用图片" : "解析失败: " + m);
           return;
         }
@@ -2185,7 +3373,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     if (!parts.length) throw new Error("空路径");
     let h = State.workspaceRoot || State.dirHandle;
     if (!h) throw new Error("未打开目录");
-    for (let i = 0; i < parts.length - 1; i++) h = await h.getDirectoryHandle(parts[i]);
+    for (let i2 = 0; i2 < parts.length - 1; i2++) h = await h.getDirectoryHandle(parts[i2]);
     return h.getFileHandle(parts[parts.length - 1]);
   }
   async function resolveRelativeImages() {
@@ -2221,9 +3409,15 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
         if (img) {
           img.src = obj;
           img.classList.remove("broken");
+          wrap.classList.remove("img-missing");
+          delete wrap.dataset.missingPath;
         }
       } catch (e) {
-        if (img) img.classList.add("broken");
+        if (img) {
+          img.classList.add("broken");
+          wrap.classList.add("img-missing");
+          wrap.dataset.missingPath = url;
+        }
       }
     }));
   }
@@ -2240,14 +3434,28 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     }
     if (handle && handle.createWritable) {
       try {
+        if (!saveAs && State.lastSavedMtime) {
+          try {
+            const before = await handle.getFile();
+            if (before.lastModified !== State.lastSavedMtime) {
+              const same = State.lastSavedMd != null && before.text ? (await before.text()).replace(/\r\n/g, "\n") === State.lastSavedMd : false;
+              if (!same && !confirm("文件已被其他程序修改，继续保存会覆盖外部改动。\n确定覆盖吗？")) return;
+            }
+          } catch (e) {
+          }
+        }
         const writable = await handle.createWritable();
-        await writable.write(md);
+        await writable.write(encodeForSave(md));
         await writable.close();
         State.fileHandle = handle;
         State.filename = handle.name || State.filename;
+        State.lastSavedMtime = (await handle.getFile()).lastModified;
+        State.autosavePaused = false;
         markSaved(md);
         saveDraft();
-        toast("已写入 " + State.filename);
+        idbDraftClear();
+        if (State.encoding === "gb18030") toast("已保存 " + State.filename + "（编码已转为 UTF-8）", 3200);
+        else toast("已写入 " + State.filename);
         return;
       } catch (e) {
         toast("无法直接写入原文件，将改为下载保存", 3e3);
@@ -2260,9 +3468,10 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
       name = /\.(md|markdown|txt)$/i.test(v) ? v : v + ".md";
       State.filename = name;
     }
-    download(name, "text/markdown;charset=utf-8", md);
+    download(name, "text/markdown;charset=utf-8", encodeForSave(md));
     markSaved(md);
     saveDraft();
+    idbDraftClear();
     toast("已下载 " + name);
   }
   var imgInput = document.createElement("input");
@@ -2354,13 +3563,13 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   }
   function cleanInlineHtml(node) {
     const c = node.cloneNode(true);
-    c.querySelectorAll(".md-marker,.md-hidden,.math-src,.md-back").forEach((x) => x.remove());
-    c.querySelectorAll(".math-inline").forEach((x) => {
-      const o = $(".math-out", x);
-      x.replaceWith(o || document.createTextNode("$" + (x.dataset.tex || "") + "$"));
+    c.querySelectorAll(".md-marker,.md-hidden,.math-src,.md-back").forEach((x2) => x2.remove());
+    c.querySelectorAll(".math-inline").forEach((x2) => {
+      const o = $(".math-out", x2);
+      x2.replaceWith(o || document.createTextNode("$" + (x2.dataset.tex || "") + "$"));
     });
-    c.querySelectorAll(".md-img").forEach((x) => {
-      const img = $("img", x);
+    c.querySelectorAll(".md-img").forEach((x2) => {
+      const img = $("img", x2);
       if (!img) return;
       if (WC.exporting) applyWordImageSize(img);
       else {
@@ -2375,7 +3584,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
         }
         img.style.maxWidth = "100%";
       }
-      x.replaceWith(img);
+      x2.replaceWith(img);
     });
     return c.innerHTML;
   }
@@ -2424,12 +3633,12 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
     if (t === "math") return `<div class="math-block">${$(".math-out", b) ? $(".math-out", b).innerHTML : ""}</div>`;
     if (t === "table") {
       const c = b.querySelector("table").cloneNode(true);
-      c.querySelectorAll("[contenteditable]").forEach((x) => x.removeAttribute("contenteditable"));
-      c.querySelectorAll(".col-resizer,.md-marker,.md-hidden,.md-src").forEach((x) => x.remove());
-      c.querySelectorAll("th,td").forEach((x) => {
-        const al = x.dataset.align;
-        if (al) x.style.textAlign = al;
-        x.removeAttribute("data-align");
+      c.querySelectorAll("[contenteditable]").forEach((x2) => x2.removeAttribute("contenteditable"));
+      c.querySelectorAll(".col-resizer,.md-marker,.md-hidden,.md-src").forEach((x2) => x2.remove());
+      c.querySelectorAll("th,td").forEach((x2) => {
+        const al = x2.dataset.align;
+        if (al) x2.style.textAlign = al;
+        x2.removeAttribute("data-align");
       });
       return c.outerHTML;
     }
@@ -2691,20 +3900,31 @@ p{orphans:2;widows:2}h1,h2,h3,h4,h5,h6{font-family:"Segoe UI","Microsoft YaHei",
     }) };
   }
   function restoreWordExportState(state) {
-    state.images.forEach((x) => {
-      if (!x.im) return;
-      x.im.setAttribute("src", x.src || "");
-      if (x.style == null) x.im.removeAttribute("style");
-      else x.im.setAttribute("style", x.style);
-      delete x.im.dataset.wordNaturalWidth;
-      delete x.im.dataset.wordNaturalHeight;
-      x.w.dataset.md = x.md || "";
-      if ($(".md-src", x.w)) $(".md-src", x.w).textContent = x.source || "";
+    state.images.forEach((x2) => {
+      if (!x2.im) return;
+      x2.im.setAttribute("src", x2.src || "");
+      if (x2.style == null) x2.im.removeAttribute("style");
+      else x2.im.setAttribute("style", x2.style);
+      delete x2.im.dataset.wordNaturalWidth;
+      delete x2.im.dataset.wordNaturalHeight;
+      x2.w.dataset.md = x2.md || "";
+      if ($(".md-src", x2.w)) $(".md-src", x2.w).textContent = x2.source || "";
     });
     State.dirty = state.dirty;
     State._serCache = state.serCache;
     State._serDirty = state.serDirty;
     updateFileStatus();
+  }
+  async function exportDocx() {
+    toast("正在生成 Word 文档（.docx）…", 1800);
+    try {
+      const data = await buildDocx();
+      download(docxFilename(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document", data);
+      toast("已导出 " + docxFilename() + "（Word/WPS 可直接打开）", 4e3);
+    } catch (e) {
+      console.error("[MarkEditor] docx 导出失败:", e);
+      toast("导出 .docx 失败: " + (e && e.message ? e.message : e), 5e3);
+    }
   }
   async function exportWord() {
     toast("正在打包图片并生成 Word…", 1500);
@@ -2837,31 +4057,38 @@ p{orphans:2;widows:2}h1,h2,h3,h4,h5,h6{font-family:"Segoe UI","Microsoft YaHei",
   }
   function saveDraft() {
     if (State.settings && State.settings.markdown && State.settings.markdown.autoDraft === false) return;
+    scheduleAutoSave();
     clearTimeout(State.savedTimer);
-    State.savedTimer = setTimeout(() => {
+    State.savedTimer = setTimeout(async () => {
+      const md = persistedMd();
+      const base = { filename: State.filename, currentPath: State.currentPath, spellcheck: State.spellcheck, theme: State.theme, zoom: State.zoom, pageWidth: State.pageWidth, hn: State.hn, ts: Date.now() };
+      let stored = false;
       try {
-        const md = persistedMd();
-        localStorage.setItem("me-draft", JSON.stringify({ md, filename: State.filename, currentPath: State.currentPath, spellcheck: State.spellcheck, theme: State.theme, zoom: State.zoom, pageWidth: State.pageWidth, hn: State.hn, ts: Date.now() }));
+        localStorage.setItem("me-draft", JSON.stringify(Object.assign({ md }, base)));
+        stored = true;
       } catch (e) {
         const isQuota = e && (e.name === "QuotaExceededError" || e.code === 22 || /quota/i.test(e.message || ""));
         if (isQuota) {
           try {
-            const md = persistedMd().replace(/!\[([^\]]*)\]\(data:[^)]+\)/g, "![$1](图片已省略-请保存到磁盘)");
-            localStorage.setItem("me-draft", JSON.stringify({ md, filename: State.filename, currentPath: State.currentPath, spellcheck: State.spellcheck, theme: State.theme, zoom: State.zoom, pageWidth: State.pageWidth, hn: State.hn, ts: Date.now() }));
+            const slim = md.replace(/!\[([^\]]*)\]\(data:[^)]+\)/g, "![$1](图片已省略-请保存到磁盘)");
+            localStorage.setItem("me-draft", JSON.stringify(Object.assign({ md: slim }, base)));
+            stored = true;
             if (!State.draftErrorShown) {
               State.draftErrorShown = true;
               toast("文档较大，草稿已省略内嵌图片，请尽快保存到磁盘", 5e3);
             }
           } catch (e2) {
-            if (!State.draftErrorShown) {
-              State.draftErrorShown = true;
-              toast("草稿保存失败（存储空间不足），请立即保存到磁盘", 6e3);
-            }
           }
-        } else if (!State.draftErrorShown) {
-          State.draftErrorShown = true;
-          toast("浏览器草稿保存失败，请尽快保存到磁盘", 4500);
         }
+      }
+      if (!stored) {
+        const ok = await idbDraftPut(Object.assign({ id: "current", md }, base));
+        if (!State.draftErrorShown) {
+          State.draftErrorShown = true;
+          toast(ok ? "浏览器存储空间不足，草稿已转存到本地数据库，不会丢失" : "草稿保存失败，请立即保存到磁盘", ok ? 5e3 : 6e3);
+        }
+      } else if (md.length > 1024 * 1024) {
+        idbDraftPut(Object.assign({ id: "current", md }, base));
       }
     }, 400);
   }
@@ -3005,12 +4232,33 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       loadMarkdown(draft.md);
     } else loadMarkdown(WELCOME);
     ensureTrailingParagraph();
-    if (draft && draft.md && draft.md.trim() && !isExported) {
+    const hadDraft = !!(draft && draft.md && draft.md.trim());
+    if (hadDraft && !isExported) {
       State.dirty = true;
       State.lastSavedMd = null;
+      toast("已恢复上次未保存的草稿" + (draft.ts ? "（" + new Date(draft.ts).toLocaleString() + "）" : "") + "，按 Ctrl+S 保存到磁盘", 4500);
     } else markSaved(currentMd());
     updateStatus();
     restoreLastWorkspace();
+    if (!isExported && !hadDraft) {
+      idbDraftGet().then((rec) => {
+        if (!rec || !rec.md || !rec.md.trim() || State.dirty || !document.querySelector("#editor")) return;
+        const when = rec.ts ? new Date(rec.ts).toLocaleString() : "上次";
+        if (!confirm("检测到未能写入浏览器本地存储的草稿（" + when + "），是否恢复？\n选择“取消”将保留当前欢迎文档。")) return;
+        releaseImageUrls();
+        State.filename = rec.filename || "untitled.md";
+        State.currentPath = rec.currentPath || "";
+        loadMarkdown(rec.md);
+        State.dirty = true;
+        State.lastSavedMd = null;
+        updateFileStatus();
+        toast("已从本地数据库恢复草稿，请尽快保存到磁盘", 4500);
+      });
+    }
+    if (!hadDraft) {
+      State.eol = "lf";
+      State.encoding = "utf-8";
+    }
     toast("就绪：直接输入 Markdown 语法开始写作", 2200);
   }
   function bootstrap_io() {
@@ -3026,22 +4274,25 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     });
     $("#workspace-open").onclick = fileOpen;
     $("#workspace-refresh").onclick = refreshFileTree;
-    fileInput.addEventListener("change", () => {
+    fileInput.addEventListener("change", async () => {
       const f = fileInput.files[0];
       if (!f) return;
-      const r = new FileReader();
-      r.onload = () => {
+      try {
+        const { text } = await readTextFile(f);
         releaseImageUrls();
         State.filename = f.name;
         State.currentPath = f.name;
         State.fileHandle = null;
         State.workspaceRoot = null;
         State.dirHandle = null;
-        loadMarkdown(r.result);
+        State.lastSavedMtime = 0;
+        State.autosavePaused = false;
+        loadMarkdown(text);
         markSaved();
-        toast("已打开 " + f.name + "（相对路径图片需用 Chrome/Edge 打开以支持目录选择）");
-      };
-      r.readAsText(f);
+        toast("已打开 " + f.name + (State.encoding !== "utf-8" ? "（已识别 " + State.encoding.toUpperCase() + " 编码）" : "") + "（相对路径图片需用 Chrome/Edge 打开以支持目录选择）", 3800);
+      } catch (e) {
+        toast("读取文件失败: " + (e && e.message ? e.message : e));
+      }
     });
     imgInput.type = "file";
     imgInput.accept = "image/*";
@@ -3118,8 +4369,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const selSet = new Set(cells);
     let minR = Infinity, maxR = -1, minC = Infinity, maxC = -1;
     trs.forEach((tr, ri) => {
-      $$("th,td", tr).forEach((td, ci) => {
-        if (selSet.has(td)) {
+      $$("th,td", tr).forEach((td2, ci) => {
+        if (selSet.has(td2)) {
           minR = Math.min(minR, ri);
           maxR = Math.max(maxR, ri);
           minC = Math.min(minC, ci);
@@ -3157,10 +4408,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         if (!tbody) break;
         const cols = $$("th,td", trsArr[0]).length;
         const nr = document.createElement("tr");
-        for (let i = 0; i < cols; i++) {
-          const td = document.createElement("td");
-          td.setAttribute("contenteditable", "true");
-          nr.appendChild(td);
+        for (let i2 = 0; i2 < cols; i2++) {
+          const td2 = document.createElement("td");
+          td2.setAttribute("contenteditable", "true");
+          nr.appendChild(td2);
         }
         tbody.appendChild(nr);
         trsArr = $$("tr", table);
@@ -3192,10 +4443,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (tr.parentElement.tagName !== "THEAD" && tr.parentElement.tagName !== "TBODY") return null;
     const cols = $$("th,td", block.querySelector("tr")).length;
     const nr = document.createElement("tr");
-    for (let i = 0; i < cols; i++) {
-      const td = document.createElement("td");
-      td.setAttribute("contenteditable", "true");
-      nr.appendChild(td);
+    for (let i2 = 0; i2 < cols; i2++) {
+      const td2 = document.createElement("td");
+      td2.setAttribute("contenteditable", "true");
+      nr.appendChild(td2);
     }
     if (tr.parentElement.tagName === "THEAD") $("tbody", block).prepend(nr);
     else tr.after(nr);
@@ -3259,10 +4510,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       const tbody = $("tbody", table) || table;
       while ($$("tr", table).length < rows) {
         const r = document.createElement("tr");
-        for (let i = 0; i < currentCols; i++) {
-          const td = document.createElement("td");
-          td.contentEditable = "true";
-          r.appendChild(td);
+        for (let i2 = 0; i2 < currentCols; i2++) {
+          const td2 = document.createElement("td");
+          td2.contentEditable = "true";
+          r.appendChild(td2);
         }
         tbody.appendChild(r);
       }
@@ -3493,13 +4744,13 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const b = activeBlock();
     if (!b) return null;
     const all = topBlocks();
-    const i = all.indexOf(b);
-    if (i < 0) return null;
+    const i2 = all.indexOf(b);
+    if (i2 < 0) return null;
     if (b.dataset.type === "table") {
       const cell = activeCell();
       if (cell) {
         const rows = $$("tr", b), c = getCaret(cell);
-        return { i, table: true, row: rows.indexOf(cell.parentElement), col: cell.cellIndex, off: c ? c.s : 0, end: c ? c.e : 0 };
+        return { i: i2, table: true, row: rows.indexOf(cell.parentElement), col: cell.cellIndex, off: c ? c.s : 0, end: c ? c.e : 0 };
       }
     }
     let off = 0, end = 0;
@@ -3509,7 +4760,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       end = c ? c.e : off;
     } catch (e) {
     }
-    return { i, off, end };
+    return { i: i2, off, end };
   }
   function captureCanonicalPos() {
     try {
@@ -3575,8 +4826,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     try {
       if (State.sourceMode) applyFrameSource(f);
       else applyFrameRender(f);
-    } catch (err) {
-      console.error("[MarkEditor] 应用历史帧失败，回退整篇重建:", err);
+    } catch (err2) {
+      console.error("[MarkEditor] 应用历史帧失败，回退整篇重建:", err2);
       if (!State.sourceMode) {
         editor.innerHTML = "";
         editor.appendChild(parseMarkdown(f.md));
@@ -3689,7 +4940,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const ranges = canonicalBlockRanges();
     if (!ranges.length) return null;
     const locate = (off) => {
-      const r = ranges.find((x) => off <= x.end) || ranges[ranges.length - 1];
+      const r = ranges.find((x2) => off <= x2.end) || ranges[ranges.length - 1];
       const b = r.block, t = b.dataset.type;
       if (t === "table") return { i: r.index, off: 0 };
       let prefix = 0;
@@ -3808,16 +5059,16 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         State.referenceDefinitions.push(line);
       }
     });
-    let i = 0;
+    let i2 = 0;
     const push = (el) => frag.appendChild(el);
-    while (i < lines.length) {
-      const line = lines[i], clean = line.replace(/[\uE000\uE001]/g, "");
-      if (i === 0 && /^---\s*$/.test(clean)) {
+    while (i2 < lines.length) {
+      const line = lines[i2], clean = line.replace(/[\uE000\uE001]/g, "");
+      if (i2 === 0 && /^---\s*$/.test(clean)) {
         let j = 1;
         while (j < lines.length && !/^(---|\.\.\.)\s*$/.test(lines[j])) j++;
         if (j < lines.length) {
           push(buildFrontMatter(lines.slice(1, j).join("\n")));
-          i = j + 1;
+          i2 = j + 1;
           continue;
         }
       }
@@ -3825,13 +5076,13 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       if (m) {
         const fence = m[2], lang = m[3].trim();
         const buf = [];
-        i++;
+        i2++;
         const closeRe = new RegExp("^\\s*" + fence[0] + "{" + fence.length + ",}\\s*$");
-        while (i < lines.length && !closeRe.test(lines[i])) {
-          buf.push(lines[i]);
-          i++;
+        while (i2 < lines.length && !closeRe.test(lines[i2])) {
+          buf.push(lines[i2]);
+          i2++;
         }
-        i++;
+        i2++;
         push(/^mermaid$/i.test(lang) ? buildMermaidBlock(buf.join("\n")) : buildCodeblock(lang, buf.join("\n"), fence));
         continue;
       }
@@ -3839,25 +5090,25 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         const tail = line.replace(/^\s*\$\$/, "").replace(/\$\$\s*$/, "");
         if (/\$\$\s*$/.test(line) && tail.trim()) {
           push(buildMathBlock(tail.trim()));
-          i++;
+          i2++;
           continue;
         }
         const buf = [];
-        i++;
-        while (i < lines.length && !/^\s*\$\$\s*$/.test(lines[i])) {
-          buf.push(lines[i]);
-          i++;
+        i2++;
+        while (i2 < lines.length && !/^\s*\$\$\s*$/.test(lines[i2])) {
+          buf.push(lines[i2]);
+          i2++;
         }
-        i++;
+        i2++;
         push(buildMathBlock(buf.join("\n").trim()));
         continue;
       }
-      if (clean.includes("|") && i + 1 < lines.length && isSepRow(lines[i + 1])) {
-        const rows = [lines[i], lines[i + 1]];
-        i += 2;
-        while (i < lines.length && lines[i].includes("|") && lines[i].trim()) {
-          rows.push(lines[i]);
-          i++;
+      if (clean.includes("|") && i2 + 1 < lines.length && isSepRow(lines[i2 + 1])) {
+        const rows = [lines[i2], lines[i2 + 1]];
+        i2 += 2;
+        while (i2 < lines.length && lines[i2].includes("|") && lines[i2].trim()) {
+          rows.push(lines[i2]);
+          i2++;
         }
         push(buildTable(rows));
         continue;
@@ -3866,19 +5117,19 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       if (ref) {
         const mm = line.match(/[\uE000\uE001]/g);
         if (mm) {
-          if (i + 1 < lines.length) lines[i + 1] = mm.join("") + lines[i + 1];
+          if (i2 + 1 < lines.length) lines[i2 + 1] = mm.join("") + lines[i2 + 1];
           else if (!fragment) push(buildTextBlock(mm.join("")));
         }
-        i++;
+        i2++;
         continue;
       }
       const fn = clean.match(/^\[\^([^\]\s]+)\]:\s*(.*)$/);
       if (fn) {
         const body = [fn[2]];
-        i++;
-        while (i < lines.length && (/^(?: {2,}|\t)/.test(lines[i]) || !lines[i] && i + 1 < lines.length && /^(?: {2,}|\t)/.test(lines[i + 1]))) {
-          body.push(lines[i].replace(/^(?: {2,4}|\t)/, ""));
-          i++;
+        i2++;
+        while (i2 < lines.length && (/^(?: {2,}|\t)/.test(lines[i2]) || !lines[i2] && i2 + 1 < lines.length && /^(?: {2,}|\t)/.test(lines[i2 + 1]))) {
+          body.push(lines[i2].replace(/^(?: {2,4}|\t)/, ""));
+          i2++;
         }
         push(buildFootnoteDefinition(fn[1], body.join("\n")));
         continue;
@@ -3888,32 +5139,32 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         const type = cm[1].toUpperCase();
         const title = cm[2] || "";
         const buf = [];
-        i++;
-        while (i < lines.length && /^\s*>/.test(lines[i])) {
-          buf.push(lines[i].replace(/^\s*>\s?/, ""));
-          i++;
+        i2++;
+        while (i2 < lines.length && /^\s*>/.test(lines[i2])) {
+          buf.push(lines[i2].replace(/^\s*>\s?/, ""));
+          i2++;
         }
         push(buildCallout(type, title, buf.join("\n")));
         continue;
       }
       const isPlainText = !clean.match(/^\s*(>|[-*+]\s|\d+[.)]\s|`{3,}|~{3,})/);
-      if (i + 1 < lines.length && /^=+\s*$/.test(lines[i + 1]) && clean.trim() && isPlainText) {
+      if (i2 + 1 < lines.length && /^=+\s*$/.test(lines[i2 + 1]) && clean.trim() && isPlainText) {
         push(buildTextBlock("# " + line));
-        i += 2;
+        i2 += 2;
         continue;
       }
-      if (i + 1 < lines.length && /^-+\s*$/.test(lines[i + 1]) && clean.trim() && isPlainText) {
+      if (i2 + 1 < lines.length && /^-+\s*$/.test(lines[i2 + 1]) && clean.trim() && isPlainText) {
         push(buildTextBlock("## " + line));
-        i += 2;
+        i2 += 2;
         continue;
       }
       if (clean.trim() === "") {
-        const cnt = Math.max(1, countBlankLines(lines, i));
-        const atEnd = i + cnt >= lines.length, k = Math.floor(cnt / 2), total = k + (atEnd && !fragment ? 1 : 0);
+        const cnt = Math.max(1, countBlankLines(lines, i2));
+        const atEnd = i2 + cnt >= lines.length, k = Math.floor(cnt / 2), total = k + (atEnd && !fragment ? 1 : 0);
         const marks = new Array(total).fill("");
         let carry = "";
         for (let l = 0; l < cnt; l++) {
-          const mm = lines[i + l].match(/[\uE000\uE001]/g);
+          const mm = lines[i2 + l].match(/[\uE000\uE001]/g);
           if (!mm) continue;
           if (!total) {
             carry += mm.join("");
@@ -3924,21 +5175,21 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         }
         for (let z = 0; z < total; z++) push(buildTextBlock(marks[z]));
         if (carry) {
-          if (!atEnd) lines[i + cnt] = carry + lines[i + cnt];
+          if (!atEnd) lines[i2 + cnt] = carry + lines[i2 + cnt];
           else push(buildTextBlock(carry));
         }
-        i += cnt;
+        i2 += cnt;
         continue;
       }
       let pm = clean.match(/^\s*<p(\s[^>]*)?>(.*)$/i);
       if (pm) {
         const content = (pm[2] || "").replace(/<\/(p|font|span|div)>\s*$/i, "").trim();
         push(buildHtmlP(pm[1] || "", content));
-        i++;
+        i2++;
         continue;
       }
       push(buildTextBlock(line));
-      i++;
+      i2++;
     }
     if (!frag.firstChild) push(buildTextBlock(""));
     return frag;
@@ -3965,6 +5216,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (!silent) historyReset();
     if (State.dirHandle || State.workspaceRoot) resolveRelativeImages();
     rerenderAsyncBlocks();
+    try {
+      editor.dispatchEvent(new CustomEvent("me:content-loaded"));
+    } catch (e) {
+    }
   }
   function ensureMathEngine() {
     if (MathEngine.katex) return Promise.resolve();
@@ -4096,7 +5351,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (info.type === "heading") {
       cls += " heading h" + info.level;
       el.dataset.level = info.level;
-      html = '<span class="md-marker block-prefix" contenteditable="false">' + escapeHtml(info.prefix) + '</span><span class="block-content">' + inlineRender(info.content) + "</span>";
+      html = '<span class="md-marker block-prefix" contenteditable="false">' + escapeHtml(info.prefix) + '</span><span class="block-content">' + inlineRender(info.content) + '</span><span class="heading-fold" contenteditable="false" title="折叠/展开本节" aria-label="折叠或展开本节">▾</span>';
     } else if (info.type === "quote") {
       cls += " quote";
       el.dataset.depth = info.depth;
@@ -4154,10 +5409,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     body.appendChild(parseFragment(contentMd || ""));
     const blocks = $$(".md-block", body);
     const emptyPara = blocks.map((bl) => bl.dataset.type === "paragraph" && !nodeToMd(bl).trim());
-    const hasContent = emptyPara.some((x) => !x);
+    const hasContent = emptyPara.some((x2) => !x2);
     let keptAnchor = false;
-    blocks.forEach((bl, i) => {
-      if (!emptyPara[i]) return;
+    blocks.forEach((bl, i2) => {
+      if (!emptyPara[i2]) return;
       if (!hasContent && !keptAnchor) {
         keptAnchor = true;
         return;
@@ -4410,16 +5665,16 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const cells = [];
     let cur = "", escaped = false, ticks = 0;
     let backticks = 0;
-    for (let i = 0; i < s.length; i++) {
-      if (s[i] === "`") {
+    for (let i2 = 0; i2 < s.length; i2++) {
+      if (s[i2] === "`") {
         let sl = 0;
-        for (let j = i - 1; j >= 0 && s[j] === "\\"; j--) sl++;
+        for (let j = i2 - 1; j >= 0 && s[j] === "\\"; j--) sl++;
         if (sl % 2 === 0) backticks++;
       }
     }
     const ticksEnabled = backticks % 2 === 0;
-    for (let i = 0; i < s.length; i++) {
-      const ch = s[i];
+    for (let i2 = 0; i2 < s.length; i2++) {
+      const ch = s[i2];
       if (escaped) {
         cur += ch;
         escaped = false;
@@ -4433,10 +5688,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       if (ch === "`") {
         if (ticksEnabled) {
           let n = 1;
-          while (s[i + n] === "`") n++;
+          while (s[i2 + n] === "`") n++;
           ticks = ticks === n ? 0 : ticks ? ticks : n;
           cur += ch.repeat(n);
-          i += n - 1;
+          i2 += n - 1;
         } else cur += ch;
         continue;
       }
@@ -4465,12 +5720,12 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     wrap.dataset.sep = rows[1] || "";
     wrap.setAttribute("contenteditable", "false");
     let html = '<div class="table-tools" contenteditable="false"><button class="tt-btn" data-act="resize" type="button">尺寸…</button><button class="tt-btn" data-act="row-add-below" type="button">+ 行</button><button class="tt-btn" data-act="row-del" type="button">− 行</button><button class="tt-btn" data-act="col-add-right" type="button">+ 列</button><button class="tt-btn" data-act="col-del" type="button">− 列</button><button class="tt-btn" data-act="align-left" type="button">左对齐</button><button class="tt-btn" data-act="align-center" type="button">居中</button><button class="tt-btn" data-act="align-right" type="button">右对齐</button><button class="tt-btn" data-act="export-csv" type="button">导出CSV</button><button class="tt-btn danger" data-act="delete" type="button">删除表</button></div><table><thead><tr>';
-    header.forEach((h, i) => html += '<th contenteditable="true" data-align="' + (aligns[i] || "") + '">' + cellRender(h) + "</th>");
+    header.forEach((h, i2) => html += '<th contenteditable="true" data-align="' + (aligns[i2] || "") + '">' + cellRender(h) + "</th>");
     html += "</tr></thead><tbody>";
     body.forEach((r) => {
       const cells = splitTableRow(r);
       html += "<tr>";
-      header.forEach((_, i) => html += '<td contenteditable="true" data-align="' + (aligns[i] || "") + '">' + cellRender(cells[i] || "") + "</td>");
+      header.forEach((_, i2) => html += '<td contenteditable="true" data-align="' + (aligns[i2] || "") + '">' + cellRender(cells[i2] || "") + "</td>");
       html += "</tr>";
     });
     html += "</tbody></table>";
@@ -4572,12 +5827,12 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       }
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
       return true;
-    } catch (err) {
+    } catch (err2) {
       try {
         await navigator.clipboard.writeText(md);
       } catch (e) {
       }
-      warnLog("系统图片剪贴板不可用，已保留内部图片剪贴板:", err);
+      warnLog("系统图片剪贴板不可用，已保留内部图片剪贴板:", err2);
       return !!md;
     }
   }
@@ -4592,8 +5847,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
           }
         }
       }
-    } catch (err) {
-      warnLog("读取系统图片剪贴板失败，尝试内部剪贴板:", err);
+    } catch (err2) {
+      warnLog("读取系统图片剪贴板失败，尝试内部剪贴板:", err2);
     }
     if (State.imageClipboard) {
       editSource(State.imageClipboard);
@@ -5017,7 +6272,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       $("#lightbox").classList.remove("dragging");
       try {
         e.target.releasePointerCapture(e.pointerId);
-      } catch (err) {
+      } catch (err2) {
       }
     });
   }
@@ -5032,6 +6287,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     typewriterScroll: () => typewriterScroll
   });
   var rafSel = null;
+  var selTimer = 0;
   var _selMarks = { active: null, editing: [] };
   function onSelectionChange() {
     if (State.editingMath) {
@@ -5078,6 +6334,15 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       }
     }
     updateSelToolbar();
+    const selInfo = $("#st-sel");
+    if (selInfo) {
+      const s = getSelection();
+      if (s && s.rangeCount && !s.isCollapsed && editor.contains(s.anchorNode)) {
+        const t = s.toString().replace(/\s+/g, " ").trim();
+        selInfo.style.display = "";
+        selInfo.textContent = "选中 " + t.length + " 字符";
+      } else selInfo.style.display = "none";
+    }
     if (State.typewriter && block) typewriterScroll(block);
     if (!block) updateBlockType(block);
   }
@@ -5106,6 +6371,41 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       const t = block.dataset.type;
       if (e.inputType === "insertText" && e.data && isTextBlock(block)) {
         const pairs = { "(": ")", "[": "]", "{": "}", '"': '"', "'": "'", "`": "`" }, c2 = getCaret(block), src = nodeToMd(block), close = pairs[e.data];
+        const MARK = { "*": ["*", "*"], "_": ["_", "_"], "~": ["~~", "~~"], "=": ["==", "=="], "$": ["$", "$"] };
+        if (c2 && c2.e > c2.s && MARK[e.data]) {
+          const [l, r] = MARK[e.data], sel = src.slice(c2.s, c2.e);
+          const before = src.slice(Math.max(0, c2.s - l.length), c2.s), after = src.slice(c2.e, c2.e + r.length);
+          const before2 = src.slice(Math.max(0, c2.s - 2), c2.s), after2 = src.slice(c2.e, c2.e + 2);
+          e.preventDefault();
+          if (e.data === "*" && before2 === "**" && after2 === "**") {
+            const ns2 = src.slice(0, c2.s - 2) + sel + src.slice(c2.e + 2);
+            rerenderBlock(block, ns2, c2.s - 2, c2.s - 2 + sel.length);
+            commitHistory("struct");
+            return;
+          }
+          if (e.data === "_" && before2 === "__" && after2 === "__") {
+            const ns2 = src.slice(0, c2.s - 2) + sel + src.slice(c2.e + 2);
+            rerenderBlock(block, ns2, c2.s - 2, c2.s - 2 + sel.length);
+            commitHistory("struct");
+            return;
+          }
+          if ((e.data === "*" || e.data === "_") && before === l && after === r) {
+            const ns2 = src.slice(0, c2.s - 1) + l + l + sel + r + r + src.slice(c2.e + 1);
+            rerenderBlock(block, ns2, c2.s + 1, c2.s + 1 + sel.length);
+            commitHistory("struct");
+            return;
+          }
+          if (before === l && after === r) {
+            const ns2 = src.slice(0, c2.s - l.length) + sel + src.slice(c2.e + r.length);
+            rerenderBlock(block, ns2, c2.s - l.length, c2.s - l.length + sel.length);
+            commitHistory("struct");
+            return;
+          }
+          const ns = src.slice(0, c2.s) + l + sel + r + src.slice(c2.e);
+          rerenderBlock(block, ns, c2.s + l.length, c2.s + l.length + sel.length);
+          commitHistory("struct");
+          return;
+        }
         if (c2 && c2.collapsed && c2.s < src.length && Object.values(pairs).includes(e.data) && src[c2.s] === e.data) {
           e.preventDefault();
           setCaret(block, c2.s + 1);
@@ -5245,6 +6545,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     document.addEventListener("selectionchange", () => {
       if (rafSel) cancelAnimationFrame(rafSel);
       rafSel = requestAnimationFrame(onSelectionChange);
+      clearTimeout(selTimer);
+      selTimer = setTimeout(onSelectionChange, 40);
     });
   }
 
@@ -5326,8 +6628,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     editSource((/* @__PURE__ */ new Date()).toLocaleString("zh-CN", { hour12: false }));
   }
   var Cmds = [];
-  function cmd(id, title, hot, run) {
-    const c = { id, title, hot, run, _hot: null };
+  function cmd(id, title, hot, run2) {
+    const c = { id, title, hot, run: run2, _hot: null };
     Cmds.push(c);
     return c;
   }
@@ -5417,8 +6719,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if ($("#lightbox").classList.contains("show")) closeLightbox();
   }
   var MENUS = [
-    { label: "文件", items: ["new", "open", "openFile", { sub: "最近工作区", recent: "workspace" }, { sub: "最近文件", recent: "file" }, "refreshWorkspace", "-", "save", "saveAs", "-", "exportWord", "exportHtml", "exportEditable", "copyMd", "-", "print"] },
-    { label: "编辑", items: ["undo", "redo", "-", "find", "replace", "spellcheck", "globalSearch", "quickOpen", "-", "palette"] },
+    { label: "文件", items: ["new", "open", "openFile", { sub: "最近工作区", recent: "workspace" }, { sub: "最近文件", recent: "file" }, "refreshWorkspace", "-", "save", "saveAs", "-", "exportDocx", "exportWord", "exportHtml", "exportEditable", "copyMd", "-", "print"] },
+    { label: "编辑", items: ["undo", "redo", "-", "find", "replace", "spellcheck", "globalSearch", "quickOpen", "-", "copyRich", "-", "palette"] },
     { label: "段落", items: ["text", "h1", "h2", "h3", "h4", "h5", "h6", "-", "quote", "ul", "ol", "task", "-", "codeblock", "mathblock", "table", "hr", "toc", "-", "indent", "outdent"] },
     { label: "格式", items: ["bold", "italic", "underline", "strike", "mark", "inlineCode", "-", "link", "image", "-", "clearInline", "removeBlankLines"] },
     { label: "插入", items: ["codeblock", "mathblock", "mermaidblock", "table", "hr", "toc", "-", "link", "image", "dateTime"] },
@@ -5442,7 +6744,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       trig.addEventListener("mousedown", (ev) => {
         ev.preventDefault();
         const wasOpen = root.classList.contains("open");
-        $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
+        $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
         if (!wasOpen) {
           root.classList.add("open");
           refreshMenuChecks();
@@ -5450,7 +6752,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       });
       root.addEventListener("mouseenter", () => {
         if ($$(".menu-root.open").length && !root.classList.contains("open")) {
-          $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
+          $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
           root.classList.add("open");
           refreshMenuChecks();
         }
@@ -5461,7 +6763,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const parts = String(path || "").split("/").filter(Boolean);
     if (!root || !parts.length) return null;
     let dir = root;
-    for (let i = 0; i < parts.length - 1; i++) dir = await dir.getDirectoryHandle(parts[i]);
+    for (let i2 = 0; i2 < parts.length - 1; i2++) dir = await dir.getDirectoryHandle(parts[i2]);
     return dir.getFileHandle(parts[parts.length - 1]);
   }
   async function openRecentRecord(record, ask = true) {
@@ -5541,7 +6843,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
           console.error("[MarkEditor] 打开历史记录失败:", e);
           toast("打开历史记录失败: " + (e.message || e), 4e3);
         } finally {
-          $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
+          $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
         }
       };
       panel.appendChild(b);
@@ -5594,8 +6896,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         wrap.addEventListener("click", (e) => {
           if (e.target.closest(".mi-sub-panel")) return;
           e.stopPropagation();
-          $$(".mi-sub.open").forEach((x) => {
-            if (x !== wrap) x.classList.remove("open");
+          $$(".mi-sub.open").forEach((x2) => {
+            if (x2 !== wrap) x2.classList.remove("open");
           });
           wrap.classList.toggle("open");
           placePanel();
@@ -5614,13 +6916,13 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
             b2.dataset.cmd = ti.cmd;
             b2.addEventListener("click", () => {
               if (cc) cc.run();
-              $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
-              $$(".mi-sub.open").forEach((x) => x.classList.remove("open"));
+              $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
+              $$(".mi-sub.open").forEach((x2) => x2.classList.remove("open"));
             });
           } else {
             b2.addEventListener("click", () => {
               setTheme(ti.theme);
-              $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
+              $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
             });
           }
           panel.appendChild(b2);
@@ -5637,7 +6939,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.innerHTML = '<span class="mi-check"></span><span>' + escapeHtml(c.title) + "</span>" + (c.hot ? '<span class="mi-k">' + escapeHtml(hotLabel(c.hot)) + "</span>" : "");
       b.addEventListener("click", () => {
-        $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
+        $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
         updateCurrentHistoryView();
         c.run();
         if (c.id !== "undo" && c.id !== "redo") commitHistory("struct");
@@ -5675,6 +6977,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       b.className = "sel-btn";
       b.textContent = d[1];
       b.title = CmdMap[d[0]].title;
+      b.dataset.cmd = d[0];
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
         updateCurrentHistoryView();
@@ -5708,8 +7011,11 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     }
     tb.style.position = "fixed";
     tb.classList.add("show");
-    const tw = tb.offsetWidth;
-    tb.style.top = Math.max(46, rect.top - 38) + "px";
+    const tw = tb.offsetWidth, th = tb.offsetHeight;
+    const gap = 8;
+    let top = rect.top - th - gap;
+    if (top < 46) top = Math.min(window.innerHeight - th - gap, rect.bottom + gap);
+    tb.style.top = Math.max(46, top) + "px";
     tb.style.left = Math.max(12, Math.min(window.innerWidth - tw - 12, rect.left + rect.width / 2 - tw / 2)) + "px";
   }
   function showModal(sel) {
@@ -5718,13 +7024,87 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   function closeModal(sel) {
     $(sel).classList.remove("show");
   }
+  function inlineRichStyles(html) {
+    try {
+      const doc = new DOMParser().parseFromString('<div id="r">' + html + "</div>", "text/html");
+      const root = doc.getElementById("r");
+      if (!root) return html;
+      root.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((h) => {
+        h.style.fontWeight = "700";
+        h.style.margin = "16px 0 8px";
+        h.style.lineHeight = "1.35";
+      });
+      root.querySelectorAll("p").forEach((p) => {
+        p.style.margin = "8px 0";
+        p.style.lineHeight = "1.7";
+      });
+      root.querySelectorAll("ul,ol").forEach((x2) => {
+        x2.style.margin = "8px 0";
+        x2.style.paddingLeft = "24px";
+      });
+      root.querySelectorAll("table").forEach((t) => {
+        t.style.borderCollapse = "collapse";
+        t.style.margin = "10px 0";
+      });
+      root.querySelectorAll("table th,table td").forEach((c) => {
+        c.style.border = "1px solid #d0d7de";
+        c.style.padding = "6px 10px";
+      });
+      root.querySelectorAll("pre").forEach((p) => {
+        p.style.background = "#f6f8fa";
+        p.style.padding = "10px 12px";
+        p.style.borderRadius = "6px";
+        p.style.overflow = "auto";
+      });
+      root.querySelectorAll("pre code,code").forEach((c) => {
+        c.style.fontFamily = "Consolas,Menlo,monospace";
+      });
+      root.querySelectorAll("blockquote").forEach((b) => {
+        b.style.borderLeft = "3px solid #d0d7de";
+        b.style.paddingLeft = "12px";
+        b.style.color = "#57606a";
+        b.style.margin = "8px 0";
+      });
+      root.querySelectorAll("img").forEach((im) => {
+        im.style.maxWidth = "100%";
+      });
+      return root.innerHTML;
+    } catch (e) {
+      return html;
+    }
+  }
+  async function copyRich() {
+    try {
+      const sel = getSelection();
+      let html, plain;
+      if (sel && sel.rangeCount && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+        const div = document.createElement("div");
+        div.appendChild(sel.getRangeAt(0).cloneContents());
+        html = cleanInlineHtml(div);
+        plain = sel.toString();
+      } else {
+        html = buildExportBody();
+        plain = serialize();
+      }
+      html = inlineRichStyles(html);
+      if (!navigator.clipboard || !window.ClipboardItem) throw new Error("当前环境不支持富文本剪贴板");
+      await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([plain], { type: "text/plain" }) })]);
+      toast("已复制为富文本，可直接粘贴到 Word / 飞书 / 邮件");
+    } catch (e) {
+      toast("复制富文本失败: " + (e && e.message ? e.message : e), 4e3);
+    }
+  }
   function openSettings() {
-    const s = State.settings;
+    const s = State.settings, a = s.appearance || {};
     $("#set-img-mode").value = s.image.mode;
     $("#set-img-dir").value = s.image.directory;
     $("#set-img-path").value = s.image.path;
     $("#set-emoji").checked = s.markdown.emoji;
     $("#set-autodraft").checked = s.markdown.autoDraft !== false;
+    $("#set-autosave").checked = s.markdown.autoSave !== false;
+    $("#set-editor-fs").value = Number(a.fontSize) || 16;
+    $("#set-editor-lh").value = Number(a.lineHeight) || 1.7;
+    $("#set-editor-font").value = a.fontFamily || "";
     $("#set-paper").value = s.export.paper;
     $("#set-orient").value = s.export.orientation;
     $("#set-font-size").value = s.export.fontSize;
@@ -5736,10 +7116,14 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     showModal("#settings-modal");
   }
   function commitSettings() {
-    State.settings = { image: { mode: $("#set-img-mode").value, directory: $("#set-img-dir").value.trim() || "assets", path: $("#set-img-path").value }, markdown: { emoji: $("#set-emoji").checked, autoDraft: $("#set-autodraft").checked }, export: { paper: $("#set-paper").value, orientation: $("#set-orient").value, fontSize: +$("#set-font-size").value || 10.5, imageWidth: +$("#set-img-width").value || 100, margin: +$("#set-margin").value || 64, frontMatter: $("#set-frontmatter").checked, header: $("#set-header").value, footer: $("#set-footer").value } };
+    State.settings = { image: { mode: $("#set-img-mode").value, directory: $("#set-img-dir").value.trim() || "assets", path: $("#set-img-path").value }, markdown: { emoji: $("#set-emoji").checked, autoDraft: $("#set-autodraft").checked, autoSave: $("#set-autosave").checked }, appearance: { fontSize: Math.max(12, Math.min(24, +$("#set-editor-fs").value || 16)), lineHeight: Math.max(1.2, Math.min(2.4, +$("#set-editor-lh").value || 1.7)), fontFamily: $("#set-editor-font").value.trim() }, export: { paper: $("#set-paper").value, orientation: $("#set-orient").value, fontSize: +$("#set-font-size").value || 10.5, imageWidth: +$("#set-img-width").value || 100, margin: +$("#set-margin").value || 64, frontMatter: $("#set-frontmatter").checked, header: $("#set-header").value, footer: $("#set-footer").value } };
     saveSettings();
+    applyAppearance();
     if (!State.settings.markdown.autoDraft) {
       lsRemove("me-draft");
+    }
+    if (!State.settings.markdown.autoSave) {
+      clearTimeout(State.autoSaveTimer);
     }
     closeModal("#settings-modal");
     toast("设置已保存");
@@ -5794,7 +7178,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       const lines = [];
       lines.push("| " + Array(cols).fill("   ").join(" | ") + " |");
       lines.push("|" + Array(cols).fill("---").join("|") + "|");
-      for (let i = 0; i < rows - 1; i++) lines.push("| " + Array(cols).fill("   ").join(" | ") + " |");
+      for (let i2 = 0; i2 < rows - 1; i2++) lines.push("| " + Array(cols).fill("   ").join(" | ") + " |");
       const tb = buildTable(lines);
       let b = activeBlock();
       if (b && isTextBlock(b) && nodeToMd(b).trim() === "") b.replaceWith(tb);
@@ -5831,7 +7215,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       list.innerHTML = '<div class="cmdk-empty">没有匹配的命令</div>';
       return;
     }
-    list.innerHTML = palList.map((c, i) => '<div class="cmdk-item ' + (i === palIdx ? "active" : "") + '" data-i="' + i + '"><span>' + escapeHtml(c.title) + "</span>" + (c.hot ? '<span class="ck">' + escapeHtml(hotLabel(c.hot)) + "</span>" : "") + "</div>").join("");
+    list.innerHTML = palList.map((c, i2) => '<div class="cmdk-item ' + (i2 === palIdx ? "active" : "") + '" data-i="' + i2 + '"><span>' + escapeHtml(c.title) + "</span>" + (c.hot ? '<span class="ck">' + escapeHtml(hotLabel(c.hot)) + "</span>" : "") + "</div>").join("");
     list.querySelectorAll(".cmdk-item").forEach((el) => el.addEventListener("click", () => {
       palIdx = +el.dataset.i;
       execPalette();
@@ -5849,9 +7233,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   var fileSearchIdx = 0;
   var fileSearchGeneration = 0;
   function fuzzyMatch(text, q) {
-    let i = 0;
-    for (const ch of text.toLowerCase()) if (ch === q[i]) i++;
-    return i === q.length;
+    let i2 = 0;
+    for (const ch of text.toLowerCase()) if (ch === q[i2]) i2++;
+    return i2 === q.length;
   }
   async function openWorkspaceSearch(mode = "quick") {
     if (!State.workspaceRoot) {
@@ -5872,7 +7256,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   function paintWorkspaceSearch() {
     const list = $("#file-search-list");
     fileSearchIdx = Math.min(fileSearchIdx, Math.max(0, fileSearchResults.length - 1));
-    list.innerHTML = fileSearchResults.length ? fileSearchResults.map((r, i) => '<div class="fs-result ' + (i === fileSearchIdx ? "active" : "") + '" data-i="' + i + '"><div class="fs-path">' + escapeHtml(r.file.path) + "</div>" + (r.preview ? '<div class="fs-preview">' + escapeHtml(r.preview) + "</div>" : "") + "</div>").join("") : '<div class="cmdk-empty">没有匹配结果</div>';
+    list.innerHTML = fileSearchResults.length ? fileSearchResults.map((r, i2) => '<div class="fs-result ' + (i2 === fileSearchIdx ? "active" : "") + '" data-i="' + i2 + '"><div class="fs-path">' + escapeHtml(r.file.path) + "</div>" + (r.preview ? '<div class="fs-preview">' + escapeHtml(r.preview) + "</div>" : "") + "</div>").join("") : '<div class="cmdk-empty">没有匹配结果</div>';
     $$(".fs-result", list).forEach((el) => el.onclick = () => openWorkspaceResult(+el.dataset.i));
   }
   async function renderWorkspaceSearch() {
@@ -5884,8 +7268,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         const f = await file.handle.getFile();
         const maxSize = 1024 * 1024;
         const text = f.size > maxSize ? await f.slice(0, maxSize).text() : await f.text();
-        const i = text.toLowerCase().indexOf(q.toLowerCase());
-        if (i >= 0) results.push({ file, preview: text.slice(Math.max(0, i - 45), i + q.length + 90).replace(/\s+/g, " ") });
+        const i2 = text.toLowerCase().indexOf(q.toLowerCase());
+        if (i2 >= 0) results.push({ file, preview: text.slice(Math.max(0, i2 - 45), i2 + q.length + 90).replace(/\s+/g, " ") });
       } catch (e) {
       }
       if (results.length >= 100 || generation !== fileSearchGeneration) break;
@@ -5894,8 +7278,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     fileSearchResults = results;
     paintWorkspaceSearch();
   }
-  async function openWorkspaceResult(i) {
-    const r = fileSearchResults[i];
+  async function openWorkspaceResult(i2) {
+    const r = fileSearchResults[i2];
     if (!r) return;
     $("#file-search").classList.remove("show");
     await openMdFile(r.file.handle, r.file.path);
@@ -5906,11 +7290,11 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   function computeHasChild(heads) {
     const hasChild = new Array(heads.length).fill(false);
     const stack = [];
-    for (let i = 0; i < heads.length; i++) {
-      const lv = +heads[i].dataset.level;
+    for (let i2 = 0; i2 < heads.length; i2++) {
+      const lv = +heads[i2].dataset.level;
       while (stack.length && stack[stack.length - 1].lv >= lv) stack.pop();
       if (stack.length) hasChild[stack[stack.length - 1].i] = true;
-      stack.push({ i, lv });
+      stack.push({ i: i2, lv });
     }
     return hasChild;
   }
@@ -5928,16 +7312,16 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     ensureOutlineDefaultCollapsed(heads, hasChild);
     const collapsed = State.outlineCollapsed;
     const hiddenStack = [];
-    heads.forEach((h, i) => {
+    heads.forEach((h, i2) => {
       const lv = +h.dataset.level;
       while (hiddenStack.length && hiddenStack[hiddenStack.length - 1] >= lv) hiddenStack.pop();
       const isHidden = hiddenStack.length > 0;
       const isCollapsed = collapsed.has(h.id);
       const b = document.createElement("div");
-      b.className = "ol-item ol-l" + lv + (isCollapsed ? " ol-collapsed" : "") + (hasChild[i] ? "" : " ol-leaf") + (isHidden ? " ol-hidden" : "");
+      b.className = "ol-item ol-l" + lv + (isCollapsed ? " ol-collapsed" : "") + (hasChild[i2] ? "" : " ol-leaf") + (isHidden ? " ol-hidden" : "");
       b.dataset.target = h.id;
       b.dataset.lv = lv;
-      b.dataset.haschild = hasChild[i] ? "1" : "0";
+      b.dataset.haschild = hasChild[i2] ? "1" : "0";
       const caret = document.createElement("span");
       caret.className = "ol-caret";
       caret.textContent = "▾";
@@ -5947,7 +7331,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       label.textContent = (numMap.get(h) || "") + headingPlainText(h);
       b.appendChild(caret);
       b.appendChild(label);
-      if (hasChild[i]) {
+      if (hasChild[i2]) {
         caret.addEventListener("click", (ev) => {
           ev.stopPropagation();
           if (collapsed.has(h.id)) collapsed.delete(h.id);
@@ -5989,7 +7373,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const narrow = window.matchMedia("(max-width:820px)").matches;
     State.outlineDefaultCollapsed = narrow;
     if (narrow) {
-      for (let i = 0; i < heads.length; i++) if (hasChild[i]) State.outlineCollapsed.add(heads[i].id);
+      for (let i2 = 0; i2 < heads.length; i2++) if (hasChild[i2]) State.outlineCollapsed.add(heads[i2].id);
     }
   }
   var spyT = null;
@@ -6029,8 +7413,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   var updateStatus = debounce(() => {
     const md = serialize();
-    const w = countWords(md);
-    $("#st-count").textContent = w.cjk + w.words + " 字 · " + w.chars + " 字符";
+    const w = countWords(md), n = w.cjk + w.words;
+    const narrow = window.matchMedia && window.matchMedia("(max-width:820px)").matches;
+    $("#st-count").textContent = n + " 字 · " + w.chars + " 字符" + (n && !narrow ? " · 约 " + Math.max(1, Math.round(n / 300)) + " 分钟" : "");
   }, () => Math.max(mutateDebounceMs() * 4, 500));
   function updateBlockType(b) {
     const el = $("#st-block-type");
@@ -6055,9 +7440,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function canonicalBlockRanges() {
     let pos = 0;
-    return topBlockLayout().map((r, i) => {
+    return topBlockLayout().map((r, i2) => {
       pos += r.sep.length;
-      const range = { block: r.block, index: i, start: pos, end: pos + r.text.length, text: r.text };
+      const range = { block: r.block, index: i2, start: pos, end: pos + r.text.length, text: r.text };
       pos = range.end;
       return range;
     });
@@ -6074,7 +7459,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (block.dataset.type === "table") {
       const saved2 = State.lastCaret && State.lastCaret.block === block ? State.lastCaret : null, cell = activeCell() || saved2 && saved2.cell;
       if (cell) {
-        const rows = $$("tr", block), row = rows.indexOf(cell.parentElement), col = cell.cellIndex, c2 = getCaret(cell) || saved2 && saved2.caret || { s: 0, e: 0 }, lines = range.text.split("\n"), lineIndex = row === 0 ? 0 : row + 1, lineStart = lines.slice(0, lineIndex).reduce((n, x) => n + x.length + 1, 0), cells = $$("th,td", cell.parentElement).map(cellText), cellStart = 2 + cells.slice(0, col).reduce((n, x) => n + x.length + 3, 0), raw = nodeToMd(cell);
+        const rows = $$("tr", block), row = rows.indexOf(cell.parentElement), col = cell.cellIndex, c2 = getCaret(cell) || saved2 && saved2.caret || { s: 0, e: 0 }, lines = range.text.split("\n"), lineIndex = row === 0 ? 0 : row + 1, lineStart = lines.slice(0, lineIndex).reduce((n, x2) => n + x2.length + 1, 0), cells = $$("th,td", cell.parentElement).map(cellText), cellStart = 2 + cells.slice(0, col).reduce((n, x2) => n + x2.length + 3, 0), raw = nodeToMd(cell);
         return { start: range.start + lineStart + cellStart + escapeCellSource(raw.slice(0, c2.s)).length, end: range.start + lineStart + cellStart + escapeCellSource(raw.slice(0, c2.e)).length };
       }
     }
@@ -6134,8 +7519,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     let n;
     while (n = walker.nextNode()) {
       for (const token of [A, B]) {
-        const i = n.nodeValue.indexOf(token);
-        if (i >= 0) hits[token] = { node: n, offset: i };
+        const i2 = n.nodeValue.indexOf(token);
+        if (i2 >= 0) hits[token] = { node: n, offset: i2 };
       }
     }
     if (hits[A]) {
@@ -6165,9 +7550,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       State._serDirty = true;
     }
     const w2 = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT), stale = [];
-    let x;
-    while (x = w2.nextNode()) {
-      if (x.nodeValue.indexOf(A) >= 0 || x.nodeValue.indexOf(B) >= 0) stale.push(x);
+    let x2;
+    while (x2 = w2.nextNode()) {
+      if (x2.nodeValue.indexOf(A) >= 0 || x2.nodeValue.indexOf(B) >= 0) stale.push(x2);
     }
     for (const t of stale) {
       t.nodeValue = t.nodeValue.split(A).join("").split(B).join("");
@@ -6180,8 +7565,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       try {
         const oldY = textareaCaretY(sourceArea, sourceArea.selectionStart), projection = decodeProjection(sourceArea.value), start = projection.map(sourceArea.selectionStart), end = projection.map(sourceArea.selectionEnd);
         restoreCanonicalMarkers(projection.text, start, end, oldY);
-      } catch (err) {
-        warnLog("源码→渲染光标映射失败，回退到文档开头:", err);
+      } catch (err2) {
+        warnLog("源码→渲染光标映射失败，回退到文档开头:", err2);
         const md = decodeImages(sourceArea.value);
         loadMarkdown(md, true);
         paper.classList.remove("source");
@@ -6205,7 +7590,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         sourceArea.focus({ preventScroll: true });
         try {
           sourceArea.setSelectionRange(start, end);
-        } catch (err) {
+        } catch (err2) {
         }
         const newY = textareaCaretY(sourceArea, start);
         sourceArea.scrollTop = Math.max(0, newY - oldY);
@@ -6286,7 +7671,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   function setZoom(z) {
     const n = Number(z);
     State.zoom = Math.max(0.7, Math.min(1.6, Math.round((isFinite(n) ? n : 1) * 100) / 100));
-    document.documentElement.style.setProperty("--editor-fs", (16 * State.zoom).toFixed(1) + "px");
+    applyAppearance();
     $("#st-zoom").textContent = Math.round(State.zoom * 100) + "%";
     saveDraft();
     invalidateHeadingOffsets();
@@ -6314,17 +7699,17 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     }
     const s = State.hn.startLevel;
     let css = "#editor{counter-reset:";
-    for (let i = 1; i <= 6; i++) css += "h" + i + " 0 ";
+    for (let i2 = 1; i2 <= 6; i2++) css += "h" + i2 + " 0 ";
     css += ";}";
-    for (let i = 1; i <= 6; i++) {
+    for (let i2 = 1; i2 <= 6; i2++) {
       let rules = "";
-      if (i >= s) rules += "counter-increment:h" + i + ";";
-      if (i < 6) rules += "counter-set:h" + (i + 1) + " 0;";
-      if (rules) css += ".heading.h" + i + "{" + rules + "}";
-      if (i >= s) {
+      if (i2 >= s) rules += "counter-increment:h" + i2 + ";";
+      if (i2 < 6) rules += "counter-set:h" + (i2 + 1) + " 0;";
+      if (rules) css += ".heading.h" + i2 + "{" + rules + "}";
+      if (i2 >= s) {
         let content = "";
-        for (let j = s; j <= i; j++) content += "counter(h" + j + ')"."';
-        css += ".heading.h" + i + "::before{content:" + content + '" ";opacity:.85;}';
+        for (let j = s; j <= i2; j++) content += "counter(h" + j + ')"."';
+        css += ".heading.h" + i2 + "::before{content:" + content + '" ";opacity:.85;}';
       }
     }
     el.textContent = css;
@@ -6361,7 +7746,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     $$(".heading", editor).forEach((h) => {
       const lv = +h.dataset.level;
       if (lv >= s) c[lv - 1]++;
-      for (let i = lv; i < 6; i++) c[i] = 0;
+      for (let i2 = lv; i2 < 6; i2++) c[i2] = 0;
       let num = "";
       if (lv >= s) {
         for (let j = s - 1; j < lv; j++) num += c[j] + ".";
@@ -6445,9 +7830,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       }
     }
   }
-  function gotoMatch(i) {
+  function gotoMatch(i2) {
     if (!findMatches.length) return;
-    findIdx = (i + findMatches.length) % findMatches.length;
+    findIdx = (i2 + findMatches.length) % findMatches.length;
     const m = findMatches[findIdx];
     const root = m.kind === "table" ? m.target : m.target.dataset.type === "codeblock" ? $("code", m.target) : m.target;
     m.target.scrollIntoView({ block: "center" });
@@ -6556,7 +7941,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     md.replace(/!\[([^\]]*)\]\((data:image\/[^)\s]+)\)/g, (m, alt, data, index) => {
       if (data.length <= 2048) return m;
       out += md.slice(last, index);
-      const i = ImageMarkers.list.length, replacement = "![" + alt + "](<image:" + i + ">)", displayStart = out.length;
+      const i2 = ImageMarkers.list.length, replacement = "![" + alt + "](<image:" + i2 + ">)", displayStart = out.length;
       ImageMarkers.list.push(data);
       out += replacement;
       ImageMarkers.segments.push({ canonicalStart: index, canonicalEnd: index + m.length, displayStart, displayEnd: displayStart + replacement.length });
@@ -6578,8 +7963,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   function decodeProjection(display) {
     let out = "", last = 0;
     const segments = [];
-    display.replace(/!\[([^\]]*)\]\(<image:(\d+)>\)/g, (m, alt, i, index) => {
-      const data = ImageMarkers.list[+i];
+    display.replace(/!\[([^\]]*)\]\(<image:(\d+)>\)/g, (m, alt, i2, index) => {
+      const data = ImageMarkers.list[+i2];
       if (!data) return m;
       out += display.slice(last, index);
       const replacement = "![" + alt + "](" + data + ")", canonicalStart = out.length;
@@ -6650,7 +8035,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     cmd("save", "保存", "Ctrl+S", () => fileSave(false));
     cmd("saveAs", "另存为…", "Ctrl+Shift+S", () => fileSave(true));
     cmd("exportHtml", "导出为 HTML…", "", exportHtml);
-    cmd("exportWord", "导出为 Word（.doc 带样式）", "", exportWord);
+    cmd("exportDocx", "导出为 Word（.docx）", "", exportDocx);
+    cmd("exportWord", "导出为 Word（.doc 兼容旧版）", "", exportWord);
     cmd("exportEditable", "导出为可编辑 HTML（内嵌文档）", "", exportEditableHtml);
     cmd("copyMd", "复制 Markdown 源码", "", async () => {
       try {
@@ -6660,6 +8046,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         toast("复制失败");
       }
     });
+    cmd("copyRich", "复制为富文本（粘贴到 Word/飞书保留样式）", "Ctrl+Alt+C", copyRich);
     cmd("print", "打印 / 另存 PDF", "", configuredPrint);
     cmd("quickOpen", "快速打开文件", "Ctrl+P", () => openWorkspaceSearch("quick"));
     cmd("globalSearch", "搜索工作区", "Ctrl+Shift+F", () => openWorkspaceSearch("global"));
@@ -6743,8 +8130,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     });
     document.addEventListener("mousedown", (e) => {
       const t = e.target;
-      if (!t.closest(".menu-root")) $$(".menu-root.open").forEach((x) => x.classList.remove("open"));
-      if (!t.closest(".mi-sub")) $$(".mi-sub.open").forEach((x) => x.classList.remove("open"));
+      if (!t.closest(".menu-root")) $$(".menu-root.open").forEach((x2) => x2.classList.remove("open"));
+      if (!t.closest(".mi-sub")) $$(".mi-sub.open").forEach((x2) => x2.classList.remove("open"));
       if (!t.closest("#ctx-menu")) $("#ctx-menu").classList.remove("show");
       if (!t.closest("#img-ctx-menu")) $("#img-ctx-menu").classList.remove("show");
       if (!t.closest("#file-ctx-menu") && !t.closest("#file-tree .tree-row")) hideFileContextMenu();
@@ -6753,6 +8140,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     $("#settings-reset").onclick = () => {
       State.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
       saveSettings();
+      applyAppearance();
       openSettings();
     };
     $$(".modal-mask").forEach((m) => m.addEventListener("mousedown", (e) => {
@@ -6872,7 +8260,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     $("#outline-toggle-all").addEventListener("click", () => {
       const heads = $$(".heading", editor).filter((h) => +h.dataset.level <= State.outlineMaxLevel);
       const flags = computeHasChild(heads);
-      const hasChild = new Set(heads.map((h, i) => flags[i] ? h.id : null).filter(Boolean));
+      const hasChild = new Set(heads.map((h, i2) => flags[i2] ? h.id : null).filter(Boolean));
       const anyExpanded = heads.some((h) => hasChild.has(h.id) && !State.outlineCollapsed.has(h.id));
       if (anyExpanded) {
         heads.forEach((h) => {
@@ -7019,17 +8407,17 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   // src/modules/line-type.js
   function skipLead(orig, len) {
     let out = "", n = 0;
-    for (let i = 0; i < orig.length; i++) {
-      const c = orig.charCodeAt(i);
+    for (let i2 = 0; i2 < orig.length; i2++) {
+      const c = orig.charCodeAt(i2);
       if (c === 57344 || c === 57345) {
-        out += orig[i];
+        out += orig[i2];
         continue;
       }
       if (n < len) {
         n++;
         continue;
       }
-      out += orig[i];
+      out += orig[i2];
     }
     return out;
   }
@@ -7107,10 +8495,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   var ALLOWED_STYLE = /^(color|font-size|background|background-color|text-align|zoom|width|height|max-width|max-height|font-weight|font-style|text-decoration|line-height)$/i;
   function filterStyle(st) {
     if (!st) return "";
-    return st.split(";").map((x) => x.trim()).filter((x) => {
-      const i = x.indexOf(":");
-      if (i < 0) return false;
-      return ALLOWED_STYLE.test(x.slice(0, i).trim());
+    return st.split(";").map((x2) => x2.trim()).filter((x2) => {
+      const i2 = x2.indexOf(":");
+      if (i2 < 0) return false;
+      return ALLOWED_STYLE.test(x2.slice(0, i2).trim());
     }).join(";");
   }
   function safeColor(c) {
@@ -7256,7 +8644,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       return pre + hold('<a class="md-bare-link" href="' + escapeAttr(safeHref(href)) + '">' + url + "</a>") + trail;
     });
     s = s.replace(/ {2,}\n/g, "<br>").replace(/[^\n]\n(?=.)/g, (m) => m[0] + "<br>");
-    s = s.replace(/\u0001(\d+)\u0002/g, (_, i) => stash[+i]);
+    s = s.replace(/\u0001(\d+)\u0002/g, (_, i2) => stash[+i2]);
     return s;
   }
 
@@ -7322,7 +8710,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       }
       return unescapeHtml(node.dataset.md || "");
     }
-    if (cls.contains("code-actions") || cls.contains("table-tools") || cls.contains("math-hint") || cls.contains("col-resizer")) return "";
+    if (cls.contains("code-actions") || cls.contains("table-tools") || cls.contains("math-hint") || cls.contains("col-resizer") || cls.contains("heading-fold")) return "";
     let out = "";
     for (const c of node.childNodes) out += nodeToMd(c, depth + 1);
     return out;
@@ -7333,21 +8721,21 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const bodyRows = $$("tbody tr", block);
     const maxCols = Math.max(ths.length, ...bodyRows.map((tr) => $$("td", tr).length), 1);
     const aligns = [];
-    for (let i = 0; i < maxCols; i++) aligns.push(ths[i] && ths[i].dataset.align || "");
-    const cellOf = (arr, i) => arr[i] ? cellText(arr[i]) : "";
+    for (let i2 = 0; i2 < maxCols; i2++) aligns.push(ths[i2] && ths[i2].dataset.align || "");
+    const cellOf = (arr, i2) => arr[i2] ? cellText(arr[i2]) : "";
     const fmtRow = (cells) => "|" + cells.map((c) => c ? " " + c + " " : " ").join("|") + "|";
-    rows.push(fmtRow(Array.from({ length: maxCols }, (_, i) => cellOf(ths, i))));
+    rows.push(fmtRow(Array.from({ length: maxCols }, (_, i2) => cellOf(ths, i2))));
     const sepAlign = (cell) => {
       const s = String(cell || "").trim();
       const l = s.startsWith(":"), r = s.endsWith(":");
       return l && r ? "center" : r ? "right" : l ? "left" : "";
     };
     const sep = block.dataset.sep;
-    const sepCells = sep ? sep.split("|").filter((x) => x !== "") : [];
+    const sepCells = sep ? sep.split("|").filter((x2) => x2 !== "") : [];
     let useOrigSep = sepCells.length === maxCols;
     if (useOrigSep) {
-      for (let i = 0; i < maxCols; i++) {
-        if (sepAlign(sepCells[i]) !== (aligns[i] || "")) {
+      for (let i2 = 0; i2 < maxCols; i2++) {
+        if (sepAlign(sepCells[i2]) !== (aligns[i2] || "")) {
           useOrigSep = false;
           break;
         }
@@ -7359,8 +8747,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       rows.push("|" + aligns.map((a) => a === "center" ? ":---:" : a === "right" ? "---:" : a === "left" ? ":---" : "---").join("|") + "|");
     }
     bodyRows.forEach((tr) => {
-      const tds = $$("td", tr);
-      rows.push(fmtRow(Array.from({ length: maxCols }, (_, i) => cellOf(tds, i))));
+      const tds2 = $$("td", tr);
+      rows.push(fmtRow(Array.from({ length: maxCols }, (_, i2) => cellOf(tds2, i2))));
     });
     return rows.join("\n");
   }
@@ -7428,14 +8816,14 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     switch (b.dataset.type) {
       case "codeblock": {
         const lang = b.dataset.lang || "", code = $("code", b).textContent, ch = (b.dataset.fence || "```")[0];
-        const runs = code.match(new RegExp(ch === "`" ? "`+" : "~+", "g")) || [], len = Math.max(3, ...runs.map((x) => x.length + 1), (b.dataset.fence || "").length), fence = ch.repeat(len);
+        const runs = code.match(new RegExp(ch === "`" ? "`+" : "~+", "g")) || [], len = Math.max(3, ...runs.map((x2) => x2.length + 1), (b.dataset.fence || "").length), fence = ch.repeat(len);
         return fence + lang + "\n" + code + (code !== "" ? "\n" : "") + fence;
       }
       case "frontmatter":
         return "---\n" + (b.dataset.src || "") + "\n---";
       case "footnote": {
         const body = nodeToMd($(".block-content", b)).split("\n");
-        return "[^" + (b.dataset.footnote || "") + "]: " + body[0] + (body.length > 1 ? "\n" + body.slice(1).map((x) => "    " + x).join("\n") : "");
+        return "[^" + (b.dataset.footnote || "") + "]: " + body[0] + (body.length > 1 ? "\n" + body.slice(1).map((x2) => "    " + x2).join("\n") : "");
       }
       case "reference":
         return b.dataset.raw || b.textContent;
@@ -7483,9 +8871,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function topBlockLayout(blocks = topBlocks()) {
     const n = blocks.length, out = [];
-    for (let i = 0; i < n; i++) {
-      const b = blocks[i], text = blockToMd(b);
-      const sep = i === 0 ? "" : i === n - 1 && isEmptyPara(b) ? "\n" : blockSeparator(blocks[i - 1], b);
+    for (let i2 = 0; i2 < n; i2++) {
+      const b = blocks[i2], text = blockToMd(b);
+      const sep = i2 === 0 ? "" : i2 === n - 1 && isEmptyPara(b) ? "\n" : blockSeparator(blocks[i2 - 1], b);
       out.push({ block: b, text, sep });
     }
     return out;
@@ -8021,10 +9409,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const blocks = topBlocks();
     const emptyParas = [];
     let activeIdx = -1;
-    blocks.forEach((b, i) => {
+    blocks.forEach((b, i2) => {
       if (b.dataset.type === "paragraph" && nodeToMd(b).trim() === "") {
         emptyParas.push(b);
-        if (b.classList.contains("active")) activeIdx = i;
+        if (b.classList.contains("active")) activeIdx = i2;
       }
     });
     if (emptyParas.length === 0) {
@@ -8244,16 +9632,16 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function reorderLists() {
     const blocks = topBlocks();
-    blocks.forEach((b, i) => {
+    blocks.forEach((b, i2) => {
       if (b.dataset.type !== "list" || !b.classList.contains("ordered")) return;
-      const prev = blocks[i - 1];
+      const prev = blocks[i2 - 1];
       let exp = +b.dataset.order || 1;
       let found = false;
       if (prev && prev.classList && prev.classList.contains("ordered") && prev.dataset.indent === b.dataset.indent) {
         exp = (+prev.dataset.order || 1) + 1;
         found = true;
       } else {
-        for (let j = i - 1; j >= 0; j--) {
+        for (let j = i2 - 1; j >= 0; j--) {
           const p = blocks[j];
           if (!p.classList || !p.classList.contains("list-item")) break;
           if (+p.dataset.indent < +b.dataset.indent) break;
@@ -8303,7 +9691,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   // src/modules/core.js
   var $ = (s, r = document) => r.querySelector(s);
   var $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  var APP_VERSION = "1.1.0";
+  var APP_VERSION = "1.1.1";
   var APP_REPO = "https://github.com/YCG1995/MarkEditor";
   var APP_SITE = "https://md.ycgi.top";
   var APP_RELEASE = APP_REPO + "/releases/tag/v" + APP_VERSION;
@@ -8358,16 +9746,43 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     outlineCollapsed: /* @__PURE__ */ new Set(),
     outlineDefaultCollapsed: null,
     _serCache: null,
-    _serDirty: true
+    _serDirty: true,
+    // 数据安全：磁盘自动保存与外部修改检测
+    autoSaveTimer: null,
+    autosavePaused: false,
+    lastSavedMtime: 0,
+    lastAutoSaveAt: 0,
+    // 文件编码/换行：打开时记录，保存时原样还原
+    eol: "lf",
+    encoding: "utf-8"
   };
-  var DEFAULT_SETTINGS = { image: { mode: "copy", directory: "assets", path: "relative" }, markdown: { emoji: true, autoDraft: true }, export: { paper: "A4", orientation: "portrait", fontSize: 10.5, imageWidth: 100, margin: 64, frontMatter: false, header: "", footer: "" } };
+  var DEFAULT_SETTINGS = {
+    image: { mode: "copy", directory: "assets", path: "relative" },
+    markdown: { emoji: true, autoDraft: true, autoSave: true },
+    appearance: { fontSize: 16, lineHeight: 1.7, fontFamily: "" },
+    export: { paper: "A4", orientation: "portrait", fontSize: 10.5, imageWidth: 100, margin: 64, frontMatter: false, header: "", footer: "" }
+  };
   function loadSettings() {
     try {
       const saved = JSON.parse(lsGet("me-settings") || "null") || {};
-      State.settings = { image: Object.assign({}, DEFAULT_SETTINGS.image, saved.image), markdown: Object.assign({}, DEFAULT_SETTINGS.markdown, saved.markdown), export: Object.assign({}, DEFAULT_SETTINGS.export, saved.export) };
+      State.settings = {
+        image: Object.assign({}, DEFAULT_SETTINGS.image, saved.image),
+        markdown: Object.assign({}, DEFAULT_SETTINGS.markdown, saved.markdown),
+        appearance: Object.assign({}, DEFAULT_SETTINGS.appearance, saved.appearance),
+        export: Object.assign({}, DEFAULT_SETTINGS.export, saved.export)
+      };
     } catch (e) {
       State.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
     }
+  }
+  function applyAppearance() {
+    const a = State.settings && State.settings.appearance || {};
+    const root = document.documentElement;
+    const fs = Number(a.fontSize) || 16, lh = Number(a.lineHeight) || 1.7;
+    root.style.setProperty("--editor-fs", (fs * (State.zoom || 1)).toFixed(1) + "px");
+    root.style.setProperty("--editor-lh", String(lh));
+    if (a.fontFamily) root.style.setProperty("--editor-font", a.fontFamily);
+    else root.style.removeProperty("--editor-font");
   }
   function lsSet(k, v) {
     try {
@@ -8472,9 +9887,11 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (!window.indexedDB) return Promise.reject(new Error("IndexedDB unavailable"));
     if (RecentStore.db) return Promise.resolve(RecentStore.db);
     return new Promise((resolve, reject) => {
-      const req = indexedDB.open("markeditor-history", 1);
+      const req = indexedDB.open("markeditor-history", 2);
       req.onupgradeneeded = () => {
-        if (!req.result.objectStoreNames.contains("handles")) req.result.createObjectStore("handles", { keyPath: "id" });
+        const db = req.result;
+        if (!db.objectStoreNames.contains("handles")) db.createObjectStore("handles", { keyPath: "id" });
+        if (!db.objectStoreNames.contains("drafts")) db.createObjectStore("drafts", { keyPath: "id" });
       };
       req.onsuccess = () => {
         RecentStore.db = req.result;
@@ -8483,12 +9900,49 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       req.onerror = () => reject(req.error);
     });
   }
+  async function idbDraftPut(record) {
+    try {
+      const db = await openRecentDb();
+      await new Promise((resolve, reject) => {
+        const req = db.transaction("drafts", "readwrite").objectStore("drafts").put(record);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+      return true;
+    } catch (e) {
+      warnLog("IndexedDB 草稿写入失败:", e);
+      return false;
+    }
+  }
+  async function idbDraftGet() {
+    try {
+      const db = await openRecentDb();
+      return await new Promise((resolve, reject) => {
+        const req = db.transaction("drafts").objectStore("drafts").get("current");
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+  async function idbDraftClear() {
+    try {
+      const db = await openRecentDb();
+      await new Promise((resolve, reject) => {
+        const req = db.transaction("drafts", "readwrite").objectStore("drafts").delete("current");
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {
+    }
+  }
   async function recentAll(kind) {
     try {
       const db = await openRecentDb();
       return await new Promise((resolve, reject) => {
         const req = db.transaction("handles").objectStore("handles").getAll();
-        req.onsuccess = () => resolve(req.result.filter((x) => !kind || x.kind === kind).sort((a, b) => b.ts - a.ts));
+        req.onsuccess = () => resolve(req.result.filter((x2) => !kind || x2.kind === kind).sort((a, b) => b.ts - a.ts));
         req.onerror = () => reject(req.error);
       });
     } catch (e) {
@@ -8540,7 +9994,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     return record;
   }
   async function getRecent(id) {
-    return (await recentAll()).find((x) => x.id === id) || null;
+    return (await recentAll()).find((x2) => x2.id === id) || null;
   }
   async function findRecentHandle(kind, handle) {
     for (const item of await recentAll(kind)) {
@@ -8572,8 +10026,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function countWords(md) {
     let cjk = 0, words = 0, chars = 0, inWord = false;
-    for (let i = 0; i < md.length; i++) {
-      const c = md.charCodeAt(i);
+    for (let i2 = 0; i2 < md.length; i2++) {
+      const c = md.charCodeAt(i2);
       const ws = c === 32 || c >= 9 && c <= 13 || c === 160 || c === 12288 || c === 65279 || c >= 8192 && c <= 8202 || c === 8232 || c === 8233 || c === 8239 || c === 8287;
       if (ws) {
         if (inWord) {
@@ -8603,6 +10057,181 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function bootstrap_core() {
     loadSettings();
+    applyAppearance();
+  }
+
+  // src/modules/fold.js
+  var fold_exports = {};
+  __export(fold_exports, {
+    applyFoldState: () => applyFoldState,
+    bootstrap_fold: () => bootstrap_fold,
+    expandAllFolds: () => expandAllFolds,
+    syncFoldButtons: () => syncFoldButtons,
+    toggleFold: () => toggleFold
+  });
+  var KEY = "me-folded";
+  var folded = null;
+  var syncTimer = 0;
+  function loadFolded() {
+    if (folded) return folded;
+    try {
+      folded = new Set(JSON.parse(lsGet(KEY) || "[]"));
+    } catch (e) {
+      folded = /* @__PURE__ */ new Set();
+    }
+    return folded;
+  }
+  function persist() {
+    try {
+      lsSet(KEY, JSON.stringify(Array.from(folded || [])));
+    } catch (e) {
+    }
+  }
+  function filePrefix() {
+    return (State.filename || "untitled") + "|";
+  }
+  function headingKey(h) {
+    const text = ($(".block-content", h) ? $(".block-content", h).textContent : "").trim();
+    return filePrefix() + (h.dataset.level || "1") + ":" + text;
+  }
+  function bodyBlocks(h) {
+    const all = topBlocks();
+    const i2 = all.indexOf(h);
+    if (i2 < 0) return [];
+    const lvl = +h.dataset.level || 1;
+    const out = [];
+    for (let j = i2 + 1; j < all.length; j++) {
+      const b = all[j];
+      if (b.dataset.type === "heading" && (+b.dataset.level || 1) <= lvl) break;
+      out.push(b);
+    }
+    return out;
+  }
+  function setCollapsed(h, collapsed, save = true) {
+    bodyBlocks(h).forEach((b) => b.classList.toggle("fold-hidden", collapsed));
+    h.classList.toggle("is-collapsed", collapsed);
+    const btn = $(".heading-fold", h);
+    if (btn) btn.textContent = collapsed ? "▸" : "▾";
+    const set = loadFolded();
+    if (collapsed) set.add(headingKey(h));
+    else set.delete(headingKey(h));
+    if (save) persist();
+  }
+  function toggleFold(h) {
+    if (!h) return;
+    const willCollapse = !h.classList.contains("is-collapsed");
+    setCollapsed(h, willCollapse);
+    if (willCollapse) {
+      const body = bodyBlocks(h);
+      if (body.length) toast("已折叠 " + body.length + " 个块（再次点击标题箭头展开）", 1800);
+    }
+  }
+  function expandAllFolds() {
+    $$('#editor .md-block[data-type="heading"]').forEach((h) => setCollapsed(h, false, false));
+    const p = filePrefix();
+    if (folded) Array.from(folded).forEach((k) => {
+      if (k.startsWith(p)) folded.delete(k);
+    });
+    persist();
+  }
+  function applyFoldState() {
+    const set = loadFolded();
+    $$('#editor .md-block[data-type="heading"]').forEach((h) => {
+      if (h.classList.contains("fold-hidden")) return;
+      setCollapsed(h, set.has(headingKey(h)), false);
+    });
+  }
+  function syncFoldButtons() {
+    const all = topBlocks();
+    for (let i2 = 0; i2 < all.length; i2++) {
+      const h = all[i2];
+      if (h.dataset.type !== "heading") continue;
+      const lvl = +h.dataset.level || 1;
+      let hasBody = false, anyHidden = false;
+      for (let j = i2 + 1; j < all.length; j++) {
+        const b = all[j];
+        if (b.dataset.type === "heading" && (+b.dataset.level || 1) <= lvl) break;
+        hasBody = true;
+        if (b.classList.contains("fold-hidden")) anyHidden = true;
+      }
+      const btn = $(".heading-fold", h);
+      if (btn) {
+        btn.style.display = hasBody ? "" : "none";
+        btn.textContent = anyHidden ? "▸" : "▾";
+      }
+      h.classList.toggle("is-collapsed", !!(hasBody && anyHidden));
+    }
+  }
+  function bootstrap_fold() {
+    editor.addEventListener("click", (e) => {
+      const btn = e.target.closest && e.target.closest(".heading-fold");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const h = btn.closest('.md-block[data-type="heading"]');
+      toggleFold(h);
+    });
+    editor.addEventListener("input", () => {
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(syncFoldButtons, 80);
+    }, true);
+    editor.addEventListener("me:content-loaded", () => {
+      folded = null;
+      applyFoldState();
+      syncFoldButtons();
+    });
+    applyFoldState();
+    syncFoldButtons();
+  }
+
+  // src/modules/mobile.js
+  var mobile_exports = {};
+  __export(mobile_exports, {
+    bootstrap_mobile: () => bootstrap_mobile
+  });
+  var SKIP_COMMIT = /* @__PURE__ */ new Set(["undo", "redo", "palette"]);
+  var SKIP_REFOCUS = /* @__PURE__ */ new Set(["palette", "link"]);
+  function setupViewportFit() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const root = document.documentElement;
+    const sync = () => {
+      const ae = document.activeElement;
+      const typing = ae && (ae === editor || ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.isContentEditable);
+      if (typing && vv.height < window.innerHeight - 80) {
+        root.style.setProperty("--app-height", Math.round(vv.height) + "px");
+      } else {
+        root.style.removeProperty("--app-height");
+      }
+    };
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
+    document.addEventListener("focusin", sync);
+    document.addEventListener("focusout", () => setTimeout(sync, 80));
+    sync();
+  }
+  function bootstrap_mobile() {
+    const bar = $("#mobile-bar");
+    if (!bar) return;
+    setupViewportFit();
+    bar.addEventListener("mousedown", (e) => e.preventDefault());
+    bar.addEventListener("click", (e) => {
+      const btn = e.target.closest && e.target.closest(".mbar-btn");
+      if (!btn) return;
+      const id = btn.dataset.cmd;
+      const c = CmdMap[id];
+      if (!c) return;
+      e.preventDefault();
+      updateCurrentHistoryView();
+      c.run();
+      if (!SKIP_COMMIT.has(id)) commitHistory("struct");
+      if (!SKIP_REFOCUS.has(id)) {
+        try {
+          editor.focus();
+        } catch (err2) {
+        }
+      }
+    });
   }
 
   // src/main.js
@@ -8614,6 +10243,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   bootstrap_input();
   bootstrap_commands();
   bootstrap_io();
+  bootstrap_fold();
+  bootstrap_mobile();
   var NS = [
     core_exports,
     line_type_exports,
@@ -8630,7 +10261,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     table_exports,
     paste_exports,
     commands_exports,
-    io_exports
+    io_exports,
+    docx_exports,
+    fold_exports,
+    mobile_exports
   ];
   var ME = {};
   for (const ns of NS) {
