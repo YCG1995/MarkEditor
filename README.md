@@ -4,7 +4,7 @@
 
 一个 HTML 文件就是全部：无需安装、无需联网、无需注册，双击即用。支持数学公式、Mermaid 图表、多主题、导出 Word/HTML/PDF、本地工作区直读直写。
 
-[![version](https://img.shields.io/badge/version-1.1.1-blue)](https://github.com/YCG1995/MarkEditor/releases)
+[![version](https://img.shields.io/badge/version-1.2.0-blue)](https://github.com/YCG1995/MarkEditor/releases)
 [![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![platform](https://img.shields.io/badge/platform-cross--platform-orange)](#下载)
 [![online](https://img.shields.io/badge/在线体验-MarkEditor-brightgreen)](#在线体验)
@@ -25,13 +25,13 @@
 
 | 平台 | 下载 |
 | --- | --- |
-| Windows 10/11 x64 | [MarkEditor-1.1.1-windows-x64.zip](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-windows-x64.zip) |
-| macOS Intel (x64) | [MarkEditor-1.1.1-macos-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-macos-x64.tar.gz) |
-| macOS Apple Silicon (M1+) | [MarkEditor-1.1.1-macos-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-macos-arm64.tar.gz) |
-| macOS 通用 (Universal) | [MarkEditor-1.1.1-macos-universal.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-macos-universal.tar.gz) |
-| Linux x64 | [MarkEditor-1.1.1-linux-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-linux-x64.tar.gz) |
-| Linux arm64 | [MarkEditor-1.1.1-linux-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-linux-arm64.tar.gz) |
-| Linux armhf | [MarkEditor-1.1.1-linux-armhf.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.1.1/MarkEditor-1.1.1-linux-armhf.tar.gz) |
+| Windows 10/11 x64 | [MarkEditor-1.2.0-windows-x64.zip](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-windows-x64.zip) |
+| macOS Intel (x64) | [MarkEditor-1.2.0-macos-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-macos-x64.tar.gz) |
+| macOS Apple Silicon (M1+) | [MarkEditor-1.2.0-macos-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-macos-arm64.tar.gz) |
+| macOS 通用 (Universal) | [MarkEditor-1.2.0-macos-universal.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-macos-universal.tar.gz) |
+| Linux x64 | [MarkEditor-1.2.0-linux-x64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-linux-x64.tar.gz) |
+| Linux arm64 | [MarkEditor-1.2.0-linux-arm64.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-linux-arm64.tar.gz) |
+| Linux armhf | [MarkEditor-1.2.0-linux-armhf.tar.gz](https://github.com/YCG1995/MarkEditor/releases/download/v1.2.0/MarkEditor-1.2.0-linux-armhf.tar.gz) |
 
 更多版本见 [Releases](https://github.com/YCG1995/MarkEditor/releases)。
 
@@ -53,7 +53,7 @@
 - 代码块语法高亮 + 行号 + 一键复制
 - 引用块与 Callout 提示块（TIP / WARNING / INFO 等 9 种）
 
-### 完整 Markdown 支持
+### 完整 Markdown 支持\n\n- **CommonMark 0.31.2 / GFM 官方 spec 1324/1324 全绿**（CommonMark 652/652，GFM 672/672）\n- 默认使用 CommonMark 语义 AST 内核，列表/引用/代码块/HTML block/链接/强调/实体按规范解析\n- 保留 Typora 式可视化编辑、源码精确往返与 `engine=legacy` 回退开关\n
 标题 H1–H6（支持自动编号）、无序/有序/任务列表、链接、图片（拖拽/粘贴、相对路径、Base64）、脚注、分割线、目录 `[TOC]`、Front Matter。
 
 ### 数学与图表
@@ -114,7 +114,7 @@
 ## 技术实现
 
 - 纯原生 HTML / CSS / JavaScript，零框架、零依赖
-- ContentEditable + 自定义 Markdown 引擎，实现真正的所见即所得
+- ContentEditable + CommonMark/GFM AST 内核（markdown-it），实现真正的所见即所得
 - File System Access API 实现本地文件直读直写
 - IndexedDB 存储最近文件 / 工作区句柄，localStorage 保存草稿与设置
 - 内置轻量 TeX 渲染器，数学公式无需联网
