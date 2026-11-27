@@ -9134,6 +9134,7 @@ img.broken{min-width:42px;min-height:28px;outline:2px dashed var(--border);outli
   function cleanInlineHtml(node2) {
     const c = node2.cloneNode(true);
     c.querySelectorAll(".md-marker,.md-hidden,.math-src,.md-back").forEach((x2) => x2.remove());
+    c.querySelectorAll("[data-md-html]").forEach((x2) => x2.removeAttribute("data-md-html"));
     c.querySelectorAll(".block-content,.li-body").forEach((x2) => x2.replaceWith(...Array.from(x2.childNodes)));
     c.querySelectorAll("br.md-softbreak").forEach((br) => br.replaceWith(document.createTextNode("\n")));
     c.querySelectorAll("br.md-hardbreak").forEach((br) => {
@@ -14722,7 +14723,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (tag === "br") return { closing: false, tag: "br", html: "<br>" };
     const escaped = escapeHtml(literal);
     if (closing) return { closing: true, tag, html: "</" + tag + ">" + MARKER(literal) };
-    return { closing: false, tag, html: MARKER(literal) + "<" + tag + ">" };
+    return { closing: false, tag, html: MARKER(literal) + "<" + tag + ' data-md-html="1">' };
   }
   function renderLink(n, ctx) {
     const href = safeHref(n.href || "");
@@ -14847,6 +14848,11 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (node2.tagName === "SPAN" && (node2.classList.contains("block-content") || node2.classList.contains("li-body")) && node2.childNodes.length === 1 && node2.firstChild && node2.firstChild.tagName === "BR") return "";
     const it = INLINE_HTML_TAGS[node2.tagName];
     if (it) {
+      if (node2.dataset && node2.dataset.mdHtml === "1") {
+        let inner2 = "";
+        for (const c of node2.childNodes) inner2 += nodeToMd(c, depth + 1);
+        return inner2.replace(/^\s+|\s+$/g, "");
+      }
       if (node2.classList.contains("md-pandoc")) {
         let inner2 = "";
         for (const c of node2.childNodes) inner2 += nodeToMd(c, depth + 1);
@@ -15947,7 +15953,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   // src/modules/core.js
   var $ = (s, r = document) => r.querySelector(s);
   var $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  var APP_VERSION = "1.2.0";
+  var APP_VERSION = "1.2.1";
   var APP_REPO = "https://github.com/YCG1995/MarkEditor";
   var APP_SITE = "https://md.ycgi.top";
   var APP_RELEASE = APP_REPO + "/releases/tag/v" + APP_VERSION;
