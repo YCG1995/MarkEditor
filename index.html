@@ -10931,9 +10931,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       const line = lines[i2], clean = line.replace(/[\uE000\uE001]/g, "");
       if (i2 === 0 && /^---\s*$/.test(clean)) {
         let j = 1;
-        while (j < lines.length && !/^(---|\.\.\.)\s*$/.test(lines[j])) j++;
+        while (j < lines.length && !/^(---|\.\.\.)\s*$/.test(lines[j].replace(/[\uE000\uE001]/g, ""))) j++;
         if (j < lines.length) {
-          push(buildFrontMatter(lines.slice(1, j).join("\n")));
+          push(buildFrontMatter(lines.slice(1, j).join("\n").replace(/[\uE000\uE001]/g, "")));
           i2 = j + 1;
           continue;
         }
@@ -10944,8 +10944,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         const buf = [];
         i2++;
         const closeRe = new RegExp("^ {0,3}" + fence2[0] + "{" + fence2.length + ",}\\s*$");
-        while (i2 < lines.length && !closeRe.test(lines[i2])) {
-          buf.push(lines[i2]);
+        while (i2 < lines.length && !closeRe.test(lines[i2].replace(/[\uE000\uE001]/g, ""))) {
+          buf.push(lines[i2].replace(/[\uE000\uE001]/g, ""));
           i2++;
         }
         i2++;
@@ -10971,27 +10971,27 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         continue;
       }
       if (/^\s*\$\$\s*.*$/.test(clean)) {
-        const tail = line.replace(/^\s*\$\$/, "").replace(/\$\$\s*$/, "");
-        if (/\$\$\s*$/.test(line) && tail.trim()) {
-          push(buildMathBlock(tail.trim()));
+        const tail = clean.replace(/^\s*\$\$/, "").replace(/\$\$\s*$/, "");
+        if (/\$\$\s*$/.test(clean) && tail.trim()) {
+          push(buildMathBlock(tail.trim(), false));
           i2++;
           continue;
         }
         const buf = [];
         i2++;
-        while (i2 < lines.length && !/^\s*\$\$\s*$/.test(lines[i2])) {
-          buf.push(lines[i2]);
+        while (i2 < lines.length && !/^\s*\$\$\s*$/.test(lines[i2].replace(/[\uE000\uE001]/g, ""))) {
+          buf.push(lines[i2].replace(/[\uE000\uE001]/g, ""));
           i2++;
         }
         i2++;
-        push(buildMathBlock(buf.join("\n").trim()));
+        push(buildMathBlock(buf.join("\n").trim(), true));
         continue;
       }
-      if (clean.includes("|") && i2 + 1 < lines.length && isSepRow(lines[i2 + 1])) {
-        const rows = [lines[i2], lines[i2 + 1]];
+      if (clean.includes("|") && i2 + 1 < lines.length && isSepRow(lines[i2 + 1].replace(/[\uE000\uE001]/g, ""))) {
+        const rows = [clean, lines[i2 + 1].replace(/[\uE000\uE001]/g, "")];
         i2 += 2;
         while (i2 < lines.length && lines[i2].includes("|") && lines[i2].trim()) {
-          rows.push(lines[i2]);
+          rows.push(lines[i2].replace(/[\uE000\uE001]/g, ""));
           i2++;
         }
         push(buildTable(rows));
@@ -11364,7 +11364,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     const el = document.createElement("div");
     el.className = "md-block hr-block";
     el.dataset.type = "hr";
-    el.dataset.src = src || "---";
+    el.dataset.src = String(src || "---").replace(/[\uE000\uE001]/g, "");
     el.setAttribute("contenteditable", "false");
     el.id = uid();
     el.innerHTML = "<hr>";
@@ -11571,11 +11571,12 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     el.innerHTML = '<span class="footnote-label">[^' + escapeHtml(id) + ']:</span> <span class="block-content">' + inlineRender(content) + "</span>";
     return el;
   }
-  function buildMathBlock(tex) {
+  function buildMathBlock(tex, multi = true) {
     const el = document.createElement("div");
     el.className = "md-block math-block";
     el.dataset.type = "math";
     el.dataset.tex = tex;
+    el.dataset.mathMulti = multi ? "1" : "0";
     el.setAttribute("contenteditable", "false");
     el.id = uid();
     el.innerHTML = '<span class="math-hint">点击编辑 · Shift+Enter 完成</span><div class="math-out" contenteditable="false">' + renderMath(tex, true) + '</div><textarea class="math-src-edit" hidden></textarea>';
@@ -14720,7 +14721,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (!m) return null;
     const closing = !!m[1], tag = m[2].toLowerCase();
     if (!/^(br|kbd|sub|sup|small|abbr|mark|u)$/.test(tag)) return null;
-    if (tag === "br") return { closing: false, tag: "br", html: "<br>" };
+    if (tag === "br") return { closing: false, tag: "br", html: '<br data-md-html="1">' };
     const escaped = escapeHtml(literal);
     if (closing) return { closing: true, tag, html: "</" + tag + ">" + MARKER(literal) };
     return { closing: false, tag, html: MARKER(literal) + "<" + tag + ' data-md-html="1">' };
@@ -14838,8 +14839,14 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (node2.nodeType !== 1) return "";
     if (depth > 100) return "";
     if (node2.tagName === "BR") {
+      if (node2.dataset && node2.dataset.mdHtml === "1") return "<br>";
       if (node2.classList && node2.classList.contains("md-hardbreak")) return "  \n";
       return "\n";
+    }
+    if (node2.dataset && node2.dataset.mdHtml === "1" && node2.tagName !== "BR") {
+      let inner = "";
+      for (const c of node2.childNodes) inner += nodeToMd(c, depth + 1);
+      return inner;
     }
     if (node2.classList.contains("footnote-ref")) {
       const a = $("a", node2);
@@ -14848,16 +14855,11 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     if (node2.tagName === "SPAN" && (node2.classList.contains("block-content") || node2.classList.contains("li-body")) && node2.childNodes.length === 1 && node2.firstChild && node2.firstChild.tagName === "BR") return "";
     const it = INLINE_HTML_TAGS[node2.tagName];
     if (it) {
-      if (node2.dataset && node2.dataset.mdHtml === "1") {
-        let inner2 = "";
-        for (const c of node2.childNodes) inner2 += nodeToMd(c, depth + 1);
-        return inner2.replace(/^\s+|\s+$/g, "");
-      }
       if (node2.classList.contains("md-pandoc")) {
         let inner2 = "";
         for (const c of node2.childNodes) inner2 += nodeToMd(c, depth + 1);
         inner2 = inner2.trim();
-        return node2.tagName === "SUP" ? "^" + inner2 + "^" : "~" + inner2 + "~";
+        return inner2;
       }
       if (node2.querySelector && node2.querySelector(".md-marker")) {
         let out2 = "";
@@ -14870,10 +14872,12 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       return "<" + it + attrs + ">" + inner.replace(/^\s+|\s+$/g, "") + "</" + it + ">";
     }
     const cls = node2.classList;
-    if (cls.contains("math-block-inline")) return "$$" + (node2.dataset.tex || "") + "$$";
-    if (cls.contains("math-inline")) return "$" + (node2.dataset.tex || "") + "$";
+    if (cls.contains("math-block-inline")) return "$$" + (node2.dataset.tex || "").replace(/[\uE000\uE001]/g, "") + "$$";
+    if (cls.contains("math-inline")) return "$" + (node2.dataset.tex || "").replace(/[\uE000\uE001]/g, "") + "$";
     if (cls.contains("md-autolink")) {
-      const t = node2.textContent.trim();
+      let t = node2.textContent.trim();
+      if (t.startsWith("<")) t = t.slice(1);
+      if (t.endsWith(">")) t = t.slice(0, -1);
       return "<" + t + ">";
     }
     if (cls.contains("md-bare-link")) {
@@ -14941,7 +14945,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     flushBlockMutations();
     let v = _cellMdCache.get(cell);
     if (v === void 0) {
-      v = escapeCellSource(nodeToMd(cell) || "");
+      v = escapeCellSource(nodeToMd(cell) || "").replace(/^ +| +$/g, "");
       _cellMdCache.set(cell, v);
     }
     return v;
@@ -15022,8 +15026,9 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       case "reference":
         return b.dataset.raw || b.textContent;
       case "math": {
-        const t = b.dataset.tex || "";
-        return /\n/.test(t) ? "$$\n" + t + "\n$$" : "$$" + t + "$$";
+        const t = (b.dataset.tex || "").replace(/[\uE000\uE001]/g, "");
+        const multi = b.dataset.mathMulti === "1" || b.dataset.mathMulti === void 0 && /\n/.test(t);
+        return multi ? "$$\n" + t + "\n$$" : "$$" + t + "$$";
       }
       case "mermaid":
         return "```mermaid\n" + (b.dataset.code || "") + "\n```";
@@ -15953,7 +15958,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   // src/modules/core.js
   var $ = (s, r = document) => r.querySelector(s);
   var $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  var APP_VERSION = "1.2.1";
+  var APP_VERSION = "1.2.2";
   var APP_REPO = "https://github.com/YCG1995/MarkEditor";
   var APP_SITE = "https://md.ycgi.top";
   var APP_RELEASE = APP_REPO + "/releases/tag/v" + APP_VERSION;
