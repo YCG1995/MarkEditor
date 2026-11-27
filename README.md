@@ -53,7 +53,12 @@
 - 代码块语法高亮 + 行号 + 一键复制
 - 引用块与 Callout 提示块（TIP / WARNING / INFO 等 9 种）
 
-### 完整 Markdown 支持\n\n- **CommonMark 0.31.2 / GFM 官方 spec 1324/1324 全绿**（CommonMark 652/652，GFM 672/672）\n- 默认使用 CommonMark 语义 AST 内核，列表/引用/代码块/HTML block/链接/强调/实体按规范解析\n- 保留 Typora 式可视化编辑、源码精确往返与 `engine=legacy` 回退开关\n
+### 完整 Markdown 支持
+
+- **CommonMark 0.31.2 / GFM 官方 spec 1324/1324 全绿**（CommonMark 652/652，GFM 672/672）
+- 默认使用 CommonMark 语义 AST 内核，列表/引用/代码块/HTML block/链接/强调/实体按规范解析
+- 保留 Typora 式可视化编辑、源码精确往返与 `engine=legacy` 回退开关
+
 标题 H1–H6（支持自动编号）、无序/有序/任务列表、链接、图片（拖拽/粘贴、相对路径、Base64）、脚注、分割线、目录 `[TOC]`、Front Matter。
 
 ### 数学与图表
