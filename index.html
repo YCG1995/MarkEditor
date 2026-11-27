@@ -10933,7 +10933,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         let j = 1;
         while (j < lines.length && !/^(---|\.\.\.)\s*$/.test(lines[j].replace(/[\uE000\uE001]/g, ""))) j++;
         if (j < lines.length) {
-          push(buildFrontMatter(lines.slice(1, j).join("\n").replace(/[\uE000\uE001]/g, "")));
+          push(buildFrontMatter(lines.slice(1, j).join("\n")));
           i2 = j + 1;
           continue;
         }
@@ -10945,15 +10945,15 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         i2++;
         const closeRe = new RegExp("^ {0,3}" + fence2[0] + "{" + fence2.length + ",}\\s*$");
         while (i2 < lines.length && !closeRe.test(lines[i2].replace(/[\uE000\uE001]/g, ""))) {
-          buf.push(lines[i2].replace(/[\uE000\uE001]/g, ""));
+          buf.push(lines[i2]);
           i2++;
         }
         i2++;
-        push(/^mermaid$/i.test(lang) ? buildMermaidBlock(buf.join("\n")) : buildCodeblock(lang, buf.join("\n"), fence2));
+        push(/^mermaid$/i.test(lang) ? buildMermaidBlock(buf.join("\n").replace(/[\uE000\uE001]/g, "")) : buildCodeblock(lang, buf.join("\n"), fence2));
         continue;
       }
       if (/^(?: {4}|\t)/.test(clean)) {
-        const buf = [clean.replace(/^(?:\t| {4})/, "")];
+        const buf = [lines[i2].replace(/^(?:\t| {4})/, "")];
         i2++;
         while (i2 < lines.length) {
           const raw = lines[i2], c = raw.replace(/[\uE000\uE001]/g, "");
@@ -10963,7 +10963,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
             continue;
           }
           if (!/^(?: {4}|\t)/.test(c)) break;
-          buf.push(c.replace(/^(?:\t| {4})/, ""));
+          buf.push(raw.replace(/^(?:\t| {4})/, ""));
           i2++;
         }
         while (buf.length && buf[buf.length - 1] === "") buf.pop();
@@ -10980,7 +10980,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         const buf = [];
         i2++;
         while (i2 < lines.length && !/^\s*\$\$\s*$/.test(lines[i2].replace(/[\uE000\uE001]/g, ""))) {
-          buf.push(lines[i2].replace(/[\uE000\uE001]/g, ""));
+          buf.push(lines[i2]);
           i2++;
         }
         i2++;
@@ -10988,10 +10988,10 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
         continue;
       }
       if (clean.includes("|") && i2 + 1 < lines.length && isSepRow(lines[i2 + 1].replace(/[\uE000\uE001]/g, ""))) {
-        const rows = [clean, lines[i2 + 1].replace(/[\uE000\uE001]/g, "")];
+        const rows = [line, lines[i2 + 1]];
         i2 += 2;
         while (i2 < lines.length && lines[i2].includes("|") && lines[i2].trim()) {
-          rows.push(lines[i2].replace(/[\uE000\uE001]/g, ""));
+          rows.push(lines[i2]);
           i2++;
         }
         push(buildTable(rows));
@@ -11555,11 +11555,12 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     }
   }
   function buildFrontMatter(src) {
+    const raw = String(src == null ? "" : src), clean = raw.replace(/[\uE000\uE001]/g, "");
     const el = createBlock("frontmatter");
     el.className = "md-block frontmatter";
     el.setAttribute("contenteditable", "false");
-    el.dataset.src = src;
-    el.innerHTML = "<pre>" + escapeHtml(src) + "</pre>";
+    el.dataset.src = clean;
+    el.innerHTML = "<pre>" + escapeHtml(raw) + "</pre>";
     return el;
   }
   function buildFootnoteDefinition(id, content) {
@@ -11573,13 +11574,15 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function buildMathBlock(tex, multi = true) {
     const el = document.createElement("div");
+    const raw = String(tex == null ? "" : tex), clean = raw.replace(/[\uE000\uE001]/g, "");
+    const isMulti = multi !== false;
     el.className = "md-block math-block";
     el.dataset.type = "math";
-    el.dataset.tex = tex;
-    el.dataset.mathMulti = multi ? "1" : "0";
+    el.dataset.tex = clean;
+    el.dataset.mathMulti = isMulti ? "1" : "0";
     el.setAttribute("contenteditable", "false");
     el.id = uid();
-    el.innerHTML = '<span class="math-hint">点击编辑 · Shift+Enter 完成</span><div class="math-out" contenteditable="false">' + renderMath(tex, true) + '</div><textarea class="math-src-edit" hidden></textarea>';
+    el.innerHTML = '<span class="math-hint">点击编辑 · Shift+Enter 完成</span><div class="math-out" contenteditable="false">' + renderMath(clean, true) + "</div>" + (raw !== clean ? '<span class="math-src md-hidden" contenteditable="false">' + escapeHtml(raw) + "</span>" : "") + '<textarea class="math-src-edit" hidden></textarea>';
     return el;
   }
   function splitTableRow(line) {
@@ -11638,7 +11641,8 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   }
   function buildTable(rows) {
     const header = splitTableRow(rows[0]);
-    const aligns = splitTableRow(rows[1]).map((c) => {
+    const sepRow = String(rows[1] || "").replace(/[\uE000\uE001]/g, "");
+    const aligns = splitTableRow(sepRow).map((c) => {
       const l = c.startsWith(":"), r = c.endsWith(":");
       return l && r ? "center" : r ? "right" : l ? "left" : "";
     });
@@ -11647,7 +11651,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     wrap.className = "md-block table-block";
     wrap.dataset.type = "table";
     wrap.id = uid();
-    wrap.dataset.sep = rows[1] || "";
+    wrap.dataset.sep = sepRow;
     wrap.setAttribute("contenteditable", "false");
     let html = '<div class="table-tools" contenteditable="false"><button class="tt-btn" data-act="resize" type="button">尺寸…</button><button class="tt-btn" data-act="row-add-below" type="button">+ 行</button><button class="tt-btn" data-act="row-del" type="button">− 行</button><button class="tt-btn" data-act="col-add-right" type="button">+ 列</button><button class="tt-btn" data-act="col-del" type="button">− 列</button><button class="tt-btn" data-act="align-left" type="button">左对齐</button><button class="tt-btn" data-act="align-center" type="button">居中</button><button class="tt-btn" data-act="align-right" type="button">右对齐</button><button class="tt-btn" data-act="export-csv" type="button">导出CSV</button><button class="tt-btn danger" data-act="delete" type="button">删除表</button></div><table><thead><tr>';
     header.forEach((h, i2) => html += '<th contenteditable="true" data-align="' + (aligns[i2] || "") + '">' + cellRender(h) + "</th>");
@@ -14945,7 +14949,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
     flushBlockMutations();
     let v = _cellMdCache.get(cell);
     if (v === void 0) {
-      v = escapeCellSource(nodeToMd(cell) || "").replace(/^ +| +$/g, "");
+      v = escapeCellSource(nodeToMd(cell) || "").replace(/[\uE000\uE001]/g, "").replace(/^ +| +$/g, "");
       _cellMdCache.set(cell, v);
     }
     return v;
@@ -15009,7 +15013,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
       case "html":
         return b.dataset.raw || "";
       case "codeblock": {
-        const lang = b.dataset.lang || "", code2 = $("code", b).textContent;
+        const lang = b.dataset.lang || "", code2 = $("code", b).textContent.replace(/[\uE000\uE001]/g, "");
         if (b.dataset.indented === "1") {
           return code2.split("\n").map((l) => l ? "    " + l : "").join("\n");
         }
@@ -15958,7 +15962,7 @@ $$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$
   // src/modules/core.js
   var $ = (s, r = document) => r.querySelector(s);
   var $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  var APP_VERSION = "1.2.2";
+  var APP_VERSION = "1.2.3";
   var APP_REPO = "https://github.com/YCG1995/MarkEditor";
   var APP_SITE = "https://md.ycgi.top";
   var APP_RELEASE = APP_REPO + "/releases/tag/v" + APP_VERSION;
